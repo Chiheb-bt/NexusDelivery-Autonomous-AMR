@@ -1,17 +1,31 @@
-name: NexusDelivery Autonomy CI
+name: NexusDelivery Continuous Integration & Security
 
 on:
   push:
-    branches: [ main, master, devel/* ]
+    branches: [ main, master, 'fix/*', 'feat/*' ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
-  unit-tests:
-    name: Autonomous Stack Unit Tests (75 Tests)
+  security-audit:
+    name: Secret & Credential Leak Detection (Gitleaks)
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Run Gitleaks Secret Scanner
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  unit-tests:
+    name: Autonomous Stack & BOM Validation Tests (79 Tests)
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -26,12 +40,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Execute Autonomous Core Unit Test Suite
+      - name: Execute Full 79-Test Unit Suite
         env:
           PYTHONPATH: .:delivery_robot_sim
         run: |
           python -m unittest discover -s delivery_robot_sim/tests -p 'test_*.py' -v
 
+      - name: Verify Mathematical BOM Arithmetic & Generator
+        run: |
+          python tools/generate_bom_table.py
+
       - name: Validate System Status Integrity
         run: |
-          python -c "import json; d = json.load(open('PROJECT_STATUS.json')); assert d['project_name'], 'Valid project_name required'"
+          python -c "import json; d = json.load(open('PROJECT_STATUS.json')); assert d['project_name'] and d['maturity_level'] == 'TRL_3_SIMULATION_PROOF_OF_CONCEPT', 'Valid project metadata required'"
