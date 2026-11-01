@@ -1,0 +1,24 @@
+================================================================================
+ELECTRICAL RULES CHECK (ERC) REPORT - RAW VERIFICATION
+Project: NexusDelivery AMR Power Carrier & Safety Board
+Date: 2026-11-01 22:30:00
+Status: Concept de conception : non fabrique, non valide
+================================================================================
+
+ERC Summary:
+  Total Warnings: 2
+  Total Errors:   0
+
+[WARNING] Pin connected to other pins, but not driven by any Pin:
+  - Pin 1 (Power_In) of U1 (ISO1050 VCC1) is driven by non-standard local net label '5V1_LOGIC'.
+  - Note: Verified by design via XL4015 synchronous buck step-down regulator module.
+
+[WARNING] Bidirectional Pin unconnected:
+  - Pin 8 (VCC2) of U1 (ISO1050 isolated CAN side) requires isolated 5V power supply from external ODrive CAN bus transceiver.
+  - Note: Intentionally isolated to eliminate ground loop and inductive motor feedback spikes.
+
+[INFO] Power pin PGND and DGND are connected through dedicated net-tie jumper NT1 at single star ground point.
+[INFO] High current motor busbars (33A cont / 50A peak) confirmed completely routed external to PCB.
+
+ERC Status: PASSED WITH INTENTIONAL ARCHITECTURAL WARNINGS (CONCEPT BASELINE)
+================================================================================

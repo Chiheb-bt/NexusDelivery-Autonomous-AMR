@@ -1,0 +1,200 @@
+{
+  "system_metadata": {
+    "project": "NexusDelivery Autonomous Sidewalk AMR",
+    "document": "Electrical Power Tree Architecture",
+    "disclaimer": "Concept de conception : non fabriqué, non validé",
+    "revision": "1.0",
+    "date": "2026-11-01",
+    "target_chassis": "600x380mm Differential Drive AMR",
+    "nominal_payload_kg": 15.0
+  },
+  "power_source": {
+    "chemistry": "LiFePO4 (Lithium Iron Phosphate)",
+    "configuration": "8S1P",
+    "voltage_nominal_v": 25.6,
+    "voltage_min_cutoff_v": 20.0,
+    "voltage_max_charged_v": 29.2,
+    "capacity_ah": 20.0,
+    "total_energy_wh": 512.0,
+    "bms_model": "Daly Smart BMS 8S 24V (CAN/UART/Bluetooth)",
+    "bms_continuous_discharge_limit_a": 40.0,
+    "bms_peak_discharge_limit_a": 80.0,
+    "status": "ESTIMATION - A VERIFIER DATASHEET"
+  },
+  "primary_protection_and_distribution": {
+    "main_fuse": {
+      "type": "MIDI Bolt-On Fuse (Slow-Blow)",
+      "rating_a": 50.0,
+      "voltage_rating_vdc": 32.0,
+      "part_number": "Littelfuse 0498050.M",
+      "derating_factor": 0.75,
+      "status": "ESTIMATION - A VERIFIER DATASHEET"
+    },
+    "power_wiring": {
+      "gauge": "10 AWG (5.26 mm2)",
+      "conductor": "Tinned Oxygen-Free Copper Multistrand",
+      "insulation": "High-temperature Flexible Silicone (200°C / 600V)",
+      "continuous_ampacity_at_50c_a": 40.0,
+      "peak_ampacity_a": 60.0,
+      "main_connectors": "Amass XT90-S Anti-Spark & Deutsch DT 2-Pin IP68",
+      "routing_rule": "High-current traction lines route directly via busbar/cables outside the PCB"
+    },
+    "emergency_stop_circuit": {
+      "concept": "Hardwired positive-opening mushroom E-Stop triggering dual SIL-2/PLd power contactor",
+      "validation_requirement": "Concept de conception a faire valider selon ISO 13849 par un ingenieur qualifie",
+      "quiescent_current_ma": 45.0
+    }
+  },
+  "voltage_rails": [
+    {
+      "rail_name": "24V_BAT",
+      "nominal_voltage_v": 25.6,
+      "operating_range_v": {
+        "min": 20.0,
+        "max": 29.2
+      },
+      "max_continuous_current_a": 33.05,
+      "peak_current_a": 49.48,
+      "derating_margin_percent": 34.0,
+      "subsystems_connected": [
+        {
+          "name": "ODrive S1 + 2x 250W Geared Hub Motors",
+          "load_type": "Traction Motor Drive",
+          "nominal_power_w": 500.0,
+          "inverter_efficiency": 0.80,
+          "electrical_input_cont_w": 625.0,
+          "current_cont_at_20v_a": 31.25,
+          "current_peak_at_20v_a": 46.88,
+          "connection": "Direct 10 AWG silicone harness with XT90 connector (bypasses PCB)"
+        },
+        {
+          "name": "DC-DC Step-Down Converter 1 (24V -> 5.1V)",
+          "load_type": "Synchronous Buck",
+          "input_current_cont_at_20v_a": 1.13,
+          "input_current_peak_at_20v_a": 1.40,
+          "connection": "Fused branch from main distribution busbar"
+        },
+        {
+          "name": "DC-DC Step-Down Converter 2 (24V -> 12.0V)",
+          "load_type": "Synchronous Buck",
+          "input_current_cont_at_20v_a": 0.67,
+          "input_current_peak_at_20v_a": 1.20,
+          "connection": "Fused branch from main distribution busbar"
+        }
+      ]
+    },
+    {
+      "rail_name": "12V_AUX",
+      "nominal_voltage_v": 12.0,
+      "operating_range_v": {
+        "min": 11.75,
+        "max": 12.25
+      },
+      "regulator": {
+        "type": "Synchronous Buck Converter",
+        "part_number": "XL4016-MOD (or TI TPS54360 concept)",
+        "rated_current_a": 3.0,
+        "efficiency": 0.92
+      },
+      "max_continuous_current_a": 1.20,
+      "peak_current_a": 2.60,
+      "derating_margin_percent": 60.0,
+      "subsystems_connected": [
+        {
+          "name": "2x Cargo Hatch Deadbolt Solenoids",
+          "operating_mode": "Pulsed (1.5s strike duration via low-side MOSFET)",
+          "current_per_solenoid_a": 1.20,
+          "total_peak_current_a": 2.40,
+          "flyback_protection": "1N5408 Fast Recovery Diode across coils"
+        },
+        {
+          "name": "Internal Cooling Fans (2x 40mm IP54)",
+          "operating_mode": "Continuous / PWM regulated",
+          "current_a": 0.20
+        }
+      ]
+    },
+    {
+      "rail_name": "5V1_LOGIC",
+      "nominal_voltage_v": 5.10,
+      "operating_range_v": {
+        "min": 5.00,
+        "max": 5.25
+      },
+      "regulator": {
+        "type": "Synchronous Buck Converter with Low Ripple (<30mV)",
+        "part_number": "XL4015-MOD (or TI LM25116 concept)",
+        "rated_current_a": 5.0,
+        "efficiency": 0.90
+      },
+      "max_continuous_current_a": 4.20,
+      "peak_current_a": 5.00,
+      "derating_margin_percent": 16.0,
+      "subsystems_connected": [
+        {
+          "name": "Raspberry Pi 5 (8GB RAM)",
+          "nominal_current_a": 2.50,
+          "peak_current_a": 3.50,
+          "notes": "Requires 5.1V on GPIO/USB-C header to avoid brownout throttling"
+        },
+        {
+          "name": "Hailo-8L M.2 AI HAT+ (13 INT8 TOPS)",
+          "nominal_current_a": 0.50,
+          "peak_current_a": 0.80,
+          "typical_tdp_w": 2.5
+        },
+        {
+          "name": "Intel RealSense D435i Depth Camera",
+          "nominal_current_a": 0.70,
+          "peak_current_a": 0.90,
+          "interface": "USB 3.0 from Raspberry Pi 5"
+        },
+        {
+          "name": "WS2812B NeoPixel 16-LED Status Ring",
+          "nominal_current_a": 0.30,
+          "peak_current_a": 0.96
+        }
+      ]
+    },
+    {
+      "rail_name": "3V3_ISO",
+      "nominal_voltage_v": 3.30,
+      "operating_range_v": {
+        "min": 3.25,
+        "max": 3.35
+      },
+      "regulator": {
+        "type": "Low-Dropout Linear Regulator (LDO)",
+        "part_number": "AMS1117-3.3 (from 5V1_LOGIC rail)",
+        "rated_current_a": 0.80,
+        "efficiency": 0.65
+      },
+      "max_continuous_current_a": 0.15,
+      "peak_current_a": 0.25,
+      "derating_margin_percent": 81.0,
+      "subsystems_connected": [
+        {
+          "name": "Isolated CAN Transceiver Logic Side (ISO1050 / TJA1052i)",
+          "current_a": 0.04,
+          "isolation_voltage_vrms": 2500
+        },
+        {
+          "name": "Optocoupler Logic & Safety Watchdog",
+          "current_a": 0.05
+        }
+      ]
+    }
+  ],
+  "thermal_dissipation_budget": {
+    "internal_ambient_max_c": 50.0,
+    "component_losses_w": {
+      "odrive_s1_foc_inverter": 25.0,
+      "dc_dc_5v_regulator": 2.4,
+      "dc_dc_12v_regulator": 1.3,
+      "raspberry_pi_5": 7.5,
+      "hailo_8l_npu": 2.5,
+      "total_internal_heat_w": 38.7
+    },
+    "cooling_architecture": "Conduction pads to 4.0mm Aluminum 5052 chassis baseplate (primary heatsink) + dual filtered 40mm IP54 circulation fans"
+  }
+}
