@@ -251,7 +251,15 @@ class WebBridgeNode(Node):
         self.raw_traffic_light_red = False
         self.traffic_light_active = False
         self.red_light = False
-        self.auth_token = os.environ.get('NEXUS_ACCESS_TOKEN', 'nexus-operator-2026')
+        env_pin = os.environ.get('NEXUS_OPERATOR_PIN') or os.environ.get('NEXUS_ACCESS_TOKEN')
+        if env_pin:
+            self.auth_token = env_pin.strip()
+        else:
+            import secrets
+            self.auth_token = secrets.token_hex(16)
+            self.get_logger().warn(
+                f"[SECURITY] NEXUS_OPERATOR_PIN not configured in environment. Generated ephemeral session token: {self.auth_token}"
+            )
         self.last_camera_stamp = 0.0
         self.last_odom_stamp = 0.0
         self.orders_completed = 0

@@ -263,8 +263,19 @@ function setStepperStep(stepNum) {
   }
 }
 
+function getOperatorToken() {
+  let token = sessionStorage.getItem('nexus_operator_token');
+  if (!token) {
+    token = window.prompt('Enter Operator Security PIN:');
+    if (token) {
+      sessionStorage.setItem('nexus_operator_token', token.trim());
+    }
+  }
+  return token || '';
+}
+
 // =====================================================================
-// 5. Founder Dispatch Direct Commands & Telemetry
+// 5. Operator Dispatch Direct Commands & Telemetry
 // =====================================================================
 async function dispatchDirectTarget(name, xy, action, orderId) {
   sounds.playTone(700, 'sine', 0.12, 0, 0.2);
@@ -277,12 +288,12 @@ async function dispatchDirectTarget(name, xy, action, orderId) {
         target_xy: xy,
         action: action,
         order_id: orderId,
-        token: 'nexus-operator-2026'
+        token: getOperatorToken()
       })
     });
     const d = await res.json();
     if (d.success) {
-      showToast(`🚀 Dispatched to ${name} (${xy[0]}, ${xy[1]})`);
+      showToast(`Dispatched to ${name} (${xy[0]}, ${xy[1]})`);
     }
   } catch (e) {
     showToast(`Dispatch signal sent to robot.`);
@@ -295,9 +306,9 @@ async function toggleEStop() {
     await fetch('/api/estop', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: 'STOP', token: 'nexus-operator-2026' })
+      body: JSON.stringify({ state: 'STOP', token: getOperatorToken() })
     });
-    showToast('🛑 EMERGENCY STOP ACTIVATED');
+    showToast('EMERGENCY STOP ACTIVATED');
   } catch (e) {}
 }
 
