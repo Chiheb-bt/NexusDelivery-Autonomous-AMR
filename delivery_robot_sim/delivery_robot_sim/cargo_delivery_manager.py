@@ -38,6 +38,12 @@ CONTAINER_SDF_PATH = "/rdsim/rdsim_gazebo/models/nexus_package/model.sdf"
 
 
 def get_package_sdf_path() -> str:
+    # 1. Dynamic relative path from repo root (portable across any OS/CI/Docker)
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.abspath(os.path.join(this_dir, "..", ".."))
+    rel_path = os.path.join(repo_root, "rdsim_gazebo", "models", "nexus_package", "model.sdf")
+    if os.path.exists(rel_path):
+        return rel_path
     if os.path.exists(DEFAULT_SDF_PATH):
         return DEFAULT_SDF_PATH
     if os.path.exists(CONTAINER_SDF_PATH):
@@ -46,7 +52,7 @@ def get_package_sdf_path() -> str:
     ws_path = os.path.expanduser("~/rdsim_ws/src/RDSim/rdsim_gazebo/models/nexus_package/model.sdf")
     if os.path.exists(ws_path):
         return ws_path
-    return DEFAULT_SDF_PATH
+    return rel_path
 
 
 class CargoDeliveryManager(Node if ROS_AVAILABLE else object):
