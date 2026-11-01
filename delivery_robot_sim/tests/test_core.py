@@ -916,7 +916,70 @@ class CargoDeliveryManagerTests(unittest.TestCase):
         self.assertTrue(os.path.exists(sdf_path), f"Package SDF path does not exist: {sdf_path}")
 
 
+class BillOfMaterialsValidationTests(unittest.TestCase):
+    """Rigorous mathematical verification of BOM.csv and generator script."""
+
+    def setUp(self):
+        self.repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        self.bom_path = os.path.join(
+            self.repo_root, "delivery_robot_sim", "web_dashboard", "downloads", "BOM.csv"
+        )
+
+    def test_bom_csv_file_exists(self):
+        self.assertTrue(os.path.exists(self.bom_path), f"BOM.csv not found at {self.bom_path}")
+
+    def test_bom_arithmetic_exactness(self):
+        import csv
+        with open(self.bom_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            item_count = 0
+            for row in reader:
+                subsystem = row["Subsystem"].strip()
+                if subsystem.startswith("Total") or "Tunisie" in subsystem:
+                    continue
+                item_count += 1
+                qty = int(row["Quantity"])
+                unit_cost = float(row["Unit Cost USD"])
+                ext_cost = float(row["Extended Cost USD"])
+                self.assertGreater(qty, 0, f"Zero or negative quantity on {row['Component']}")
+                self.assertGreater(unit_cost, 0.0, f"Zero or negative unit cost on {row['Component']}")
+                expected = round(qty * unit_cost, 2)
+                self.assertAlmostEqual(
+                    ext_cost, expected, places=2,
+                    msg=f"BOM math error on {row['Component']}: {qty} * {unit_cost} != {ext_cost}"
+                )
+            self.assertGreaterEqual(item_count, 15, "BOM should have at least 15 verified line items")
+
+    def test_bom_total_sum_matches(self):
+        import csv
+        parts_total = 0.0
+        reported_total = None
+        with open(self.bom_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                subsystem = row["Subsystem"].strip()
+                if subsystem == "Total Pièces Brutes":
+                    reported_total = float(row["Extended Cost USD"])
+                elif not subsystem.startswith("Total") and "Tunisie" not in subsystem:
+                    parts_total += float(row["Extended Cost USD"])
+
+        self.assertIsNotNone(reported_total, "Total Pièces Brutes row missing from BOM.csv")
+        self.assertAlmostEqual(
+            parts_total, reported_total, places=2,
+            msg=f"Sum of parts ({parts_total:.2f}) does not match reported total ({reported_total:.2f})"
+        )
+
+    def test_bom_table_generator_script(self):
+        from tools.generate_bom_table import generate_markdown_table
+        table_md, parts_tot, landed_tot = generate_markdown_table(self.bom_path)
+        self.assertIn("Total pieces brutes", table_md)
+        self.assertIn("Total rendu Tunisie", table_md)
+        self.assertGreater(parts_tot, 1000.0)
+        self.assertGreater(landed_tot, parts_tot)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
 
 
