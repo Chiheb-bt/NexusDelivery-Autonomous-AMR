@@ -1,0 +1,17 @@
+Subsystem,Component,Part Number,Key Specifications,Quantity,Est Unit Cost USD
+Compute Core,Raspberry Pi 5 (8GB),SC1112,Quad Cortex-A76 @ 2.4GHz 8GB RAM 40-pin GPIO,1,80.00
+AI Coprocessor,Hailo-8L M.2 AI Module,HM21LB1C2AE,13 TOPS INT8 NPU M.2 2242 2.5W typical TDP,1,75.00
+M.2 Interface HAT,Raspberry Pi M.2 HAT+,SC1115,Official PCIe Gen 3.0 to M.2 Key-M adapter,1,12.00
+Perception Sensor,Intel RealSense D435i,999AFR,Active IR Stereo Depth (0.2-5.0m) + 1080p RGB + BMI055 IMU,1,349.00
+Motor Controller,ODrive S1 Dual BLDC,ODrive-S1-40A,Dual FOC 24V-56V 40A cont. CAN 2.0B / UART,1,169.00
+Traction Drive,Brushless Planetary Motors,BLDC-24V-250W-PG15,24V 250W BLDC 15:1 planetary reduction 32Nm peak,2,85.00
+Main Battery,24V 20Ah LiFePO4 Pack,8S1P-LFP-20AH,25.6V nom. 512Wh Daly Smart BMS I2C/CAN,1,195.00
+Power Converter 1,Synchronous Buck (5V/5A),LM2596S-HV / XL4015,24V to 5.1V 5.0A out for Raspberry Pi 5,1,8.50
+Power Converter 2,Synchronous Buck (12V/3A),XL4016 DC-DC,24V to 12.0V 3.0A out for Solenoid & Lights,1,7.00
+Hatch Security,Electronic Deadbolt Solenoid,DC-12V-10MM-LATCH,12V DC spring-loaded latch 1.2A pulse 10mm throw,1,14.00
+Lock Relay,Optocoupler Relay Module,1-Channel 5V Relay,5V trigger GPIO18 optoisolated 1N4007 flyback diode,1,3.50
+Safety Interlock,Emergency Stop Switch,LAY37-11ZS,Push-to-lock twist-to-release 22mm panel mount,1,9.00
+Status Lighting,WS2812B RGB NeoPixel Ring,16-LED Ring 5050,16 addressable RGB LEDs 5V single-wire data,1,6.50
+Caster Wheels,Heavy-Duty Swivel Casters,75mm Polyurethane,75mm diameter 35x35mm 4-hole mounting plate,2,11.00
+Structural Frame,2D Laser-Cut Baseplate,CR-NEXUS-BASE-V2,4.0mm Aluminum 5052-H32 / 600x380mm (DXF format),1,45.00
+Total,NexusDelivery Autonomous Robot,FULL-KIT-V2,Complete Autonomous Sidewalk Delivery Carrier,1,1065.00

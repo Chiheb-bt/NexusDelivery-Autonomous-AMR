@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-350 -240 700 480" width="700mm" height="480mm" style="background:#0b0f19; font-family:'Inter', system-ui, sans-serif;">
+  <defs>
+    <!-- Grid Pattern (10mm minor, 50mm major) -->
+    <pattern id="grid10" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="0.3"/>
+    </pattern>
+    <pattern id="grid50" width="50" height="50" patternUnits="userSpaceOnUse">
+      <rect width="50" height="50" fill="url(#grid10)" />
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(56,189,248,0.12)" stroke-width="0.6"/>
+    </pattern>
+    <!-- Arrow Markers -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <!-- Background Grid -->
+  <rect x="-350" y="-240" width="700" height="480" fill="url(#grid50)"/>
+
+  <!-- Center Coordinate Crosshairs -->
+  <line x1="-330" y1="0" x2="330" y2="0" stroke="rgba(56,189,248,0.25)" stroke-width="0.8" stroke-dasharray="8,4,2,4"/>
+  <line x1="0" y1="-220" x2="0" y2="220" stroke="rgba(56,189,248,0.25)" stroke-width="0.8" stroke-dasharray="8,4,2,4"/>
+  <text x="5" y="-5" fill="rgba(56,189,248,0.5)" font-size="6" font-family="'JetBrains Mono', monospace">(0, 0) WHEELBASE ORIGIN</text>
+
+  <!-- ============================================================== -->
+  <!-- 1. MAIN CHASSIS BASEPLATE CONTOUR (600mm x 380mm, R=30mm)      -->
+  <!-- ============================================================== -->
+  <!-- Outer Cut Contour in High-Vis Red/Orange Glow -->
+  <rect x="-300" y="-190" width="600" height="380" rx="30" ry="30"
+        fill="rgba(15,23,42,0.85)" stroke="#ef4444" stroke-width="1.8" filter="drop-shadow(0 0 4px rgba(239,68,68,0.5))"/>
+
+  <!-- ============================================================== -->
+  <!-- 2. WHEEL WELL SLOTS (LEFT & RIGHT)                             -->
+  <!-- ============================================================== -->
+  <!-- Left Wheel Well (Y = +135 to +185, X = -60 to +60) -->
+  <rect x="-60" y="135" width="120" height="50" rx="4"
+        fill="rgba(16,185,129,0.12)" stroke="#10b981" stroke-width="1.2" stroke-dasharray="2,2"/>
+  <text x="-48" y="162" fill="#10b981" font-size="6" font-weight="600">LEFT WHEEL WELL (120x50mm)</text>
+  <circle cx="0" cy="160" r="1.5" fill="#10b981"/>
+
+  <!-- Right Wheel Well (Y = -185 to -135, X = -60 to +60) -->
+  <rect x="-60" y="-185" width="120" height="50" rx="4"
+        fill="rgba(16,185,129,0.12)" stroke="#10b981" stroke-width="1.2" stroke-dasharray="2,2"/>
+  <text x="-52" y="-158" fill="#10b981" font-size="6" font-weight="600">RIGHT WHEEL WELL (120x50mm)</text>
+  <circle cx="0" cy="-160" r="1.5" fill="#10b981"/>
+
+  <!-- ============================================================== -->
+  <!-- 3. ELECTRONICS COMPONENT FOOTPRINTS & DRILL HOLES              -->
+  <!-- ============================================================== -->
+  
+  <!-- RASPBERRY PI 5 + HAILO-8L M.2 HAT -->
+  <g id="rpi5_footprint">
+    <rect x="43.5" y="34.5" width="85" height="56" rx="4" fill="rgba(56,189,248,0.08)" stroke="#38bdf8" stroke-width="1.0"/>
+    <text x="47" y="47" fill="#38bdf8" font-size="6" font-weight="700">RASPBERRY PI 5 (8GB)</text>
+    <text x="47" y="55" fill="#94a3b8" font-size="5">+ Hailo-8L M.2 HAT (13 TOPS)</text>
+    <!-- 4x M2.5 Holes (Spacing 58x49) -->
+    <circle cx="51.0" cy="40.5" r="1.35" fill="#38bdf8" stroke="#ffffff" stroke-width="0.5"/>
+    <circle cx="109.0" cy="40.5" r="1.35" fill="#38bdf8" stroke="#ffffff" stroke-width="0.5"/>
+    <circle cx="51.0" cy="89.5" r="1.35" fill="#38bdf8" stroke="#ffffff" stroke-width="0.5"/>
+    <circle cx="109.0" cy="89.5" r="1.35" fill="#38bdf8" stroke="#ffffff" stroke-width="0.5"/>
+    <text x="50" y="80" fill="#38bdf8" font-size="4.5">4x M2.5 (dia 2.7mm)</text>
+  </g>
+
+  <!-- ODRIVE S1 DUAL BLDC MOTOR CONTROLLER -->
+  <g id="odrive_footprint">
+    <rect x="-115" y="38" width="70" height="54" rx="4" fill="rgba(168,85,247,0.08)" stroke="#a855f7" stroke-width="1.0"/>
+    <text x="-110" y="52" fill="#c084fc" font-size="6" font-weight="700">ODRIVE S1 DUAL FOC</text>
+    <text x="-110" y="60" fill="#94a3b8" font-size="5">24V-56V / 40A CAN Bus</text>
+    <!-- 4x M3 Holes (Spacing 50x40) -->
+    <circle cx="-105.0" cy="45.0" r="1.6" fill="#a855f7" stroke="#ffffff" stroke-width="0.5"/>
+    <circle cx="-55.0" cy="45.0" r="1.6" fill="#a855f7" stroke="#ffffff" stroke-width="0.5"/>
+    <circle cx="-105.0" cy="85.0" r="1.6" fill="#a855f7" stroke="#ffffff" stroke-width="0.5"/>
+    <circle cx="-55.0" cy="85.0" r="1.6" fill="#a855f7" stroke="#ffffff" stroke-width="0.5"/>
+    <text x="-105" y="78" fill="#a855f7" font-size="4.5">4x M3 (dia 3.2mm)</text>
+  </g>
+
+  <!-- INTEL REALSENSE D435i CAMERA FRONT MOUNT -->
+  <g id="realsense_mount">
+    <rect x="270" y="-30" width="25" height="60" rx="3" fill="rgba(244,63,94,0.12)" stroke="#f43f5e" stroke-width="1.0"/>
+    <text x="272" y="-12" fill="#f43f5e" font-size="5" font-weight="700">REALSENSE</text>
+    <text x="272" y="-5" fill="#f43f5e" font-size="4.5">D435i Depth</text>
+    <circle cx="285.0" cy="-22.5" r="1.6" fill="#f43f5e" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="285.0" cy="22.5" r="1.6" fill="#f43f5e" stroke="#fff" stroke-width="0.5"/>
+    <text x="272" y="15" fill="#f43f5e" font-size="4">2x M3 (45mm)</text>
+  </g>
+
+  <!-- 24V 20Ah LiFePO4 BATTERY TRAY -->
+  <g id="battery_tray">
+    <rect x="-95" y="-130" width="190" height="120" rx="4" fill="rgba(234,179,8,0.08)" stroke="#eab308" stroke-width="1.2"/>
+    <text x="-80" y="-115" fill="#fbbf24" font-size="7" font-weight="700">24V 20Ah LiFePO4 BATTERY PACK (512 Wh)</text>
+    <text x="-80" y="-105" fill="#94a3b8" font-size="5.5">Daly Smart BMS w/ Active Balancing + I2C/CAN Telemetry</text>
+    <!-- 4x M4 Mounting Holes -->
+    <circle cx="-90" cy="-125" r="2.1" fill="#eab308" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="90" cy="-125" r="2.1" fill="#eab308" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="-90" cy="-15" r="2.1" fill="#eab308" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="90" cy="-15" r="2.1" fill="#eab308" stroke="#fff" stroke-width="0.5"/>
+    <!-- 4 Strap Cutout Slots -->
+    <rect x="-65" y="-127.5" width="30" height="5" rx="2" fill="#1e293b" stroke="#eab308" stroke-width="0.8"/>
+    <rect x="35" y="-127.5" width="30" height="5" rx="2" fill="#1e293b" stroke="#eab308" stroke-width="0.8"/>
+    <rect x="-65" y="-17.5" width="30" height="5" rx="2" fill="#1e293b" stroke="#eab308" stroke-width="0.8"/>
+    <rect x="35" y="-17.5" width="30" height="5" rx="2" fill="#1e293b" stroke="#eab308" stroke-width="0.8"/>
+    <text x="-40" y="-70" fill="#fbbf24" font-size="5">VELCRO STRAP MOUNTING SLOTS (4x)</text>
+  </g>
+
+  <!-- FRONT CASTER WHEEL MOUNT (X = +220) -->
+  <g id="front_caster">
+    <rect x="200" y="-20" width="40" height="40" rx="3" fill="rgba(148,163,184,0.1)" stroke="#94a3b8" stroke-width="0.8" stroke-dasharray="3,2"/>
+    <circle cx="202.5" cy="-17.5" r="2.1" fill="#94a3b8" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="237.5" cy="-17.5" r="2.1" fill="#94a3b8" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="202.5" cy="17.5" r="2.1" fill="#94a3b8" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="237.5" cy="17.5" r="2.1" fill="#94a3b8" stroke="#fff" stroke-width="0.5"/>
+    <text x="204" y="3" fill="#cbd5e1" font-size="4.5" font-weight="600">FRONT CASTER</text>
+    <text x="206" y="10" fill="#94a3b8" font-size="4">4x M4 (35x35)</text>
+  </g>
+
+  <!-- REAR CASTER WHEEL MOUNT (X = -220) -->
+  <g id="rear_caster">
+    <rect x="-240" y="-20" width="40" height="40" rx="3" fill="rgba(148,163,184,0.1)" stroke="#94a3b8" stroke-width="0.8" stroke-dasharray="3,2"/>
+    <circle cx="-237.5" cy="-17.5" r="2.1" fill="#94a3b8" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="-202.5" cy="-17.5" r="2.1" fill="#94a3b8" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="-237.5" cy="17.5" r="2.1" fill="#94a3b8" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="-202.5" cy="17.5" r="2.1" fill="#94a3b8" stroke="#fff" stroke-width="0.5"/>
+    <text x="-236" y="3" fill="#cbd5e1" font-size="4.5" font-weight="600">REAR CASTER</text>
+    <text x="-234" y="10" fill="#94a3b8" font-size="4">4x M4 (35x35)</text>
+  </g>
+
+  <!-- DELIVERY HATCH SOLENOID LOCK (X = +150) -->
+  <g id="solenoid_lock">
+    <circle cx="150" cy="-15" r="1.6" fill="#ec4899" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="150" cy="15" r="1.6" fill="#ec4899" stroke="#fff" stroke-width="0.5"/>
+    <rect x="140" y="-20" width="20" height="40" rx="2" fill="rgba(236,72,153,0.1)" stroke="#ec4899" stroke-width="0.8"/>
+    <text x="135" y="-24" fill="#ec4899" font-size="5" font-weight="600">SOLENOID LOCK 12V</text>
+  </g>
+
+  <!-- 4x CABLE GROMMETS (dia 25mm) -->
+  <circle cx="-160" cy="-70" r="12.5" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1.0"/>
+  <text x="-173" y="-68" fill="#38bdf8" font-size="4.5">CABLE D25</text>
+
+  <circle cx="-160" cy="70" r="12.5" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1.0"/>
+  <text x="-173" y="72" fill="#38bdf8" font-size="4.5">CABLE D25</text>
+
+  <circle cx="160" cy="-70" r="12.5" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1.0"/>
+  <text x="147" y="-68" fill="#38bdf8" font-size="4.5">CABLE D25</text>
+
+  <circle cx="160" cy="70" r="12.5" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1.0"/>
+  <text x="147" y="72" fill="#38bdf8" font-size="4.5">CABLE D25</text>
+
+  <!-- ============================================================== -->
+  <!-- 4. ENGINEERING DIMENSION LINES (ISO 128 / ASME Y14.5M)         -->
+  <!-- ============================================================== -->
+  <!-- Length Dimension: 600.00 mm (Bottom) -->
+  <line x1="-300" y1="208" x2="300" y2="208" stroke="#38bdf8" stroke-width="1.0" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <line x1="-300" y1="192" x2="-300" y2="216" stroke="rgba(56,189,248,0.5)" stroke-width="0.6"/>
+  <line x1="300" y1="192" x2="300" y2="216" stroke="rgba(56,189,248,0.5)" stroke-width="0.6"/>
+  <rect x="-40" y="202" width="80" height="12" fill="#0b0f19"/>
+  <text x="0" y="211" fill="#38bdf8" font-size="8" font-weight="700" text-anchor="middle" font-family="'JetBrains Mono', monospace">600.0 mm</text>
+
+  <!-- Width Dimension: 380.00 mm (Right) -->
+  <line x1="316" y1="-190" x2="316" y2="190" stroke="#38bdf8" stroke-width="1.0" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <line x1="302" y1="-190" x2="324" y2="-190" stroke="rgba(56,189,248,0.5)" stroke-width="0.6"/>
+  <line x1="302" y1="190" x2="324" y2="190" stroke="rgba(56,189,248,0.5)" stroke-width="0.6"/>
+  <rect x="310" y="-10" width="12" height="20" fill="#0b0f19" transform="rotate(-90 316 0)"/>
+  <text x="316" y="3" fill="#38bdf8" font-size="8" font-weight="700" text-anchor="middle" font-family="'JetBrains Mono', monospace" transform="rotate(-90 316 0)">380.0 mm</text>
+
+  <!-- Wheelbase & Caster Spacing: 440.00 mm -->
+  <line x1="-220" y1="-202" x2="220" y2="-202" stroke="#fbbf24" stroke-width="0.8" marker-start="url(#arrow-amber)" marker-end="url(#arrow-amber)"/>
+  <line x1="-220" y1="-192" x2="-220" y2="-208" stroke="rgba(251,191,36,0.5)" stroke-width="0.6"/>
+  <line x1="220" y1="-192" x2="220" y2="-208" stroke="rgba(251,191,36,0.5)" stroke-width="0.6"/>
+  <rect x="-60" y="-208" width="120" height="12" fill="#0b0f19"/>
+  <text x="0" y="-199" fill="#fbbf24" font-size="7" font-weight="700" text-anchor="middle" font-family="'JetBrains Mono', monospace">CASTER DISTANCE: 440.0 mm</text>
+
+  <!-- Corner Radius Callout (R30) -->
+  <line x1="-279" y1="-169" x2="-250" y2="-140" stroke="#ef4444" stroke-width="0.8"/>
+  <text x="-248" y="-136" fill="#ef4444" font-size="6" font-weight="700">R 30.0 mm (4x)</text>
+
+  <!-- ============================================================== -->
+  <!-- 5. OFFICIAL ENGINEERING TITLE BLOCK                            -->
+  <!-- ============================================================== -->
+  <g id="title_block" transform="translate(-290, -180)">
+    <rect width="210" height="60" rx="3" fill="rgba(15,23,42,0.92)" stroke="rgba(56,189,248,0.4)" stroke-width="1.0"/>
+    <text x="10" y="16" fill="#38bdf8" font-size="8" font-weight="800">CHIHEB ROBOTICS — NEXUS-DELIVERY</text>
+    <text x="10" y="27" fill="#f8fafc" font-size="6.5" font-weight="600">CHASSIS STRUCTURAL BASEPLATE (REV 2.4)</text>
+    <line x1="10" y1="31" x2="200" y2="31" stroke="rgba(56,189,248,0.2)" stroke-width="0.6"/>
+    <text x="10" y="40" fill="#94a3b8" font-size="5">MATERIAL: 4.0mm Aluminum 5052-H32 / Laser Cut</text>
+    <text x="10" y="48" fill="#94a3b8" font-size="5">SCALE: 1:1 (True Millimeter Units) | TOLERANCE: +/-0.20mm</text>
+    <text x="10" y="55" fill="#10b981" font-size="5" font-weight="600">READY FOR CNC LASER / WATERJET / 3D PRINT</text>
+  </g>
+
+  <!-- Drill Chart Table (Top Right) -->
+  <g id="drill_chart" transform="translate(140, -180)">
+    <rect width="150" height="56" rx="3" fill="rgba(15,23,42,0.92)" stroke="rgba(56,189,248,0.4)" stroke-width="1.0"/>
+    <text x="8" y="14" fill="#38bdf8" font-size="6.5" font-weight="700">DRILL SCHEDULE</text>
+    <line x1="8" y1="18" x2="142" y2="18" stroke="rgba(56,189,248,0.2)" stroke-width="0.6"/>
+    <text x="8" y="27" fill="#38bdf8" font-size="5">• 4x M2.5 (dia 2.7mm) — Raspberry Pi 5</text>
+    <text x="8" y="35" fill="#a855f7" font-size="5">• 4x M3 (dia 3.2mm) — ODrive S1 Controller</text>
+    <text x="8" y="43" fill="#f43f5e" font-size="5">• 4x M3 (dia 3.2mm) — RealSense &amp; Solenoid</text>
+    <text x="8" y="51" fill="#eab308" font-size="5">• 12x M4 (dia 4.2mm) — Casters &amp; Battery Tray</text>
+  </g>
+</svg>

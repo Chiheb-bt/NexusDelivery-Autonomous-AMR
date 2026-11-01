@@ -1,0 +1,19 @@
+gps_camera_controller:
+  ros__parameters:
+    route_xy: [-15.0, 0.0, -15.0, 45.0, 45.0, 45.0, 45.0, 0.0, 108.0, 0.0]
+    start_x: -30.0
+    start_y: 0.0
+    world_heading_deg: 180.0
+    max_linear_speed: 0.35
+    max_angular_speed: 0.8
+    waypoint_radius: 1.5
+    lookahead_distance: 2.0
+    gps_timeout_s: 2.0
+    odom_timeout_s: 1.0
+    camera_timeout_s: 1.0
+    yolo_every_n: 3
+    yolo_confidence: 0.35
+    obstacle_clearance_y: 0.52
+    obstacle_corridor_fraction: 0.30
+    obstacle_clear_hold_s: 1.5
+    log_path: "/tmp/city_navigation.csv"

@@ -1,0 +1,41 @@
+# Paramètres des nœuds (valeurs de départ : à régler au premier lancement).
+driver_node:
+  ros__parameters:
+    use_clahe: true
+    kp: 0.016          # rad/s par pixel d'erreur
+    ki: 0.0
+    kd: 0.0
+    v_base: 0.25       # m/s
+    x_target: 162.0    # measured center of the track stripe in the camera image
+    line_threshold: 170
+    roi_line: [110, 200, 0, 320]        # [ligne_debut, ligne_fin, col_debut, col_fin]
+    roi_line_narrow: [110, 200, 60, 260]
+    roi_obstacle: [120, 200, 60, 260]
+    thr_obstacle: 5500                  # pixels orange
+    thr_red: 150
+    thr_green: 40
+    obstacle_mode: "avoid"              # "avoid" (contournement minuté) ou "stop" (arrêt de sécurité)
+    max_fill: 0.6                       # ROI too bright = no line (white floor)
+    yolo_every_n: 3                     # run YOLO on 1 frame out of 3
+    yolo_enabled: false
+    yolo_model: "models/yolov8n.pt"
+    yolo_conf: 0.25
+    w_avoid: 0.9
+    t_left: 0.45
+    t_straight: 4.8
+    t_right: 0.8
+    t_reacquire: 8.0
+    lockout: 15.0
+    watchdog_timeout_s: 0.6
+    log_path: "/tmp/driver_log.csv"
+evaluator_node:
+  ros__parameters:
+    log_path: "/tmp/eval_log.csv"
+    summary_path: "/tmp/eval_summary.json"
+    track_mode: straight
+    tl_stop_line_x: 0.2
+traffic_light_node:
+  ros__parameters:
+    world_name: "city_track"
+    red_s: 12.0
+    green_s: 12.0

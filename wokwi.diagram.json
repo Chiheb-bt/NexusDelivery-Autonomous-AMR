@@ -1,0 +1,328 @@
+{
+  "version": 1,
+  "author": "Chiheb Robotics \u2014 NexusDelivery Team",
+  "name": "NexusDelivery Physical Hardware Workbench & Assembly",
+  "description": "Virtual physical hardware wiring simulation of the autonomous sidewalk delivery robot (Zero-LiDAR architecture).",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-pi-5",
+      "id": "rpi5",
+      "top": 120,
+      "left": 350,
+      "attrs": {
+        "model": "Raspberry Pi 5 Model B 8GB",
+        "os": "Ubuntu 22.04 LTS (ROS 2 Humble)",
+        "cpu": "Quad-core ARM Cortex-A76 @ 2.4GHz",
+        "ram": "8GB LPDDR4X"
+      }
+    },
+    {
+      "type": "module-hailo8l-hat",
+      "id": "npu_hailo",
+      "top": 120,
+      "left": 550,
+      "attrs": {
+        "interface": "PCIe Gen 3.0 x1 Lane",
+        "compute": "13 TOPS INT8 Neural Processing Unit",
+        "model_pipeline": "YOLOv8s Pedestrian & Obstacle Detection (138 FPS, 7.2ms latency)"
+      }
+    },
+    {
+      "type": "sensor-realsense-d435i",
+      "id": "rgbd_cam",
+      "top": -80,
+      "left": 350,
+      "attrs": {
+        "interface": "USB 3.0 SuperSpeed (5 Gbps)",
+        "depth_technology": "Active IR Stereo + RGB 1080p",
+        "imu": "Bosch BMI055 6-DoF IMU",
+        "range": "0.2m to 5.0m sidewalk clearance"
+      }
+    },
+    {
+      "type": "controller-odrive-s1",
+      "id": "odrive_motor_controller",
+      "top": 350,
+      "left": 350,
+      "attrs": {
+        "bus_voltage": "24V DC",
+        "rated_current": "40A continuous",
+        "control_mode": "Dual FOC (Field Oriented Control)",
+        "interface": "CAN Bus 2.0B @ 1 Mbps (or UART0)"
+      }
+    },
+    {
+      "type": "motor-bldc-planetary",
+      "id": "left_drive_motor",
+      "top": 450,
+      "left": 150,
+      "attrs": {
+        "power": "250W 24V BLDC",
+        "reduction": "15:1 Planetary Gearbox",
+        "encoder": "14-bit Absolute Magnetic (SPI/ABI)"
+      }
+    },
+    {
+      "type": "motor-bldc-planetary",
+      "id": "right_drive_motor",
+      "top": 450,
+      "left": 580,
+      "attrs": {
+        "power": "250W 24V BLDC",
+        "reduction": "15:1 Planetary Gearbox",
+        "encoder": "14-bit Absolute Magnetic (SPI/ABI)"
+      }
+    },
+    {
+      "type": "battery-lifepo4-8s",
+      "id": "main_battery",
+      "top": 350,
+      "left": 50,
+      "attrs": {
+        "chemistry": "LiFePO4 (Lithium Iron Phosphate)",
+        "cells": "8S1P (3.2V x 8 = 25.6V nominal)",
+        "capacity": "20Ah (512 Wh)",
+        "bms": "Daly Smart BMS w/ Active Balancing & I2C/CAN bus"
+      }
+    },
+    {
+      "type": "regulator-buck-sync",
+      "id": "dcdc_5v_5a",
+      "top": 240,
+      "left": 180,
+      "attrs": {
+        "input": "24V DC",
+        "output": "5.1V DC @ 5A (25.5W)",
+        "efficiency": "94.5%"
+      }
+    },
+    {
+      "type": "regulator-buck-sync",
+      "id": "dcdc_12v_3a",
+      "top": 240,
+      "left": 80,
+      "attrs": {
+        "input": "24V DC",
+        "output": "12.0V DC @ 3A (36W)"
+      }
+    },
+    {
+      "type": "actuator-solenoid-latch",
+      "id": "cargo_latch",
+      "top": 120,
+      "left": 120,
+      "attrs": {
+        "voltage": "12V DC",
+        "stroke": "10mm spring-return deadbolt",
+        "relay": "Optocoupler isolated relay with 1N4007 flyback diode"
+      }
+    },
+    {
+      "type": "switch-estop-kill",
+      "id": "emergency_stop",
+      "top": 350,
+      "left": 230,
+      "attrs": {
+        "type": "Push-to-lock, twist-to-release safety kill switch",
+        "interlock": "Cuts ODrive VBUS + GPIO23 hardware interrupt"
+      }
+    },
+    {
+      "type": "led-ring-ws2812b",
+      "id": "halo_rgb_ring",
+      "top": -80,
+      "left": 550,
+      "attrs": {
+        "pixels": 16,
+        "interface": "Single-wire NZR (GPIO18/24)",
+        "states": "Emerald=Nominal, Cyan=Customer Unlock, Amber=Caution, Red=E-Stop"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "main_battery:V+",
+      "emergency_stop:IN",
+      "red",
+      [
+        "v30",
+        "h100"
+      ]
+    ],
+    [
+      "emergency_stop:OUT",
+      "odrive_motor_controller:VBUS",
+      "red",
+      [
+        "h60"
+      ]
+    ],
+    [
+      "emergency_stop:OUT",
+      "dcdc_5v_5a:VIN",
+      "red",
+      [
+        "v-40"
+      ]
+    ],
+    [
+      "emergency_stop:OUT",
+      "dcdc_12v_3a:VIN",
+      "red",
+      [
+        "v-40"
+      ]
+    ],
+    [
+      "main_battery:GND",
+      "odrive_motor_controller:GND",
+      "black",
+      [
+        "v40",
+        "h200"
+      ]
+    ],
+    [
+      "main_battery:GND",
+      "dcdc_5v_5a:GND",
+      "black",
+      [
+        "v-20"
+      ]
+    ],
+    [
+      "main_battery:GND",
+      "rpi5:GND",
+      "black",
+      [
+        "v-100"
+      ]
+    ],
+    [
+      "dcdc_5v_5a:VOUT",
+      "rpi5:5V_IN",
+      "orange",
+      [
+        "v-60",
+        "h100"
+      ]
+    ],
+    [
+      "dcdc_12v_3a:VOUT",
+      "cargo_latch:V+",
+      "orange",
+      [
+        "v-60"
+      ]
+    ],
+    [
+      "rpi5:PCIE_FPC",
+      "npu_hailo:PCIE_M2",
+      "cyan",
+      [
+        "h40"
+      ]
+    ],
+    [
+      "rpi5:USB3_0",
+      "rgbd_cam:TYPE_C",
+      "blue",
+      [
+        "v-120"
+      ]
+    ],
+    [
+      "rpi5:GPIO18",
+      "cargo_latch:RELAY_SIG",
+      "green",
+      [
+        "h-120"
+      ]
+    ],
+    [
+      "rpi5:GPIO23",
+      "emergency_stop:SENSE",
+      "purple",
+      [
+        "v120"
+      ]
+    ],
+    [
+      "rpi5:GPIO24",
+      "halo_rgb_ring:DIN",
+      "yellow",
+      [
+        "v-100"
+      ]
+    ],
+    [
+      "rpi5:CAN_H",
+      "odrive_motor_controller:CAN_H",
+      "blue",
+      [
+        "v120"
+      ]
+    ],
+    [
+      "rpi5:CAN_L",
+      "odrive_motor_controller:CAN_L",
+      "magenta",
+      [
+        "v120"
+      ]
+    ],
+    [
+      "main_battery:I2C_SDA",
+      "rpi5:GPIO2_SDA",
+      "white",
+      [
+        "v-140",
+        "h200"
+      ]
+    ],
+    [
+      "main_battery:I2C_SCL",
+      "rpi5:GPIO3_SCL",
+      "white",
+      [
+        "v-140",
+        "h200"
+      ]
+    ],
+    [
+      "odrive_motor_controller:M0_UVW",
+      "left_drive_motor:UVW",
+      "orange",
+      [
+        "v40",
+        "h-120"
+      ]
+    ],
+    [
+      "odrive_motor_controller:M1_UVW",
+      "right_drive_motor:UVW",
+      "orange",
+      [
+        "v40",
+        "h140"
+      ]
+    ],
+    [
+      "left_drive_motor:ENCODER",
+      "odrive_motor_controller:ENC0",
+      "gray",
+      [
+        "h100"
+      ]
+    ],
+    [
+      "right_drive_motor:ENCODER",
+      "odrive_motor_controller:ENC1",
+      "gray",
+      [
+        "h-100"
+      ]
+    ]
+  ]
+}

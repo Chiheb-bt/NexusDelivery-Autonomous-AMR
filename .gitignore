@@ -1,0 +1,76 @@
+# ==============================================================================
+# Chiheb Robotics — NexusDelivery (.gitignore)
+# ==============================================================================
+
+# OS & Desktop files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.agents/
+.system_generated/
+
+# Python compiled & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+eggs/
+.eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+pip-wheel-metadata/
+
+# ROS 2 & Colcon build artifacts
+build/
+install/
+log/
+COLCON_IGNORE
+install_isolated/
+devel/
+devel_isolated/
+
+# Gazebo temporary runtime files
+*.log
+gazebo_*.log
+ogre.log
+~*.world
+
+# Binary tools & external downloads
+tools/cloudflared
+*.zip
+*.tar.gz
+*.tgz
+*.deb
+*.rpm
+
+# Host scratch & temporary testing logs
+/tmp/driver_log.csv
+/tmp/*.csv
+/tmp/*.json
+/tmp/*.png
+/tmp/*.gif
+
+# Model checkpoints (larger than 100MB; keep lightweight yolov8n.pt 6.5MB)
+*.weights
+*.onnx
+*.engine
+*.hef
+*.h5
+*.tflite
+!delivery_robot_sim/yolov8n.pt

@@ -1,0 +1,28 @@
+[
+  {
+    "mission_id": "MSN-20261022-01",
+    "order_id": "ORD-001",
+    "status": "COMPLETED",
+    "priority": 1,
+    "package_id": "PKG-101",
+    "pickup_name": "DEPOT_POST_OFFICE",
+    "delivery_name": "CLIENT_1_NORTH_AVENUE",
+    "created_time": 0.0,
+    "assigned_time": 0.5,
+    "completed_time": 45.0,
+    "failure_reason": null
+  },
+  {
+    "mission_id": "MSN-20261022-01",
+    "order_id": "ORD-002",
+    "status": "COMPLETED",
+    "priority": 2,
+    "package_id": "PKG-102",
+    "pickup_name": "DEPOT_POST_OFFICE",
+    "delivery_name": "CLIENT_2_NORTH_AVENUE",
+    "created_time": 0.0,
+    "assigned_time": 45.0,
+    "completed_time": 69.0,
+    "failure_reason": null
+  }
+]

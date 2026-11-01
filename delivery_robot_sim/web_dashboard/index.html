@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusDelivery — Autonomous Sidewalk Delivery & Fleet Ops</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <!-- Top Global Navigation Header -->
+  <header class="top-header">
+    <div class="brand-block">
+      <div class="brand-logo">
+        <span class="logo-icon">⚡</span>
+      </div>
+      <div class="brand-meta">
+        <div class="brand-title">
+          <span class="brand-name">Chiheb Robotics</span>
+          <span class="brand-badge">NexusDelivery</span>
+        </div>
+        <div class="brand-sub">Autonomous Zero-LiDAR Sidewalk Delivery Platform</div>
+      </div>
+    </div>
+
+    <!-- Quad-Portal Mode Switcher (Customer vs Founder/Fleet vs Hardware vs CAD) -->
+    <div class="portal-nav-toggle" role="tablist">
+      <button class="portal-btn active" id="tabFounderPortal" onclick="switchPortal('founder')">
+        <span class="portal-btn-icon">⚡</span>
+        <span class="portal-btn-text">Fleet Cockpit</span>
+      </button>
+      <button class="portal-btn" id="tabCustomerPortal" onclick="switchPortal('customer')">
+        <span class="portal-btn-icon">🛍️</span>
+        <span class="portal-btn-text">Customer Portal</span>
+      </button>
+      <button class="portal-btn" id="tabHardwarePortal" onclick="switchPortal('hardware')">
+        <span class="portal-btn-icon">🔌</span>
+        <span class="portal-btn-text">Hardware Simulator</span>
+      </button>
+      <button class="portal-btn" id="tabCadPortal" onclick="switchPortal('cad')">
+        <span class="portal-btn-icon">📐</span>
+        <span class="portal-btn-text">2D CAD Blueprint</span>
+      </button>
+    </div>
+
+    <!-- Telemetry Pills & Global Controls -->
+    <div class="header-right-tools">
+      <div class="status-pill" id="connStatusPill">
+        <span class="live-dot" id="liveDot"></span>
+        <span class="status-text" id="connStatusText">ROS 2 ONLINE</span>
+      </div>
+      <div class="status-pill hide-on-mobile">
+        <span class="pill-title">BATTERY:</span>
+        <span class="pill-value text-emerald" id="topBattery">98% (25.1V)</span>
+      </div>
+      <div class="status-pill hide-on-mobile">
+        <span class="pill-title">SPEED:</span>
+        <span class="pill-value text-cyan" id="topSpeed">0.00 m/s</span>
+      </div>
+      <button class="icon-btn" id="audioToggleBtn" onclick="toggleAudio()" title="Sound Chimes Toggle">
+        <span id="audioIcon">🔊</span>
+      </button>
+      <button class="btn-danger-pill" id="globalEstopBtn" onclick="toggleEStop()">
+        <span class="estop-dot"></span>
+        <span>E-STOP</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =================================================================== -->
+  <!-- 1. CUSTOMER DELIVERY PORTAL (E-COMMERCE & RECIPIENT TRACKING)       -->
+  <!-- =================================================================== -->
+  <section class="portal-view" id="customerPortalView">
+    <div class="customer-portal-grid">
+      <!-- Left Column: E-Commerce Store & Order Placement -->
+      <div class="customer-left-col">
+        <!-- Store Banner & Selection -->
+        <div class="glass-card store-card">
+          <div class="card-header-styled">
+            <div class="header-title-group">
+              <span class="header-icon">🍔</span>
+              <div>
+                <h2>Select Your Delivery Order</h2>
+                <p class="subtitle">Fresh gourmet meals & essentials brought to your doorstep by autonomous robot</p>
+              </div>
+            </div>
+            <span class="category-badge">FREE AUTONOMOUS DELIVERY</span>
+          </div>
+
+          <!-- Product Menu Catalog Grid -->
+          <div class="menu-items-grid">
+            <div class="menu-card selected" onclick="selectMenuItem(this, 'PRD-01', 'Artisan Margherita Pizza', 14.50, '🍕')">
+              <div class="menu-badge">Popular</div>
+              <div class="menu-icon-wrap">🍕</div>
+              <div class="menu-details">
+                <div class="menu-name">Artisan Margherita Pizza</div>
+                <div class="menu-desc">Fresh mozzarella, organic basil, wood-fired sourdough crust</div>
+                <div class="menu-price">$14.50</div>
+              </div>
+              <div class="select-check">✓</div>
+            </div>
+
+            <div class="menu-card" onclick="selectMenuItem(this, 'PRD-02', 'Tokyo Fresh Bento Deluxe', 18.00, '🍱')">
+              <div class="menu-badge special">Chef's Choice</div>
+              <div class="menu-icon-wrap">🍱</div>
+              <div class="menu-details">
+                <div class="menu-name">Tokyo Fresh Bento Deluxe</div>
+                <div class="menu-desc">Glazed salmon teriyaki, gyoza, steamed rice, edamame</div>
+                <div class="menu-price">$18.00</div>
+              </div>
+              <div class="select-check">✓</div>
+            </div>
+
+            <div class="menu-card" onclick="selectMenuItem(this, 'PRD-03', 'Parisian Bakery Pastry Box', 9.50, '🥐')">
+              <div class="menu-icon-wrap">🥐</div>
+              <div class="menu-details">
+                <div class="menu-name">Parisian Bakery Box</div>
+                <div class="menu-desc">2x butter croissants, pain au chocolat, fresh espresso roast</div>
+                <div class="menu-price">$9.50</div>
+              </div>
+              <div class="select-check">✓</div>
+            </div>
+
+            <div class="menu-card" onclick="selectMenuItem(this, 'PRD-04', 'Express Pharmacy Care Pack', 12.00, '💊')">
+              <div class="menu-icon-wrap">💊</div>
+              <div class="menu-details">
+                <div class="menu-name">Express Wellness Care Pack</div>
+                <div class="menu-desc">Vitamins, electrolytes, sanitizers, emergency care kit</div>
+                <div class="menu-price">$12.00</div>
+              </div>
+              <div class="select-check">✓</div>
+            </div>
+          </div>
+
+          <!-- Location Picker Options -->
+          <div class="location-picker-box">
+            <div class="section-subheading">
+              <span>📍 Choose Your Delivery Destination</span>
+              <span class="hint-text">Click anywhere on the map or pick an address below</span>
+            </div>
+
+            <!-- Quick Preset Chips -->
+            <div class="destination-chips">
+              <button class="dest-chip active" onclick="setPresetCustomer('CUST-001')">
+                <span class="chip-pin">🏠</span> Sophie Laurent (North Ave)
+              </button>
+              <button class="dest-chip" onclick="setPresetCustomer('CUST-002')">
+                <span class="chip-pin">🏢</span> Marc Dubois (Commercial Hub)
+              </button>
+              <button class="dest-chip" onclick="setPresetCustomer('CUST-005')">
+                <span class="chip-pin">🥐</span> Amira Khan (Central Square)
+              </button>
+              <button class="dest-chip" onclick="setPresetCustomer('CUST-004')">
+                <span class="chip-pin">☕</span> Lucas Vance (West Blvd)
+              </button>
+              <button class="dest-chip" onclick="setPresetCustomer('CUST-003')">
+                <span class="chip-pin">🏛️</span> Elena Rostova (North Plaza)
+              </button>
+            </div>
+
+            <!-- Customer Details Form -->
+            <div class="customer-form-row">
+              <div class="form-group">
+                <label>Recipient Name</label>
+                <input type="text" id="custInputName" class="styled-input" value="Sophie Laurent" placeholder="Full name">
+              </div>
+              <div class="form-group">
+                <label>Phone / SMS</label>
+                <input type="text" id="custInputPhone" class="styled-input" value="+1 (555) 234-5678" placeholder="Phone for arrival SMS">
+              </div>
+              <div class="form-group">
+                <label>Delivery Coordinates</label>
+                <input type="text" id="custInputCoords" class="styled-input mono" value="-14.60, 15.00" readonly>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Special Delivery Instructions</label>
+              <input type="text" id="custInputNotes" class="styled-input" value="Please stop on North sidewalk in front of doorstep porch" placeholder="e.g. Leave near front door">
+            </div>
+
+            <!-- Action Dispatch Button -->
+            <button class="btn-dispatch-order" id="btnPlaceCustomerOrder" onclick="placeCustomerOrder()">
+              <span class="btn-icon">🚀</span>
+              <span class="btn-text">Order Autonomous Sidewalk Delivery Now</span>
+              <span class="btn-arrow">➔</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Order Tracking Stepper Card -->
+        <div class="glass-card tracking-card">
+          <div class="card-header-styled">
+            <div class="header-title-group">
+              <span class="header-icon">📦</span>
+              <div>
+                <h2>Live Order Tracker</h2>
+                <p class="subtitle" id="trackingSub">Order <strong id="trackingOrderNum">ORD-001</strong> to <strong id="trackingDestName">Sophie Laurent</strong></p>
+              </div>
+            </div>
+            <div class="eta-pill" id="trackingEtaPill">
+              <span class="eta-label">ESTIMATED ARRIVAL</span>
+              <span class="eta-val" id="trackingEtaText">~2.5 Mins</span>
+            </div>
+          </div>
+
+          <!-- Multi-Step Order Stepper -->
+          <div class="order-stepper">
+            <div class="step-item completed" id="step1">
+              <div class="step-circle">1</div>
+              <div class="step-label">Order Confirmed</div>
+            </div>
+            <div class="step-line active" id="line1"></div>
+            <div class="step-item active" id="step2">
+              <div class="step-circle">2</div>
+              <div class="step-label">Loaded at Depot</div>
+            </div>
+            <div class="step-line" id="line2"></div>
+            <div class="step-item" id="step3">
+              <div class="step-circle">3</div>
+              <div class="step-label">Sidewalk Transit</div>
+            </div>
+            <div class="step-line" id="line3"></div>
+            <div class="step-item" id="step4">
+              <div class="step-circle">4</div>
+              <div class="step-label">Arrived at Door</div>
+            </div>
+            <div class="step-line" id="line4"></div>
+            <div class="step-item" id="step5">
+              <div class="step-circle">5</div>
+              <div class="step-label">Package Collected</div>
+            </div>
+          </div>
+
+          <!-- Security OTP Verification & Interactive Compartment Actuation Box -->
+          <div class="handover-security-box" id="handoverBox">
+            <div class="otp-display-group">
+              <div class="otp-info">
+                <span class="otp-title">Your 6-Digit Pickup PIN</span>
+                <span class="otp-number" id="customerOtpCode">482 910</span>
+                <span class="otp-desc">Verify this code when the robot arrives at your door</span>
+              </div>
+              <div class="qr-mockup">
+                <div class="qr-matrix"></div>
+                <span class="qr-label">SCAN QR</span>
+              </div>
+            </div>
+
+            <!-- Glowing Interactive Unlock Compartment Button -->
+            <div class="compartment-unlock-cta">
+              <button class="btn-unlock-hatch pulse-glow" id="btnUnlockCompartment" onclick="triggerCustomerHatchUnlock()">
+                <span class="unlock-icon">🔓</span>
+                <span class="unlock-text" id="unlockBtnText">TAP TO UNLOCK CARGO COMPARTMENT</span>
+              </button>
+              <div class="unlock-status-sub" id="unlockStatusSub">
+                Robot is cruising toward your doorstep. Compartment will unlock upon arrival or manual tap.
+              </div>
+            </div>
+          </div>
+
+          <!-- 3D Autonomous Courier Live Vehicle & Cargo Tracker -->
+          <div class="glass-card courier-3d-card" id="courier3DCard" style="margin-top: 18px;">
+            <div class="card-header-styled">
+              <div class="header-title-group">
+                <span class="header-icon">🤖</span>
+                <div>
+                  <h2>3D Courier Vehicle & Cargo View</h2>
+                  <p class="subtitle">Live 3D digital twin tracking your parcel & hatch status in real-time</p>
+                </div>
+              </div>
+              <span class="badge-live-3d" id="customer3dBadge">● 3D TWIN SYNCED</span>
+            </div>
+            <div class="courier-3d-container">
+              <canvas id="customer3DCanvas" width="480" height="240"></canvas>
+              <div class="courier-3d-hud">
+                <span class="hatch-badge" id="custHatchBadge">HATCH: LOCKED (0°)</span>
+                <span class="cargo-badge" id="custCargoBadge">PARCEL: 1x INSIDE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Map with Pin Dropper -->
+      <div class="customer-right-col">
+        <div class="glass-card map-card-customer">
+          <div class="card-header-styled">
+            <div class="header-title-group">
+              <span class="header-icon">🗺️</span>
+              <div>
+                <h2>Live City Sidewalk Map</h2>
+                <p class="subtitle">Click anywhere to drop your delivery pin or track the robot</p>
+              </div>
+            </div>
+            <div class="map-controls">
+              <button class="btn-map-tool" onclick="zoomCustomerMap(1.25)" title="Zoom In">🔍 +</button>
+              <button class="btn-map-tool" onclick="zoomCustomerMap(0.80)" title="Zoom Out">🔍 -</button>
+              <button class="btn-map-tool" onclick="resetCustomerMapZoom()" title="Reset Zoom">↺ Reset</button>
+              <button class="btn-map-tool" onclick="recenterMap()">🎯 Recenter</button>
+              <button class="btn-map-tool active" id="btnDropPinMode" onclick="togglePinDropMode()">📍 Drop Pin Mode</button>
+            </div>
+          </div>
+
+          <!-- Map Viewport Canvas -->
+          <div class="map-canvas-container" id="customerMapContainer">
+            <canvas id="customerCanvasMap" width="900" height="650"></canvas>
+            <div class="map-pin-indicator" id="mapPinTip">
+              📍 Click anywhere on sidewalk to deliver here
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- 2. FOUNDER & FLEET OPERATIONS COCKPIT (ENGINEERING CONSOLE)        -->
+  <!-- =================================================================== -->
+  <section class="portal-view active" id="founderPortalView">
+    <div class="founder-cockpit-grid">
+      <!-- Left Column: Large Cinema Vision Monitor & Hardware Benchmarks -->
+      <div class="founder-left-col">
+        <!-- Cinema-Sized HD Camera Monitor (Exact Image 3 Style) -->
+        <div class="glass-card camera-cinema-card">
+          <div class="card-header-styled">
+            <div class="header-title-group">
+              <span class="header-icon">📷</span>
+              <div>
+                <h2>Front Camera Feed</h2>
+                <p class="subtitle">Connection: <span class="text-emerald font-mono">ONLINE</span> | RTCP: <span class="text-cyan font-mono">45ms</span></p>
+              </div>
+            </div>
+            <div class="cam-badges-group">
+              <button class="cam-mode-btn active" id="btnCamFront" onclick="switchCamFeed('camera')">📹 Front HD Eye</button>
+              <button class="cam-mode-btn" id="btnCam3D" onclick="switchCamFeed('twin3d')">🤖 3D Digital Twin</button>
+              <button class="cam-mode-btn icon-only" onclick="toggleCamFullscreen()" title="Fullscreen">⛶</button>
+            </div>
+          </div>
+
+          <!-- Cinema Viewport Box -->
+          <div class="cinema-viewport-container" id="cinemaViewportBox" style="position:relative;">
+            <!-- 1. Front RealSense Camera Stream -->
+            <img id="cinemaCameraStream" src="/stream/camera.mjpg" alt="Autonomous Camera Stream" onerror="handleCameraError()">
+
+            <!-- Interactive AI Bounding Box HUD Canvas Overlay (Green YOLO pedestrian / ID: 4) -->
+            <canvas id="cameraHudCanvas" width="640" height="380" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:auto; z-index:3;"></canvas>
+
+            <!-- 2. Interactive 3D Fleet Digital Twin Canvas -->
+            <canvas id="fleet3DCanvas" width="640" height="380" style="display:none; width:100%; height:100%; background:#070a14;"></canvas>
+
+            <!-- Image 3 Top-Left Live Stream Badge -->
+            <div class="live-stream-badge-overlay" style="position:absolute; top:14px; left:16px; z-index:4;">
+              <span class="live-pill-green">
+                <span class="live-glowing-dot"></span>
+                LIVE STREAM | 30 FPS
+              </span>
+            </div>
+
+            <!-- Subtle Goal Tag Bottom Right -->
+            <div class="clean-cam-overlay" style="z-index:4;">
+              <div class="cam-target-tag" id="camTargetOverlay">
+                GOAL: Sophie Laurent (2.1m)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- IMAGE 3 SIGNATURE TRI-PANEL: RADAR + STATUS + TELEOP DPAD      -->
+        <!-- ============================================================== -->
+        <div class="cockpit-tri-panel">
+          <!-- Column 1: DEPTH RADAR -->
+          <div class="cockpit-sub-card radar-sub-card">
+            <div class="cockpit-sub-header">
+              <span class="sub-title"><span class="icon">📡</span> DEPTH RADAR</span>
+              <span class="badge-radar-scan">ACTIVE 360°</span>
+            </div>
+            <div class="radar-canvas-wrap">
+              <canvas id="cinemaRadarCanvas" width="280" height="230"></canvas>
+            </div>
+          </div>
+
+          <!-- Column 2: ROBOT STATUS & CONTROLS -->
+          <div class="cockpit-sub-card status-sub-card">
+            <div class="cockpit-controls-row">
+              <button class="cockpit-pill-btn btn-stream-stop" id="btnStreamStop" onclick="toggleStreamPause(this)">
+                <span>STOP STREAM</span>
+              </button>
+              <div class="cockpit-pill-badge badge-recording">
+                <span class="rec-dot"></span>
+                <span>RECORDING</span>
+              </div>
+              <div class="cockpit-pill-badge badge-mode-auto">
+                <span>MODE: AUTO</span>
+              </div>
+            </div>
+
+            <div class="robot-status-block">
+              <div class="status-lbl">Robot Status:</div>
+              <div class="status-val-hero text-emerald" id="cockpitHeroStatus">OPERATIONAL</div>
+            </div>
+
+            <div class="telemetry-compact-grid">
+              <div class="compact-metric"><span class="k">BATTERY:</span> <span class="v text-emerald" id="cockpitBattery">74%</span></div>
+              <div class="compact-metric"><span class="k">WIFI:</span> <span class="v text-cyan" id="cockpitWifi">92%</span></div>
+              <div class="compact-metric"><span class="k">CPU:</span> <span class="v text-white" id="cockpitCpu">38%</span></div>
+              <div class="compact-metric"><span class="k">MEM:</span> <span class="v text-white" id="cockpitMem">4.1GB</span></div>
+            </div>
+
+            <div class="cockpit-hatch-cargo-row">
+              <button class="btn-micro-action" onclick="triggerHatchAction('toggle')" title="Toggle Cargo Hatch">
+                <span id="cockpitHatchLabel">🚪 HATCH: CLOSED (0°)</span>
+              </button>
+              <button class="btn-micro-action" onclick="triggerPackageAction('toggle')" title="Toggle Parcel Bay">
+                <span id="cockpitCargoLabel">📦 CARGO: LOADED (1x)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Column 3: TELEOPERATION D-PAD -->
+          <div class="cockpit-sub-card teleop-sub-card">
+            <div class="cockpit-sub-header">
+              <span class="sub-title"><span class="icon">🎮</span> TELEOPERATION</span>
+              <span class="badge-teleop-hint">W/A/S/D</span>
+            </div>
+            <div class="teleop-keypad">
+              <button class="key-btn key-up" onmousedown="startTeleop(1.0, 0.0)" onmouseup="stopTeleop()" ontouchstart="startTeleop(1.0, 0.0)" ontouchend="stopTeleop()">↑</button>
+              <div class="key-row-mid">
+                <button class="key-btn key-left" onmousedown="startTeleop(0.0, 1.0)" onmouseup="stopTeleop()" ontouchstart="startTeleop(0.0, 1.0)" ontouchend="stopTeleop()">←</button>
+                <button class="key-btn key-stop" onclick="stopTeleop()">■</button>
+                <button class="key-btn key-right" onmousedown="startTeleop(0.0, -1.0)" onmouseup="stopTeleop()" ontouchstart="startTeleop(0.0, -1.0)" ontouchend="stopTeleop()">→</button>
+              </div>
+              <button class="key-btn key-down" onmousedown="startTeleop(-0.8, 0.0)" onmouseup="stopTeleop()" ontouchstart="startTeleop(-0.8, 0.0)" ontouchend="stopTeleop()">↓</button>
+            </div>
+            <div class="teleop-speed-bar">
+              <span class="speed-lbl">SPEED:</span>
+              <button class="speed-pill active" onclick="setTeleopSpeed(0.6, this)">0.6</button>
+              <button class="speed-pill" onclick="setTeleopSpeed(1.1, this)">1.1</button>
+              <button class="speed-pill" onclick="setTeleopSpeed(1.5, this)">1.5</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tactical Actuator & Operator Operations Action Bar -->
+        <div class="glass-card tactical-bar-card" style="margin-top: 14px; margin-bottom: 14px;">
+          <div class="tactical-actions-bar">
+            <button class="tactical-btn btn-hatch" id="btnToggleHatch" onclick="triggerHatchAction('toggle')">
+              <span class="btn-icon">🚪</span>
+              <span id="txtHatchBtn">Open Hatch (60°)</span>
+            </button>
+            <button class="tactical-btn btn-package" id="btnTogglePackage" onclick="triggerPackageAction('toggle')">
+              <span class="btn-icon">📦</span>
+              <span id="txtPackageBtn">Unload Parcel</span>
+            </button>
+            <button class="tactical-btn btn-depot" onclick="returnToDepotDock()">
+              <span class="btn-icon">🏠</span>
+              <span>Return to Depot Dock</span>
+            </button>
+            <button class="tactical-btn btn-chime" onclick="testDoorstepChime()">
+              <span class="btn-icon">🔔</span>
+              <span>Doorbell Chime</span>
+            </button>
+            <div class="hud-mode-selector">
+              <span class="hud-label">AI HUD:</span>
+              <button class="hud-chip active" id="chipHudAll" onclick="setHudOverlayMode('all')">ALL</button>
+              <button class="hud-chip" id="chipHudDist" onclick="setHudOverlayMode('distance')">METRIC</button>
+              <button class="hud-chip" id="chipHudClean" onclick="setHudOverlayMode('clean')">CLEAN</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Physical Hardware Simulation & Benchmark Card (Raspberry Pi 5 + Hailo-8L + LiFePO4) -->
+        <div class="glass-card hardware-card">
+          <div class="card-header-styled">
+            <div class="header-title-group">
+              <span class="header-icon">💻</span>
+              <div>
+                <h2>Embedded Hardware & Edge AI Benchmark</h2>
+                <p class="subtitle">Real-time simulation of production prototype hardware specification</p>
+              </div>
+            </div>
+            <span class="hw-spec-badge">BOM VERIFIED • 1:1 SIM-TO-REAL</span>
+          </div>
+
+          <div class="hardware-grid">
+            <!-- Hailo-8L M.2 AI HAT Benchmark -->
+            <div class="hw-module-card highlight-hailo">
+              <div class="hw-mod-header">
+                <span class="hw-icon">🧠</span>
+                <div>
+                  <div class="hw-mod-title">Hailo-8L M.2 AI HAT+</div>
+                  <div class="hw-mod-spec">13 TOPS INT8 Coprocessor</div>
+                </div>
+              </div>
+              <div class="hw-benchmark-bar">
+                <div class="hw-bench-row">
+                  <span>Hailo NPU Latency:</span>
+                  <strong class="text-cyan">7.2 ms</strong>
+                </div>
+                <div class="hw-bench-row">
+                  <span>Host CPU Latency:</span>
+                  <span class="text-muted">68.4 ms</span>
+                </div>
+                <div class="hw-bench-bar-track">
+                  <div class="hw-bench-fill-cyan" style="width: 10%;"></div>
+                </div>
+                <div class="hw-acceleration-tag">
+                  ⚡ <strong>9.5x Latency Acceleration</strong> over SBC CPU
+                </div>
+              </div>
+              <div class="hw-mod-footer">
+                <span>Model: YOLOv8n-Sidewalk</span>
+                <span class="text-emerald">24.5% Load</span>
+              </div>
+            </div>
+
+            <!-- Raspberry Pi 5 Host SBC -->
+            <div class="hw-module-card">
+              <div class="hw-mod-header">
+                <span class="hw-icon">🖥️</span>
+                <div>
+                  <div class="hw-mod-title">Raspberry Pi 5 (8GB)</div>
+                  <div class="hw-mod-spec">Quad Cortex-A76 @ 2.4 GHz</div>
+                </div>
+              </div>
+              <div class="hw-metrics-list">
+                <div class="hw-metric-item">
+                  <span class="lbl">CPU Load:</span>
+                  <span class="val text-cyan" id="hwCpuLoad">18.4%</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">Core Temp:</span>
+                  <span class="val text-emerald" id="hwCpuTemp">38.2°C</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">Active Cooler:</span>
+                  <span class="val">2,400 RPM</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">OS Platform:</span>
+                  <span class="val">Ubuntu 24.04 / ROS 2</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- LiFePO4 Traction Battery & BMS -->
+            <div class="hw-module-card">
+              <div class="hw-mod-header">
+                <span class="hw-icon">🔋</span>
+                <div>
+                  <div class="hw-mod-title">24V 20Ah LiFePO4</div>
+                  <div class="hw-mod-spec">512 Wh Deep-Cycle Smart BMS</div>
+                </div>
+              </div>
+              <div class="hw-metrics-list">
+                <div class="hw-metric-item">
+                  <span class="lbl">Terminal Voltage:</span>
+                  <span class="val text-emerald" id="hwBatVolt">25.1 V</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">Cruising Power:</span>
+                  <span class="val text-cyan" id="hwBatPower">52.7 W</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">Run Endurance:</span>
+                  <span class="val text-emerald">7.6 Hours</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">Est. Range:</span>
+                  <span class="val">21.8 km / charge</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Intel RealSense D435i -->
+            <div class="hw-module-card">
+              <div class="hw-mod-header">
+                <span class="hw-icon">👁️</span>
+                <div>
+                  <div class="hw-mod-title">Intel RealSense D435i</div>
+                  <div class="hw-mod-spec">RGB-D + Bosch 6-DoF IMU</div>
+                </div>
+              </div>
+              <div class="hw-metrics-list">
+                <div class="hw-metric-item">
+                  <span class="lbl">RGB Stream:</span>
+                  <span class="val">640×480 @ 30 FPS</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">Active IR Depth:</span>
+                  <span class="val">640×480 (0.2m–10m)</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">IMU Rate:</span>
+                  <span class="val text-cyan">200 Hz Fused</span>
+                </div>
+                <div class="hw-metric-item">
+                  <span class="lbl">Lighting Immunity:</span>
+                  <span class="val text-emerald">Day & Night (IR)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Tactical Vector Map & Mission Dispatch Cockpit -->
+      <div class="founder-right-col">
+        <!-- Tactical Vector Map Card -->
+        <div class="glass-card map-card-founder">
+          <div class="card-header-styled">
+            <div class="header-title-group">
+              <span class="header-icon">🗺️</span>
+              <div>
+                <h2>Tactical Sidewalk Vector Grid & A* Path</h2>
+                <p class="subtitle">Real-time sidewalk routing, zebra crossings, and dynamic obstacle bypass</p>
+              </div>
+            </div>
+            <div class="map-controls">
+              <button class="btn-map-tool" onclick="zoomFounderMap(1.25)" title="Zoom In">🔍 +</button>
+              <button class="btn-map-tool" onclick="zoomFounderMap(0.80)" title="Zoom Out">🔍 -</button>
+              <button class="btn-map-tool" onclick="resetFounderMapZoom()" title="Reset Zoom">↺ Reset</button>
+              <button class="btn-map-tool" onclick="recenterMap()">🎯 Center</button>
+              <button class="btn-map-tool active" id="btnFollowToggle" onclick="toggleFollowRobot()">📍 Follow Robot</button>
+            </div>
+          </div>
+
+          <div class="map-canvas-container">
+            <canvas id="founderCanvasMap" width="800" height="520"></canvas>
+          </div>
+        </div>
+
+        <!-- Fleet Dispatch Manifest & Quick Controls -->
+        <div class="glass-card dispatch-card">
+          <div class="card-header-styled">
+            <div class="header-title-group">
+              <span class="header-icon">🚀</span>
+              <div>
+                <h2>Fleet Mission Dispatch Cockpit</h2>
+                <p class="subtitle">Direct remote waypoint override & delivery queue manager</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Dispatch Presets Grid -->
+          <div class="quick-dispatch-grid">
+            <button class="dispatch-chip" onclick="dispatchDirectTarget('CLIENT_1_NORTH_AVENUE', [-14.6, 15.0], 'DELIVERY', 'ORD-001')">
+              <span class="badge">CLIENT 1</span>
+              <strong>Sophie Laurent</strong>
+              <span>North Ave (15.0m)</span>
+            </button>
+
+            <button class="dispatch-chip" onclick="dispatchDirectTarget('CLIENT_2_NORTH_AVENUE', [-14.6, 28.0], 'DELIVERY', 'ORD-002')">
+              <span class="badge">CLIENT 2</span>
+              <strong>Marc Dubois</strong>
+              <span>Commercial Hub (28.0m)</span>
+            </button>
+
+            <button class="dispatch-chip" onclick="dispatchDirectTarget('CLIENT_5_CENTRAL_SQUARE', [-6.0, 0.0], 'DELIVERY', 'ORD-003')">
+              <span class="badge">CLIENT 5</span>
+              <strong>Amira Khan</strong>
+              <span>Central Square Bakery</span>
+            </button>
+
+            <button class="dispatch-chip" onclick="dispatchDirectTarget('DEPOT_POST_OFFICE', [-31.5, 2.5], 'PARK', 'NONE')">
+              <span class="badge depot">DEPOT</span>
+              <strong>Return to Dock</strong>
+              <span>Logistics Facility (Bay)</span>
+            </button>
+          </div>
+
+          <!-- Live Manifest Queue List -->
+          <div class="manifest-list-container">
+            <div class="manifest-list-header">
+              <span>ACTIVE DELIVERY MANIFEST & QUEUE</span>
+              <span class="manifest-count" id="manifestCountBadge">2 Orders</span>
+            </div>
+            <div class="manifest-items-box" id="manifestItemsBox">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- 3. HARDWARE SIMULATOR & PHYSICAL ASSEMBLY WORKBENCH (WOKWI/WIKI)     -->
+  <!-- =================================================================== -->
+  <section class="portal-view" id="hardwarePortalView">
+    <div class="hardware-portal-container">
+      <!-- Top Action & Sandbox Toolbar -->
+      <div class="glass-card hardware-hero-card">
+        <div class="hw-hero-left">
+          <div class="hw-hero-icon">🔌</div>
+          <div>
+            <div class="hw-title-row">
+              <h2>NexusDelivery Physical Hardware Workbench & Assembly</h2>
+              <span class="category-badge">WOKWI / FRITZING INTERACTIVE BENCH</span>
+            </div>
+            <p class="subtitle">Complete physical component wiring, 40-pin GPIO interactive pinout, and live electronic test sandbox</p>
+          </div>
+        </div>
+
+        <!-- Sandbox Simulation Action Triggers -->
+        <div class="hw-sandbox-actions">
+          <button class="hw-btn-action cyan" onclick="testHardwareAction('test_solenoid')">
+            <span>⚡</span>
+            <span>Pulse Solenoid Lock (GPIO 18)</span>
+          </button>
+          <button class="hw-btn-action crimson" onclick="testHardwareAction('test_estop')">
+            <span>🛑</span>
+            <span>Test E-Stop Kill (GPIO 23)</span>
+          </button>
+          <button class="hw-btn-action purple" onclick="testHardwareAction('test_npu')">
+            <span>🧠</span>
+            <span>Benchmark Hailo-8L NPU</span>
+          </button>
+          <button class="hw-btn-action emerald" onclick="testHardwareAction('test_bms')">
+            <span>🔋</span>
+            <span>Balance LiFePO4 Cells</span>
+          </button>
+          <a href="/downloads/delivery_robot_wokwi_project.json" download="wokwi.diagram.json" class="hw-btn-action outline">
+            <span>💾</span>
+            <span>Export Wokwi JSON</span>
+          </a>
+          <a href="/downloads/BOM.csv" download="NexusDelivery_BOM.csv" class="hw-btn-action outline">
+            <span>📄</span>
+            <span>Download BOM (CSV)</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Hardware Grid: Physical Components & Live Topology -->
+      <div class="hw-components-grid">
+        <!-- 1. Raspberry Pi 5 Model B -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge green">HOST COMPUTE</span>
+              <h3>Raspberry Pi 5 Model B (8GB)</h3>
+            </div>
+            <span class="hw-card-bus">Broadcom BCM2712</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-spec-row">
+              <span class="label">CPU Architecture:</span>
+              <span class="val">Quad ARM Cortex-A76 @ 2.4 GHz</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">RAM / OS:</span>
+              <span class="val">8GB LPDDR4X • Ubuntu 22.04 LTS (ROS 2 Humble)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Expansion Interfaces:</span>
+              <span class="val">PCIe 2.0/3.0 x1 • 2x USB 3.0 • Gigabit Ethernet</span>
+            </div>
+            <!-- Interactive 40-Pin GPIO Mini Diagram -->
+            <div class="hw-gpio-box">
+              <div class="gpio-header">
+                <span>INTERACTIVE 40-PIN GPIO HEADER (CLICK TO INSPECT)</span>
+                <span class="gpio-active-count">7 ACTIVE SIGNALS</span>
+              </div>
+              <div class="gpio-pins-grid">
+                <div class="gpio-pin pwr" onclick="inspectGpio(2, '+5.1V DC IN', 'Main power rail from 24V->5V Buck')">Pin 2: +5V IN</div>
+                <div class="gpio-pin pwr" onclick="inspectGpio(4, '+5.1V DC IN', 'Parallel 5A power rail')">Pin 4: +5V IN</div>
+                <div class="gpio-pin gnd" onclick="inspectGpio(6, 'GND', 'Common system ground bus')">Pin 6: GND</div>
+                <div class="gpio-pin sig" onclick="inspectGpio(3, 'GPIO 2 (SDA1)', 'Daly Smart BMS I2C Telemetry')">Pin 3: I2C1 SDA</div>
+                <div class="gpio-pin sig" onclick="inspectGpio(5, 'GPIO 3 (SCL1)', 'Daly Smart BMS I2C Clock')">Pin 5: I2C1 SCL</div>
+                <div class="gpio-pin ser" onclick="inspectGpio(8, 'GPIO 14 (TXD0)', 'ODrive S1 UART telemetry TX')">Pin 8: UART0 TX</div>
+                <div class="gpio-pin ser" onclick="inspectGpio(10, 'GPIO 15 (RXD0)', 'ODrive S1 UART telemetry RX')">Pin 10: UART0 RX</div>
+                <div class="gpio-pin pwm" onclick="inspectGpio(12, 'GPIO 18 (PWM0)', 'Compartment Solenoid Lock Pulse')">Pin 12: GPIO 18 (LOCK)</div>
+                <div class="gpio-pin int" onclick="inspectGpio(16, 'GPIO 23', 'Emergency Stop Kill Sense Loop')">Pin 16: GPIO 23 (E-STOP)</div>
+                <div class="gpio-pin led" onclick="inspectGpio(18, 'GPIO 24', 'WS2812B NeoPixel Halo Ring Data')">Pin 18: GPIO 24 (RGB)</div>
+              </div>
+              <div class="gpio-detail-callout" id="gpioDetailCallout">
+                Click any highlighted pin to inspect electrical voltage, logic level, and connected peripheral.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Hailo-8L M.2 AI Module -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge purple">NEURAL NPU</span>
+              <h3>Hailo-8L M.2 AI Module</h3>
+            </div>
+            <span class="hw-card-bus">PCIe Gen 3.0 x1</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-gauge-container">
+              <div class="hw-gauge-card">
+                <span class="gauge-num text-purple" id="npuTopsVal">13.0</span>
+                <span class="gauge-sub">INT8 TOPS PEAK</span>
+              </div>
+              <div class="hw-gauge-card">
+                <span class="gauge-num text-cyan" id="npuFpsVal">138.4</span>
+                <span class="gauge-sub">FPS (YOLOv8s)</span>
+              </div>
+              <div class="hw-gauge-card">
+                <span class="gauge-num text-emerald" id="npuLatencyVal">7.18</span>
+                <span class="gauge-sub">ms LATENCY</span>
+              </div>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Pipeline:</span>
+              <span class="val">Zero-LiDAR Sidewalk Pedestrian & Obstacle Detection</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Hardware Acceleration:</span>
+              <span class="val text-emerald">9.5x Speedup vs Quad-Cortex A76 CPU (68.4ms)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">TDP / Temp:</span>
+              <span class="val" id="npuTempText">2.5W Typical • 48.2°C (M.2 Heatsink Active)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Intel RealSense D435i -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge cyan">PERCEPTION</span>
+              <h3>Intel RealSense D435i</h3>
+            </div>
+            <span class="hw-card-bus">USB 3.0 Type-C (5 Gbps)</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-spec-row">
+              <span class="label">Technology:</span>
+              <span class="val">Active IR Stereo Depth + 1080p RGB Sensor</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Active Range:</span>
+              <span class="val text-cyan">0.20 m to 5.00 m (Sidewalk Corridor)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Embedded IMU:</span>
+              <span class="val">Bosch BMI055 6-DoF (Accelerometer + Gyroscope)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Stream Format:</span>
+              <span class="val">Depth: 640x480 @ 30 FPS • RGB: 1920x1080 @ 30 FPS</span>
+            </div>
+            <div class="hw-status-indicator active">
+              <span class="dot pulse"></span>
+              <span>Stereo Pointcloud Stream Online</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ODrive S1 Dual BLDC Controller -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge orange">TRACTION FOC</span>
+              <h3>ODrive S1 Dual Motor Controller</h3>
+            </div>
+            <span class="hw-card-bus">CAN Bus 2.0B / UART</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-spec-row">
+              <span class="label">Voltage Range:</span>
+              <span class="val">24V DC Nominal (12V–56V Input Range)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Rated Current:</span>
+              <span class="val">40A Continuous / 65A Peak per Channel</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Feedback Encoders:</span>
+              <span class="val text-cyan">14-bit Magnetic Absolute SPI / ABI</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Control Loop:</span>
+              <span class="val">Field-Oriented Control (FOC) @ 24 kHz PWM</span>
+            </div>
+            <div class="hw-status-indicator active">
+              <span class="dot pulse"></span>
+              <span>Dual FOC Loops Closed • CAN 1 Mbps</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 2x Planetary Gear BLDC Motors -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge orange">DRIVETRAIN</span>
+              <h3>2x 24V 250W Planetary BLDC Motors</h3>
+            </div>
+            <span class="hw-card-bus">3-Phase UVW</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-spec-row">
+              <span class="label">Gear Reduction:</span>
+              <span class="val">15:1 Precision Planetary Gearbox</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Output Torque:</span>
+              <span class="val text-orange">32 N·m Peak per Axle (64 N·m Combined)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Drive Wheels:</span>
+              <span class="val">200mm Dia. High-Traction Polyurethane Tread</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Cruising Velocity:</span>
+              <span class="val text-cyan">1.30 m/s (Nominal) • 1.50 m/s (Max)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 24V 20Ah LiFePO4 Battery & Smart BMS -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge emerald">ENERGY SYSTEM</span>
+              <h3>24V 20Ah LiFePO4 Battery (512 Wh)</h3>
+            </div>
+            <span class="hw-card-bus">Daly 8S Smart BMS</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-spec-row">
+              <span class="label">Cell Configuration:</span>
+              <span class="val">8S1P LiFePO4 (3.20V x 8 = 25.6V Nominal)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Energy & Life:</span>
+              <span class="val text-emerald">512 Wh Capacity • 2,000+ Full Cycles</span>
+            </div>
+            <!-- Live 8-Cell Voltage Balancer Display -->
+            <div class="bms-cells-container">
+              <div class="bms-cell-title">8-CELL ACTIVE BALANCING TELEMETRY (I2C)</div>
+              <div class="bms-cells-bars">
+                <div class="cell-bar"><span class="bar-fill" style="height:92%"></span><span class="c-label">C1<br>3.21V</span></div>
+                <div class="cell-bar"><span class="bar-fill" style="height:91%"></span><span class="c-label">C2<br>3.20V</span></div>
+                <div class="cell-bar"><span class="bar-fill" style="height:92%"></span><span class="c-label">C3<br>3.21V</span></div>
+                <div class="cell-bar"><span class="bar-fill" style="height:90%"></span><span class="c-label">C4<br>3.19V</span></div>
+                <div class="cell-bar"><span class="bar-fill" style="height:92%"></span><span class="c-label">C5<br>3.21V</span></div>
+                <div class="cell-bar"><span class="bar-fill" style="height:91%"></span><span class="c-label">C6<br>3.20V</span></div>
+                <div class="cell-bar"><span class="bar-fill" style="height:92%"></span><span class="c-label">C7<br>3.21V</span></div>
+                <div class="cell-bar"><span class="bar-fill" style="height:91%"></span><span class="c-label">C8<br>3.20V</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Power Regulation & DC-DC Buck -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge cyan">POWER REG</span>
+              <h3>Synchronous DC-DC Regulators</h3>
+            </div>
+            <span class="hw-card-bus">Efficiency 94.5%</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-spec-row">
+              <span class="label">Primary Rail (5.1V):</span>
+              <span class="val text-cyan">24V -> 5.1V @ 5.0A (Raspberry Pi 5 + Hailo NPU)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Aux Rail (12.0V):</span>
+              <span class="val text-orange">24V -> 12.0V @ 3.0A (Solenoid Lock + Halo LED)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Protection:</span>
+              <span class="val">Reverse Polarity, Overcurrent, Thermal Cutoff</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Solenoid Lock & Relay Module -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge crimson">CARGO ACCESS</span>
+              <h3>12V Solenoid Deadbolt & Relay</h3>
+            </div>
+            <span class="hw-card-bus">GPIO 18 Trigger</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-spec-row">
+              <span class="label">Operating Voltage:</span>
+              <span class="val">12V DC (1.2A inrush pulse, 10mm throw)</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Protection:</span>
+              <span class="val">1N4007 Flyback Diode across coil terminals</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Current Status:</span>
+              <span class="val text-emerald" id="hwLockStatusBadge">SECURELY LATCHED</span>
+            </div>
+            <button class="btn-action-primary" style="margin-top:12px; width:100%" onclick="testHardwareAction('test_solenoid')">
+              <span>🔓</span>
+              <span>Test Unlatch Compartment (GPIO 18)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 9. Safety E-Stop & WS2812B NeoPixel Ring -->
+        <div class="glass-card hw-card">
+          <div class="hw-card-header">
+            <div class="hw-card-title-group">
+              <span class="hw-chip-badge crimson">SAFETY & LIGHTING</span>
+              <h3>Safety E-Stop & RGB Halo Ring</h3>
+            </div>
+            <span class="hw-card-bus">GPIO 23 & GPIO 24</span>
+          </div>
+          <div class="hw-card-body">
+            <div class="hw-spec-row">
+              <span class="label">E-Stop Switch:</span>
+              <span class="val text-crimson">Industrial 22mm Push-to-Lock / Twist Release</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Halo Ring:</span>
+              <span class="val">16-LED Addressable WS2812B 5050 RGB</span>
+            </div>
+            <div class="hw-spec-row">
+              <span class="label">Status Colors:</span>
+              <span class="val text-cyan">🟢 Cruising | 🔵 Unlocking | 🟡 Caution | 🔴 Stop</span>
+            </div>
+            <div class="hw-halo-preview" id="hwHaloPreview">
+              <span class="halo-circle"></span>
+              <span class="halo-label" id="hwHaloLabel">NOMINAL AUTONOMOUS OPERATION</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Complete Hardware Assembly Guide & Bringup Reference -->
+      <div class="glass-card hw-guide-card">
+        <div class="card-header-styled">
+          <div class="header-title-group">
+            <span class="header-icon">📖</span>
+            <div>
+              <h2>Physical Hardware Bringup & Verification Guide</h2>
+              <p class="subtitle">Real-world shell commands for Raspberry Pi 5 terminal bringing up sensors, NPU, and motor controllers</p>
+            </div>
+          </div>
+          <a href="/downloads/delivery_robot_wokwi_project.json" download class="category-badge">WOKWI SPEC VERIFIED</a>
+        </div>
+        <div class="hw-terminal-box">
+          <pre><code><span class="comment"># 1. Verify PCIe connection between Raspberry Pi 5 and Hailo-8L NPU</span>
+<span class="cmd">lspci -v</span>
+<span class="out">00:00.0 Co-processor: Hailo Technologies Ltd. Hailo-8 AI Processor (rev 01)</span>
+
+<span class="comment"># 2. Run official HailoRT real-time YOLOv8s benchmark</span>
+<span class="cmd">hailortcli run yolo_v8s.hef --frames 1000</span>
+<span class="out">> Frame count: 1000 | Inference Latency: 7.18 ms | Throughput: 138.4 FPS | Temp: 48.2°C</span>
+
+<span class="comment"># 3. Check Intel RealSense D435i depth + RGB video streams</span>
+<span class="cmd">rs-enumerate-devices</span>
+<span class="out">> Intel RealSense D435i (USB 3.2 Gen 1) | Depth: 640x480 @ 30fps | RGB: 1920x1080 @ 30fps</span>
+
+<span class="comment"># 4. Trigger delivery compartment electronic solenoid lock via GPIO18</span>
+<span class="cmd">python3 -c "import gpiod; chip = gpiod.Chip('gpiochip4'); line = chip.get_line(18); line.request(consumer='lock', type=gpiod.LINE_REQ_DIR_OUT); line.set_value(1)"</span>
+<span class="out">> [RELAY CLICK] Solenoid energized: Compartment latch opened successfully.</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================== -->
+  <!-- 4. 2D MECHANICAL CAD BLUEPRINT & FABRICATION SUITE (DXF/SVG/PRINT)   -->
+  <!-- =================================================================== -->
+  <section class="portal-view" id="cadPortalView">
+    <div class="cad-portal-container">
+      <!-- CAD Action & Spec Header -->
+      <div class="glass-card cad-hero-card">
+        <div class="cad-hero-left">
+          <div class="cad-hero-icon">📐</div>
+          <div>
+            <div class="cad-title-row">
+              <h2>2D Mechanical CAD Blueprint & Fabrication Suite</h2>
+              <span class="category-badge">1:1 SCALE PRODUCTION READY</span>
+            </div>
+            <p class="subtitle">Chassis baseplate engineering drawings ready for CNC Laser Cutting, Waterjet, Router, or 3D Printing</p>
+          </div>
+        </div>
+
+        <!-- Download & Print Actions -->
+        <div class="cad-actions-bar">
+          <a href="/downloads/delivery_robot_chassis_2d_print.dxf" download="delivery_robot_chassis_2d_print.dxf" class="cad-btn cyan">
+            <span>📥</span>
+            <span>Download .DXF (Laser / CNC)</span>
+          </a>
+          <a href="/downloads/delivery_robot_chassis_blueprint.svg" download="delivery_robot_chassis_blueprint.svg" class="cad-btn purple">
+            <span>📥</span>
+            <span>Download .SVG (Vector)</span>
+          </a>
+          <button class="cad-btn emerald" onclick="printCadBlueprint()">
+            <span>🖨️</span>
+            <span>Print 1:1 Scale Template</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main CAD Blueprint Viewer Container -->
+      <div class="glass-card cad-viewer-card">
+        <div class="cad-viewer-toolbar">
+          <div class="viewer-tools-left">
+            <span class="viewer-title">CHASSIS STRUCTURAL BASEPLATE (REV 2.4)</span>
+            <span class="viewer-dim-pill">600.0 mm × 380.0 mm × 4.0 mm</span>
+          </div>
+          <div class="viewer-tools-right">
+            <button class="tool-btn active" id="btnToggleCadDims" onclick="toggleCadLayer('dims')">Dimensions: ON</button>
+            <button class="tool-btn active" id="btnToggleCadHoles" onclick="toggleCadLayer('holes')">Holes & Drill Schedule: ON</button>
+            <button class="tool-btn" onclick="zoomCad(1.2)">🔍 Zoom +</button>
+            <button class="tool-btn" onclick="zoomCad(0.8)">🔍 Zoom -</button>
+            <button class="tool-btn" onclick="resetCadZoom()">↺ Reset</button>
+          </div>
+        </div>
+
+        <!-- Interactive SVG Canvas Frame -->
+        <div class="cad-svg-viewport" id="cadSvgViewport">
+          <img src="/downloads/delivery_robot_chassis_blueprint.svg" alt="2D CAD Mechanical Blueprint" class="cad-blueprint-img" id="cadBlueprintImg">
+        </div>
+
+        <!-- Engineering Specifications & Drill Schedule Cards -->
+        <div class="cad-specs-grid">
+          <!-- Structural Specs -->
+          <div class="cad-spec-card">
+            <h4>📐 Mechanical Dimensions & Material</h4>
+            <ul>
+              <li><strong>Outer Contour:</strong> 600.0 mm Length × 380.0 mm Width with 30.0 mm fillet radius corners.</li>
+              <li><strong>Material Spec:</strong> 4.0 mm Aluminum 5052-H32 (or 6.0 mm Polycarbonate / Cast Acrylic).</li>
+              <li><strong>Machining Tolerance:</strong> ±0.20 mm standard CNC laser / waterjet tolerance.</li>
+              <li><strong>Ground Clearance:</strong> 65.0 mm nominal curb clearance on sidewalk terrain.</li>
+            </ul>
+          </div>
+
+          <!-- Drill Schedule -->
+          <div class="cad-spec-card">
+            <h4>🔩 Precision Drill Schedule</h4>
+            <ul>
+              <li><strong class="text-cyan">4x M2.5 (dia 2.7mm):</strong> Raspberry Pi 5 + Hailo-8L HAT (58.0mm × 49.0mm pattern).</li>
+              <li><strong class="text-purple">4x M3 (dia 3.2mm):</strong> ODrive S1 Dual BLDC Controller (50.0mm × 40.0mm pattern).</li>
+              <li><strong class="text-crimson">2x M3 (dia 3.2mm):</strong> Intel RealSense D435i Front Bracket (45.0mm spacing).</li>
+              <li><strong class="text-amber">8x M4 (dia 4.2mm):</strong> Front & Rear Swivel Casters (35.0mm × 35.0mm square pattern).</li>
+              <li><strong class="text-emerald">4x M4 (dia 4.2mm):</strong> 24V LiFePO4 Battery Containment Bracket.</li>
+            </ul>
+          </div>
+
+          <!-- Cutouts & Openings -->
+          <div class="cad-spec-card">
+            <h4>⚙️ Cutouts, Slots & Routing</h4>
+            <ul>
+              <li><strong>Drive Wheel Wells:</strong> 2x 120.0 mm × 50.0 mm axle slots for 200mm diameter drive wheels.</li>
+              <li><strong>Battery Straps:</strong> 4x 30.0 mm × 5.0 mm slots for heavy-duty velcro cinch tie-downs.</li>
+              <li><strong>Wiring Grommets:</strong> 4x ⌀25.0 mm chamfered circular cutouts with rubber edge protectors.</li>
+              <li><strong>Cargo Hatch Solenoid:</strong> 2x M3 mount at X = +150.0 mm for motorized deadbolt lock.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notification Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="three.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

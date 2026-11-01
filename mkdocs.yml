@@ -1,0 +1,56 @@
+site_name: "NexusDelivery Platform"
+site_author: Chiheb
+repo_url: https://github.com/Chiheb-bt/NexusDelivery-Autonomous-AMR
+site_url: https://Chiheb-bt.github.io/NexusDelivery-Autonomous-AMR/
+site_description: "Commercial-Grade Vision-Centric Autonomous Sidewalk Delivery Robot Platform (ROS 2 Humble + Gazebo Classic 11)"
+
+theme:
+    name: material
+    palette:
+        primary: indigo
+        accent: light blue
+    logo: assets/logo2_w.png
+    favicon: assets/favicon.png
+    font:
+        text: Roboto
+
+use_directory_urls: false
+
+markdown_extensions:
+    - meta
+    - attr_list
+    - admonition
+    - pymdownx.highlight:
+        anchor_linenums: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
+    - pymdownx.arithmatex:
+        generic: true
+    - pymdownx.emoji:
+        emoji_index: !!python/name:material.extensions.emoji.twemoji
+        emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+copyright: "Copyright &copy; 2026 Chiheb Robotics Systems Lab"
+
+extra:
+    social:
+        - icon: fontawesome/brands/github
+          link: https://github.com/Chiheb-bt
+
+extra_css:
+    - "css/custom.css"
+    - "https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css"
+
+nav:
+    - Overview: 'index.md'
+    - Whitepaper: 'WHITE_PAPER.md'
+    - Proof of Concept & ROI: 'NEXUS_DELIVERY_PROOF_OF_CONCEPT.md'
+    - System Architecture: 'ARCHITECTURE.md'
+    - Hardware Blueprint (BOM): 'HARDWARE_PROTOTYPE_SPEC.md'
+    - Chassis Assembly: 'HARDWARE_ASSEMBLY_GUIDE.md'
+    - Operator Guide: 'OPERATOR_GUIDE.md'
+    - Mission Specs: 'MISSION_SPECIFICATIONS.md'
+    - Quickstart: 'quickstart.md'
+    - Installation: 'installation.md'
+    - Docker: 'docker.md'

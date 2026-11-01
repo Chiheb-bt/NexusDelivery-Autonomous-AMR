@@ -1,0 +1,4 @@
+target_onnx=delivery_robot_sim/models_compiled/yolov8n_320x320.onnx
+imgsz=320
+batch=1
+opset=12

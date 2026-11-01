@@ -1,0 +1,31 @@
+{
+  "mission_completion_status": "SUCCESS",
+  "start_location": "DEPOT_POST_OFFICE (-31.5, -0.8)",
+  "destination_settings": [
+    "CLIENT_1_NORTH_AVENUE (-15.0, 15.0)",
+    "CLIENT_2_NORTH_AVENUE (-15.0, 28.0)"
+  ],
+  "mission_duration_s": 150.81,
+  "total_distance_travelled_m": 89.63,
+  "net_progress_distance_m": 0.86,
+  "minimum_obstacle_clearance_m": 0.487,
+  "collision_count": 0,
+  "destination_error_avg_m": 1.581,
+  "average_speed_mps": 0.684,
+  "maximum_speed_mps": 1.561,
+  "number_of_stops": 11,
+  "obstacle_avoidance_outcome": "AVOIDANCE_AND_REACQUISITION_VERIFIED",
+  "orders_completed": 2,
+  "orders_failed": 0,
+  "returned_to_depot": true,
+  "mission_states_reached": [
+    "ALIGNING_HEADING",
+    "AVOIDING_OBSTACLE",
+    "DELIVERING",
+    "DOCKING",
+    "NAVIGATING_TO_CLIENT",
+    "RETURNING_TO_DEPOT",
+    "WAITING_FOR_ORDER"
+  ],
+  "perception_and_control_sensor_stack": "Front RGB Camera (/camera/image_raw) + RGB-D Depth Camera (/camera/depth/image_raw) + IMU (/imu) + Wheel Odometry (/odom). NO LiDAR, NO GPS."
+}

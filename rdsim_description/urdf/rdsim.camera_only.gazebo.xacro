@@ -1,0 +1,243 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- ============================================================== -->
+  <!-- Gazebo Material References for Visual Realism                  -->
+  <!-- ============================================================== -->
+  <gazebo reference="base_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+
+  <!-- chassis_shell_link preserves multi-color livery from URDF (white shell, black visor, cyan strips, red/green LEDs, amber beacon) -->
+
+  <gazebo reference="cargo_hatch_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+
+  <gazebo reference="cargo_bay_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <gazebo reference="battery_bay_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <gazebo reference="bumper_front_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <gazebo reference="bumper_rear_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <gazebo reference="estop_base_link">
+    <material>Gazebo/Yellow</material>
+  </gazebo>
+
+  <gazebo reference="headlights_link">
+    <material>Gazebo/White</material>
+  </gazebo>
+
+  <gazebo reference="taillights_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <gazebo reference="beacon_left_link">
+    <material>Gazebo/SkyBlue</material>
+  </gazebo>
+
+  <gazebo reference="beacon_right_link">
+    <material>Gazebo/SkyBlue</material>
+  </gazebo>
+
+  <!-- ============================================================== -->
+  <!-- Wheel Physics and Contact Dynamics                             -->
+  <!-- ============================================================== -->
+  <!-- Front Active Drive Wheels (Traction and longitudinal driving force) -->
+  <gazebo reference="wheel_left_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>0.1</maxVel>
+    <fdir1>1 0 0</fdir1>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <gazebo reference="wheel_right_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>0.1</maxVel>
+    <fdir1>1 0 0</fdir1>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <!-- Rear Passive Rolling Wheels (Low lateral friction prevents wheel scrub during turns) -->
+  <gazebo reference="wheel_rear_left_link">
+    <mu1>0.05</mu1>
+    <mu2>0.05</mu2>
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <gazebo reference="wheel_rear_right_link">
+    <mu1>0.05</mu1>
+    <mu2>0.05</mu2>
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <!-- ============================================================== -->
+  <!-- Drivetrain Controller: Differential Drive Plugin                -->
+  <!-- ============================================================== -->
+  <gazebo>
+    <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <remapping>cmd_vel:=/cmd_vel</remapping>
+        <remapping>odom:=/odom</remapping>
+      </ros>
+      <left_joint>wheel_left_joint</left_joint>
+      <right_joint>wheel_right_joint</right_joint>
+      <wheel_separation>0.62</wheel_separation>
+      <wheel_diameter>0.40</wheel_diameter>
+      <max_wheel_torque>50</max_wheel_torque>
+      <max_wheel_acceleration>1.5</max_wheel_acceleration>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>false</publish_odom_tf>
+      <publish_wheel_tf>true</publish_wheel_tf>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_footprint</robot_base_frame>
+      <update_rate>30</update_rate>
+    </plugin>
+
+    <!-- Decoupled Ground Truth (Used exclusively by Evaluator) -->
+    <plugin name="ground_truth" filename="libgazebo_ros_p3d.so">
+      <ros>
+        <remapping>odom:=/odom_gt</remapping>
+      </ros>
+      <body_name>base_footprint</body_name>
+      <frame_name>world</frame_name>
+      <update_rate>30.0</update_rate>
+      <gaussian_noise>0.0</gaussian_noise>
+      <xyz_offset>0 0 0</xyz_offset>
+      <rpy_offset>0 0 0</rpy_offset>
+      <always_on>true</always_on>
+    </plugin>
+  </gazebo>
+
+  <!-- ============================================================== -->
+  <!-- Front RGB-D Camera Sensor Plugin                               -->
+  <!-- ============================================================== -->
+  <gazebo reference="camera_link">
+    <material>Gazebo/FlatBlack</material>
+    <sensor name="front_camera" type="depth">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <visualize>false</visualize>
+      <camera>
+        <horizontal_fov>1.5184</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.10</near>
+          <far>35.0</far>
+        </clip>
+      </camera>
+      <plugin name="front_camera_ros" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>/camera</namespace>
+          <remapping>/camera/front_camera/image_raw:=/camera/image_raw</remapping>
+          <remapping>/camera/front_camera/camera_info:=/camera/camera_info</remapping>
+          <remapping>/camera/front_camera/depth/image_raw:=/camera/depth/image_raw</remapping>
+          <remapping>/camera/front_camera/depth/camera_info:=/camera/depth/camera_info</remapping>
+          <remapping>/camera/front_camera/points:=/camera/depth/points</remapping>
+        </ros>
+        <min_depth>0.10</min_depth>
+        <max_depth>20.0</max_depth>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ============================================================== -->
+  <!-- Cargo Hatch Joint State Publisher                              -->
+  <!-- ============================================================== -->
+  <gazebo>
+    <plugin name="cargo_joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <ros>
+        <remapping>joint_states:=/joint_states</remapping>
+      </ros>
+      <update_rate>30</update_rate>
+      <joint_name>cargo_hatch_joint</joint_name>
+    </plugin>
+  </gazebo>
+
+  <!-- ============================================================== -->
+  <!-- IMU Sensor Plugin                                              -->
+  <!-- ============================================================== -->
+  <gazebo reference="imu_link">
+    <material>Gazebo/Yellow</material>
+    <sensor name="imu_sensor" type="imu">
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <ros>
+          <remapping>~/out:=/imu</remapping>
+        </ros>
+        <initial_orientation_as_reference>true</initial_orientation_as_reference>
+      </plugin>
+      <always_on>true</always_on>
+      <update_rate>50</update_rate>
+      <visualize>false</visualize>
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></z>
+        </linear_acceleration>
+      </imu>
+    </sensor>
+  </gazebo>
+
+  <!-- ============================================================== -->
+  <!-- GPS Sensor Plugin (Evaluation isolated)                        -->
+  <!-- ============================================================== -->
+  <gazebo reference="gps_link">
+    <sensor name="gps_sensor" type="gps">
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <gps>
+        <position_sensing>
+          <noise type="gaussian">
+            <mean>0.0</mean>
+            <stddev>0.5</stddev>
+          </noise>
+        </position_sensing>
+      </gps>
+      <plugin name="gps_plugin" filename="libgazebo_ros_gps_sensor.so">
+        <ros>
+          <namespace>/gps</namespace>
+          <remapping>~/out:=gps/data</remapping>
+        </ros>
+        <output_type>sensor_msgs/NavSatFix</output_type>
+        <frame_name>gps_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
