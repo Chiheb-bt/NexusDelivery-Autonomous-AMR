@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusDelivery — Autonomous Sidewalk Delivery Experience</title>
+  <meta name="description" content="Next-generation autonomous sidewalk delivery platform. Order gourmet dining, espresso, and daily essentials delivered directly to your doorstep by intelligent AI rovers.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="client.css">
+</head>
+<body class="client-theme">
+
+  <!-- ========================================================================= -->
+  <!-- 1. GLOBAL TOP NAVIGATION BAR                                              -->
+  <!-- ========================================================================= -->
+  <header class="client-navbar">
+    <div class="nav-container">
+      <!-- Brand Block -->
+      <a href="/client" class="brand-link" id="brandHomeLink">
+        <div class="brand-icon-pulse">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="3" stroke="#00f0ff" stroke-width="2"/>
+            <circle cx="6" cy="18" r="2" fill="#00f0ff"/>
+            <circle cx="18" cy="18" r="2" fill="#00f0ff"/>
+            <path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" stroke="#6366f1" stroke-width="2"/>
+            <circle cx="12" cy="12" r="2" fill="#10b981"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Nexus<span class="text-cyan">Delivery</span></span>
+          <span class="brand-badge">AUTONOMOUS</span>
+        </div>
+      </a>
+
+      <!-- Fleet Status Indicator -->
+      <div class="fleet-status-pill">
+        <span class="status-pulse-dot"></span>
+        <span class="fleet-status-text" id="fleetStatusText">4 Rovers Active in Tunis Hub</span>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="nav-actions">
+        <!-- Switch to Engineer Cockpit -->
+        <a href="/supervisor" class="cockpit-toggle-btn" id="linkSupervisorCockpit" title="Open Fleet Operations Supervisor Cockpit">
+          <span class="toggle-icon">⚡</span>
+          <span class="toggle-text">Supervisor Cockpit</span>
+        </a>
+
+        <!-- Sound Chime Toggle -->
+        <button class="icon-toggle-btn" id="btnSoundToggle" onclick="toggleClientAudio()" title="Sound Feedback Toggle">
+          <span id="soundIcon">🔊</span>
+        </button>
+
+        <!-- Cart Trigger Button -->
+        <button class="cart-trigger-btn" id="btnCartTrigger" onclick="toggleCartDrawer()">
+          <span class="cart-icon">🛒</span>
+          <span class="cart-label">Cart</span>
+          <span class="cart-badge" id="cartBadgeCount">0</span>
+          <span class="cart-total-preview" id="cartHeaderTotal">$0.00</span>
+        </button>
+
+        <!-- User Authentication & Profile Block -->
+        <div class="user-auth-slot" id="userAuthSlot">
+          <!-- Populated dynamically: Sign In button OR User Profile Pill -->
+          <button class="btn-primary-auth" id="btnOpenAuthModal" onclick="openAuthModal('login')">
+            <span class="btn-auth-icon">🔑</span>
+            <span>Sign In / Inscription</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. CINEMATIC HERO SECTION (NETFLIX-STYLE ATMOSPHERE)                      -->
+  <!-- ========================================================================= -->
+  <section class="hero-section">
+    <div class="hero-backdrop-glow"></div>
+    <div class="hero-content">
+      <div class="hero-chip">
+        <span class="chip-dot"></span>
+        <span>TRL 3 Proven Prototype • Real-Time ROS 2 Sidewalk Navigation</span>
+      </div>
+      <h1 class="hero-title">
+        Autonomous Sidewalk Delivery. <br>
+        <span class="gradient-text">Silent. Zero-Emission. Instant.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Order gourmet cuisine, fresh bakery items, and emergency wellness care delivered directly to your doorstep by smart, zero-emission sidewalk rovers. Unlocked exclusively with your personal security code.
+      </p>
+
+      <div class="hero-feature-tags">
+        <div class="feature-tag">
+          <span class="tag-icon">⚡</span>
+          <span>12–18 min transit</span>
+        </div>
+        <div class="feature-tag">
+          <span class="tag-icon">🔒</span>
+          <span>6-Digit OTP Hatch</span>
+        </div>
+        <div class="feature-tag">
+          <span class="tag-icon">🌱</span>
+          <span>100% Electric LiFePO4</span>
+        </div>
+        <div class="feature-tag">
+          <span class="tag-icon">🎯</span>
+          <span>Zero LiDAR • Active IR</span>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#storeCatalogSection" class="btn-hero-cta" onclick="playChime('click')">
+          <span>Explore Catalog & Order</span>
+          <span class="btn-arrow">➔</span>
+        </a>
+        <a href="#liveTrackingSection" class="btn-hero-secondary" onclick="scrollToTracking()">
+          <span class="btn-icon">📍</span>
+          <span>Track Active Rover</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Visual Preview Floating Card -->
+    <div class="hero-visual-card">
+      <div class="visual-card-inner">
+        <div class="visual-card-header">
+          <div class="visual-badge">
+            <span class="pulse-beacon"></span>
+            <span>NEXUS-AMR-01 LIVE</span>
+          </div>
+          <span class="visual-speed-metric" id="heroVisualSpeed">0.82 m/s</span>
+        </div>
+        <div class="visual-card-radar">
+          <canvas id="heroRadarMiniCanvas" width="300" height="180"></canvas>
+          <div class="radar-scan-line"></div>
+        </div>
+        <div class="visual-card-footer">
+          <div class="visual-meta">
+            <span class="meta-label">DESTINATION:</span>
+            <span class="meta-value" id="heroVisualTarget">12 North Avenue, Apt 4B</span>
+          </div>
+          <div class="visual-eta">
+            <span class="meta-label">ETA:</span>
+            <span class="meta-value text-emerald" id="heroVisualEta">~3 min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. STOREFRONT PRODUCT CATALOG SECTION                                     -->
+  <!-- ========================================================================= -->
+  <main class="store-catalog-section" id="storeCatalogSection">
+    <div class="section-container">
+      
+      <!-- Catalog Filter Pills -->
+      <div class="catalog-header-row">
+        <div>
+          <h2 class="section-heading">Curated Curbside Catalog</h2>
+          <p class="section-sub">Select items for zero-contact autonomous sidewalk rover delivery</p>
+        </div>
+
+        <!-- Category Filter Buttons -->
+        <div class="category-filters" role="tablist" id="categoryFilterBar">
+          <button class="category-pill active" onclick="filterCatalog('all', this)">
+            <span>🌟</span> All Items
+          </button>
+          <button class="category-pill" onclick="filterCatalog('Hot Food', this)">
+            <span>🍕</span> Artisan Pizzas
+          </button>
+          <button class="category-pill" onclick="filterCatalog('Cold Meal', this)">
+            <span>🍱</span> Japanese Bento
+          </button>
+          <button class="category-pill" onclick="filterCatalog('Bakery', this)">
+            <span>🥐</span> Bakery & Pastry
+          </button>
+          <button class="category-pill" onclick="filterCatalog('Beverages', this)">
+            <span>☕</span> Cold Brew & Drinks
+          </button>
+          <button class="category-pill" onclick="filterCatalog('Healthcare', this)">
+            <span>💊</span> Wellness & Care
+          </button>
+        </div>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="products-grid" id="productsCatalogGrid">
+        <!-- Injected dynamically via client.js from /api/products -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 4. LIVE ORDER TRACKING & DOORSTEP RADAR SECTION                           -->
+  <!-- ========================================================================= -->
+  <section class="live-tracking-section" id="liveTrackingSection">
+    <div class="section-container">
+      <div class="tracking-grid">
+        
+        <!-- Left Column: Order Status & Stepper Card -->
+        <div class="tracking-status-card">
+          <div class="card-glass-header">
+            <div class="order-id-badge">
+              <span class="badge-dot"></span>
+              <span id="activeOrderBadge">ORDER ORD-001</span>
+            </div>
+            <span class="order-type-chip">AUTONOMOUS DISPATCH</span>
+          </div>
+
+          <div class="order-recipient-info">
+            <div class="recipient-avatar">🏠</div>
+            <div class="recipient-details">
+              <h3 id="trackingRecipientName">Sophie Laurent</h3>
+              <p id="trackingRecipientAddress">12 North Avenue, Curbside Bay 1</p>
+              <span class="tracking-phone-masked" id="trackingPhoneMasked">+216 20 ••• •56</span>
+            </div>
+          </div>
+
+          <!-- Dynamic 4-Stage Stepper -->
+          <div class="tracking-stepper">
+            <div class="step-item completed" id="step1">
+              <div class="step-circle">✓</div>
+              <div class="step-info">
+                <h4>Order Placed & Verified</h4>
+                <p>Payment confirmed & packaged</p>
+              </div>
+            </div>
+            <div class="step-item completed" id="step2">
+              <div class="step-circle">✓</div>
+              <div class="step-info">
+                <h4>Secured in Cargo Compartment</h4>
+                <p>Dual motorized solenoid locked</p>
+              </div>
+            </div>
+            <div class="step-item active" id="step3">
+              <div class="step-circle pulse">3</div>
+              <div class="step-info">
+                <h4>Rover in Sidewalk Transit</h4>
+                <p id="step3Sub">Cruising North Avenue Sidewalk (0.82 m/s)</p>
+              </div>
+            </div>
+            <div class="step-item" id="step4">
+              <div class="step-circle">4</div>
+              <div class="step-info">
+                <h4>Arrived at Doorstep (OTP Unlock)</h4>
+                <p>Enter 6-digit code to open hatch</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Metrics Meter -->
+          <div class="tracking-metrics-bar">
+            <div class="metric-box">
+              <span class="metric-label">ESTIMATED ARRIVAL</span>
+              <span class="metric-value text-emerald" id="trackingEtaText">03 min 20 s</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">DISTANCE REMAINING</span>
+              <span class="metric-value text-cyan" id="trackingDistText">24.5 m</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">CARGO HATCH</span>
+              <span class="metric-value text-amber" id="trackingHatchState">LOCKED 🔒</span>
+            </div>
+          </div>
+
+          <!-- Handover OTP Action Box -->
+          <div class="handover-action-box">
+            <div class="handover-instructions">
+              <div class="otp-key-icon">🔑</div>
+              <div>
+                <h4>Doorstep Security Code</h4>
+                <p>Your one-time pickup code to unlatch the robot compartment</p>
+              </div>
+            </div>
+            <div class="otp-display-pill">
+              <span class="otp-digit-highlight" id="displayOtpCode">482910</span>
+            </div>
+            <button class="btn-open-otp-modal" onclick="openOtpModal()">
+              <span>Enter Code & Unlock Hatch</span>
+              <span class="btn-arrow">🔓</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive 2D Radar Canvas Map -->
+        <div class="tracking-map-card">
+          <div class="map-card-header">
+            <div class="map-header-title">
+              <span class="radar-dot"></span>
+              <h3>Live Sidewalk GPS & Perception Radar</h3>
+            </div>
+            <div class="map-controls">
+              <button class="map-tool-btn" onclick="resetMapCenter()" title="Recenter on Rover">🎯 Center Rover</button>
+              <button class="map-tool-btn" onclick="toggleMapRoute()" title="Toggle Corridor Route">🛣️ Corridors</button>
+            </div>
+          </div>
+
+          <div class="canvas-map-wrap">
+            <canvas id="clientTrackingMapCanvas" width="600" height="480"></canvas>
+            
+            <!-- Live Floating HUD overlay -->
+            <div class="map-floating-hud">
+              <div class="hud-item">
+                <span class="hud-k">POS:</span>
+                <span class="hud-v" id="hudRoverCoords">X: -14.20, Y: 15.00</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-k">SPEED:</span>
+                <span class="hud-v" id="hudRoverSpeed">0.82 m/s</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-k">SAFETY:</span>
+                <span class="hud-v text-emerald" id="hudRoverSafety">NORMAL</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="map-footer-notes">
+            <span>📍 Curbside Stopping Bay: <strong>CLIENT_1_NORTH_AVENUE</strong></span>
+            <span>⚡ Zero-Emission Autonomous Courier</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5. SLIDE-OVER SHOPPING CART DRAWER                                        -->
+  <!-- ========================================================================= -->
+  <div class="cart-drawer-backdrop" id="cartDrawerBackdrop" onclick="toggleCartDrawer()"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <span class="drawer-icon">🛍️</span>
+        <div>
+          <h3>Your Delivery Order</h3>
+          <p class="drawer-sub">Autonomous curbside dispatch</p>
+        </div>
+      </div>
+      <button class="drawer-close-btn" onclick="toggleCartDrawer()">✕</button>
+    </div>
+
+    <!-- Items List -->
+    <div class="drawer-items-list" id="drawerCartItemsList">
+      <!-- Injected via client.js -->
+      <div class="empty-cart-state">
+        <span class="empty-cart-icon">🛒</span>
+        <p>Your delivery cart is empty.</p>
+        <button class="btn-browse-catalog" onclick="toggleCartDrawer()">Browse Curbside Menu</button>
+      </div>
+    </div>
+
+    <!-- Destination Selector -->
+    <div class="drawer-destination-box">
+      <label class="dest-label">Delivery Address / Stopping Bay</label>
+      <select class="dest-select" id="cartDestSelect" onchange="onDestinationChange()">
+        <option value="CUST-001" data-coords="-14.20, 15.00">🏠 Sophie Laurent — 12 North Avenue (Bay 1)</option>
+        <option value="CUST-002" data-coords="-14.20, 28.00">🏢 Marc Dubois — 45 North Avenue Commercial</option>
+        <option value="CUST-003" data-coords="-14.20, 38.00">🏛️ Elena Rostova — 8 North Plaza</option>
+        <option value="CUST-004" data-coords="-43.80, 15.00">☕ Lucas Vance — 22 West Boulevard</option>
+        <option value="CUST-005" data-coords="-6.00, 0.00">🥐 Amira Khan — 3 Central Square</option>
+      </select>
+    </div>
+
+    <!-- Order Summary & Checkout -->
+    <div class="drawer-footer">
+      <div class="bill-row">
+        <span>Items Subtotal</span>
+        <span id="billSubtotal">$0.00</span>
+      </div>
+      <div class="bill-row">
+        <span>Autonomous Rover Delivery</span>
+        <span class="text-emerald">FREE ($0.00)</span>
+      </div>
+      <div class="bill-row eco-row">
+        <span>🌱 Carbon Offset</span>
+        <span class="text-emerald">-0.85 kg CO₂ (Zero-Emission)</span>
+      </div>
+      <div class="bill-total-row">
+        <span>Total Amount</span>
+        <span class="total-price" id="billTotal">$0.00</span>
+      </div>
+
+      <button class="btn-checkout-dispatch" id="btnCheckoutDispatch" onclick="checkoutOrder()">
+        <span class="checkout-spinner" id="checkoutSpinner"></span>
+        <span id="checkoutBtnText">Confirm & Dispatch Autonomous Rover</span>
+        <span class="btn-arrow">🚀</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- 6. SECURE AUTHENTICATION MODAL (SIGN IN & INSCRIPTION)                    -->
+  <!-- ========================================================================= -->
+  <div class="auth-modal-backdrop" id="authModalBackdrop">
+    <div class="auth-modal-window">
+      <button class="auth-modal-close" onclick="closeAuthModal()">✕</button>
+
+      <!-- Auth Modal Tabs -->
+      <div class="auth-tabs-header">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">
+          <span>🔑</span> Sign In
+        </button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">
+          <span>✨</span> Create Account (Inscription)
+        </button>
+      </div>
+
+      <!-- Tab 1: Sign In Form -->
+      <form class="auth-form" id="loginForm" onsubmit="handleLoginSubmit(event)">
+        <div class="auth-form-intro">
+          <h3>Welcome Back to NexusDelivery</h3>
+          <p>Access your orders, personalized doorstep locations, and live tracking.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" class="auth-input" placeholder="e.g. client@nexus.tn" value="client@nexus.tn" required>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" class="auth-input" placeholder="Enter your password" value="password123" required>
+        </div>
+
+        <div class="auth-form-meta">
+          <label class="remember-label">
+            <input type="checkbox" id="loginRemember" checked> Remember this device
+          </label>
+          <span class="demo-cred-hint">Demo PIN: <strong>client@nexus.tn / password123</strong></span>
+        </div>
+
+        <div class="auth-error-msg" id="loginErrorMsg"></div>
+
+        <button type="submit" class="btn-auth-submit" id="btnLoginSubmit">
+          <span>Sign In to Account</span>
+          <span class="btn-arrow">➔</span>
+        </button>
+      </form>
+
+      <!-- Tab 2: Register Form (Inscription) -->
+      <form class="auth-form" id="registerForm" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+        <div class="auth-form-intro">
+          <h3>Create Your Delivery Account</h3>
+          <p>Register your address for automated curbside robotic delivery.</p>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="regName" class="auth-input" placeholder="e.g. Mehdi Ben Salem" required>
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" id="regPhone" class="auth-input" placeholder="+216 20 123 456" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="regEmail" class="auth-input" placeholder="e.g. mehdi@gmail.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="regPassword" class="auth-input" placeholder="Create a secure password (min 6 chars)" minlength="6" required>
+        </div>
+
+        <div class="form-group">
+          <label>Delivery Street Address (Tunis City Center)</label>
+          <input type="text" id="regAddress" class="auth-input" placeholder="e.g. 15 Rue Habib Bourguiba, Apt 3" required>
+        </div>
+
+        <div class="form-group">
+          <label>Curbside Stopping Bay</label>
+          <select id="regBaySelect" class="auth-input">
+            <option value="CLIENT_1_NORTH_AVENUE">North Avenue Sidewalk (Bay 1)</option>
+            <option value="CLIENT_2_NORTH_AVENUE">North Avenue Commercial (Bay 2)</option>
+            <option value="CLIENT_3_NORTH_PLAZA">North Plaza Galleria (Bay 3)</option>
+            <option value="CLIENT_4_WEST_BOULEVARD">West Boulevard Bistro (Bay 4)</option>
+            <option value="CLIENT_5_CENTRAL_SQUARE">Central Square Bakery (Bay 5)</option>
+          </select>
+        </div>
+
+        <div class="auth-error-msg" id="registerErrorMsg"></div>
+
+        <button type="submit" class="btn-auth-submit" id="btnRegisterSubmit">
+          <span>Complete Registration (Inscription)</span>
+          <span class="btn-arrow">🚀</span>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 7. DOORSTEP 6-DIGIT OTP UNLOCK MODAL                                      -->
+  <!-- ========================================================================= -->
+  <div class="otp-modal-backdrop" id="otpModalBackdrop">
+    <div class="otp-modal-window">
+      <button class="otp-modal-close" onclick="closeOtpModal()">✕</button>
+
+      <div class="otp-modal-header">
+        <div class="otp-modal-icon">🔓</div>
+        <h3>Doorstep Cargo Compartment Unlock</h3>
+        <p>Enter the 6-digit one-time code to unlatch the motorized robot hatch.</p>
+      </div>
+
+      <!-- Animated 6-Digit PIN Boxes -->
+      <div class="otp-pin-display" id="otpPinDisplay">
+        <div class="pin-box" id="pinBox0">-</div>
+        <div class="pin-box" id="pinBox1">-</div>
+        <div class="pin-box" id="pinBox2">-</div>
+        <div class="pin-box" id="pinBox3">-</div>
+        <div class="pin-box" id="pinBox4">-</div>
+        <div class="pin-box" id="pinBox5">-</div>
+      </div>
+
+      <div class="otp-preset-helper">
+        <span>Delivery Code for this order:</span>
+        <button class="btn-autofill-otp" onclick="autofillOtp()">Autofill Code (<strong id="helperOtpCode">482910</strong>)</button>
+      </div>
+
+      <!-- Numeric Keypad -->
+      <div class="otp-keypad">
+        <button class="num-key" onclick="pressKeypad('1')">1</button>
+        <button class="num-key" onclick="pressKeypad('2')">2</button>
+        <button class="num-key" onclick="pressKeypad('3')">3</button>
+        <button class="num-key" onclick="pressKeypad('4')">4</button>
+        <button class="num-key" onclick="pressKeypad('5')">5</button>
+        <button class="num-key" onclick="pressKeypad('6')">6</button>
+        <button class="num-key" onclick="pressKeypad('7')">7</button>
+        <button class="num-key" onclick="pressKeypad('8')">8</button>
+        <button class="num-key" onclick="pressKeypad('9')">9</button>
+        <button class="num-key key-clear" onclick="clearKeypad()">C</button>
+        <button class="num-key" onclick="pressKeypad('0')">0</button>
+        <button class="num-key key-back" onclick="backspaceKeypad()">⌫</button>
+      </div>
+
+      <div class="otp-feedback-msg" id="otpFeedbackMsg"></div>
+
+      <!-- Hatch Unlocked Graphic Animation Container -->
+      <div class="hatch-success-display" id="hatchSuccessDisplay" style="display: none;">
+        <div class="success-check-ring">✓</div>
+        <h4>Motorized Hatch Unlocked (60°)</h4>
+        <p>Please lift the lid and retrieve your items. Have a wonderful meal!</p>
+        <button class="btn-complete-pickup" onclick="confirmPackageRetrieved()">Package Retrieved & Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Client Application Logic -->
+  <script src="client.js"></script>
+</body>
+</html>

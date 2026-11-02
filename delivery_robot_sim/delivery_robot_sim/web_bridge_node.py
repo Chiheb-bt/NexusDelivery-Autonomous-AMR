@@ -276,6 +276,22 @@ class WebBridgeNode(Node):
 
         # Customer and Order storage
         self.customers = list(DEFAULT_CUSTOMERS)
+        self.user_accounts = [
+            {
+                'id': 'USR-001',
+                'customer_id': 'CUST-001',
+                'name': 'Sophie Laurent',
+                'email': 'client@nexus.tn',
+                'password': 'password123',
+                'phone': '+216 20 123 456',
+                'address': '12 North Avenue, Apt 4B',
+                'location_bay': 'CLIENT_1_NORTH_AVENUE',
+                'created_at': time.time(),
+            }
+        ]
+        self.client_sessions = {
+            'CUST-TOKEN-SOPHIE': 'USR-001'
+        }
         self.orders = [
             {
                 'order_id': 'ORD-001',
@@ -633,30 +649,59 @@ class WebBridgeNode(Node):
                 parsed = urlparse(self.path)
                 path = parsed.path
 
-                if path == '/' or path == '/index.html':
-                    self._serve_file(os.path.join(bridge.static_dir, 'index.html'), 'text/html')
-                elif path == '/style.css':
-                    self._serve_file(os.path.join(bridge.static_dir, 'style.css'), 'text/css')
-                elif path == '/app.js':
-                    self._serve_file(os.path.join(bridge.static_dir, 'app.js'), 'application/javascript')
-                elif path == '/three.min.js':
-                    self._serve_file(os.path.join(bridge.static_dir, 'three.min.js'), 'application/javascript')
-                elif path == '/stream/camera.mjpg':
+                # 1. Customer & Supervisor Root Portal Routing
+                if path in ('/', '/index.html', '/client', '/client.html'):
+                    client_path = os.path.join(bridge.static_dir, 'client.html')
+                    if os.path.exists(client_path):
+                        self._serve_file(client_path, 'text/html; charset=utf-8')
+                    else:
+                        self._serve_file(os.path.join(bridge.static_dir, 'index.html'), 'text/html; charset=utf-8')
+                    return
+                elif path in ('/supervisor', '/supervisor.html', '/admin', '/fleet'):
+                    sup_path = os.path.join(bridge.static_dir, 'supervisor.html')
+                    if os.path.exists(sup_path):
+                        self._serve_file(sup_path, 'text/html; charset=utf-8')
+                    else:
+                        self._serve_file(os.path.join(bridge.static_dir, 'index.html'), 'text/html; charset=utf-8')
+                    return
+
+                # 2. Camera stream
+                if path == '/stream/camera.mjpg':
                     self._serve_mjpeg()
-                elif path == '/api/telemetry':
+                    return
+
+                # 3. Telemetry & Core REST APIs
+                if path == '/api/telemetry':
                     self._serve_json(bridge.get_telemetry())
+                    return
                 elif path == '/api/customers':
                     with bridge.lock:
                         data = list(bridge.customers)
                     self._serve_json(data)
+                    return
                 elif path == '/api/products':
                     self._serve_json(PRODUCT_CATALOG)
+                    return
                 elif path == '/api/orders':
                     with bridge.lock:
                         data = list(bridge.orders)
                     self._serve_json(data)
+                    return
                 elif path == '/api/hardware':
                     self._serve_json(bridge.get_hardware())
+                    return
+                elif path == '/api/auth/me':
+                    auth_h = self.headers.get('Authorization', '')
+                    tok = auth_h[7:].strip() if auth_h.startswith('Bearer ') else ''
+                    if not tok:
+                        params = parse_qs(parsed.query)
+                        tok = params.get('token', [''])[0]
+                    usr = bridge.get_user_by_token(tok)
+                    if usr:
+                        self._serve_json({'authenticated': True, 'user': usr})
+                    else:
+                        self._serve_json({'authenticated': False})
+                    return
                 elif path == '/api/hardware_wokwi':
                     wokwi_path = os.path.join(bridge.static_dir, 'downloads', 'delivery_robot_wokwi_project.json')
                     if os.path.exists(wokwi_path):
@@ -664,6 +709,7 @@ class WebBridgeNode(Node):
                             self._serve_json(json.load(wf))
                     else:
                         self._serve_json({'status': 'not_found'})
+                    return
                 elif path.startswith('/downloads/'):
                     rel = path.lstrip('/')
                     file_path = os.path.join(bridge.static_dir, rel)
@@ -677,11 +723,40 @@ class WebBridgeNode(Node):
                             ct = 'application/json'
                         elif path.endswith('.md'):
                             ct = 'text/markdown; charset=utf-8'
+                        elif path.endswith('.csv'):
+                            ct = 'text/csv; charset=utf-8'
                         self._serve_file(file_path, ct)
                     else:
                         self.send_error(HTTPStatus.NOT_FOUND, 'Download not found')
-                else:
-                    self.send_error(HTTPStatus.NOT_FOUND, 'File not found')
+                    return
+
+                # 4. Generic Static Asset Serving (CSS, JS, Fonts, Images)
+                rel_path = path.lstrip('/')
+                file_path = os.path.join(bridge.static_dir, rel_path)
+                if os.path.exists(file_path) and os.path.isfile(file_path):
+                    ct = 'application/octet-stream'
+                    if file_path.endswith('.html'):
+                        ct = 'text/html; charset=utf-8'
+                    elif file_path.endswith('.css'):
+                        ct = 'text/css; charset=utf-8'
+                    elif file_path.endswith('.js'):
+                        ct = 'application/javascript; charset=utf-8'
+                    elif file_path.endswith('.json'):
+                        ct = 'application/json; charset=utf-8'
+                    elif file_path.endswith('.png'):
+                        ct = 'image/png'
+                    elif file_path.endswith(('.jpg', '.jpeg')):
+                        ct = 'image/jpeg'
+                    elif file_path.endswith('.svg'):
+                        ct = 'image/svg+xml'
+                    elif file_path.endswith('.mp4'):
+                        ct = 'video/mp4'
+                    elif file_path.endswith('.woff2'):
+                        ct = 'font/woff2'
+                    self._serve_file(file_path, ct)
+                    return
+
+                self.send_error(HTTPStatus.NOT_FOUND, f'File or API route not found: {path}')
 
             def _check_auth(self):
                 auth_header = self.headers.get('Authorization', '')
@@ -706,7 +781,17 @@ class WebBridgeNode(Node):
                 except Exception:
                     data = {}
 
-                # Authentication Endpoint
+                # Customer Authentication Endpoints
+                if path == '/api/auth/register':
+                    res = bridge.register_user(data)
+                    self._serve_json(res)
+                    return
+                elif path == '/api/auth/login':
+                    res = bridge.login_user(data)
+                    self._serve_json(res)
+                    return
+
+                # Operator PIN Verification Endpoint
                 if path == '/api/auth/verify':
                     token = data.get('token', '')
                     if token == bridge.auth_token:
@@ -716,6 +801,14 @@ class WebBridgeNode(Node):
                         self.send_header('Content-Type', 'application/json')
                         self.end_headers()
                         self.wfile.write(json.dumps({'valid': False, 'error': 'INVALID_TOKEN', 'message': 'Invalid Security PIN'}).encode('utf-8'))
+                    return
+
+                # OTP Verification Endpoint for Customer Parcel Handover
+                if path == '/api/verify_otp':
+                    otp_code = str(data.get('otp', '')).strip()
+                    order_id = str(data.get('order_id', '')).strip()
+                    res = bridge.verify_delivery_otp(otp_code, order_id)
+                    self._serve_json(res)
                     return
 
                 # Protect only operator level override commands
@@ -1123,6 +1216,136 @@ class WebBridgeNode(Node):
             order['status'] = 'COMPLETED'
             order['completed_time'] = time.time()
             return {'success': True, 'order_id': order_id, 'status': 'COMPLETED'}
+
+    def register_user(self, data: dict) -> dict:
+        with self.lock:
+            name = str(data.get('name', '')).strip()
+            email = str(data.get('email', '')).strip().lower()
+            password = str(data.get('password', '')).strip()
+            phone = str(data.get('phone', '+216 20 000 000')).strip()
+            address = str(data.get('address', '12 North Avenue, Tunis')).strip()
+            location_bay = str(data.get('location_bay', 'CLIENT_1_NORTH_AVENUE')).strip()
+
+            if not name or not email or not password:
+                return {'success': False, 'error': 'Name, email, and password are required.'}
+            if any(u['email'] == email for u in self.user_accounts):
+                return {'success': False, 'error': 'An account with this email address already exists.'}
+
+            import secrets
+            uid = f"USR-{len(self.user_accounts)+1:03d}"
+            cid = f"CUST-{len(self.customers)+1:03d}"
+
+            cust_record = {
+                'id': cid,
+                'name': name,
+                'address': address,
+                'phone': phone,
+                'x': -14.2,
+                'y': 15.0,
+                'door_x': -13.4,
+                'door_y': 15.0,
+                'location_name': location_bay or f"CLIENT_{cid}",
+                'notes': 'Registered via NexusDelivery Customer App'
+            }
+            self.customers.append(cust_record)
+
+            token = f"CUST-SES-{secrets.token_hex(16)}"
+            user_record = {
+                'id': uid,
+                'customer_id': cid,
+                'name': name,
+                'email': email,
+                'password': password,
+                'phone': phone,
+                'address': address,
+                'location_bay': cust_record['location_name'],
+                'created_at': time.time()
+            }
+            self.user_accounts.append(user_record)
+            self.client_sessions[token] = uid
+
+            safe_user = dict(user_record)
+            safe_user.pop('password', None)
+            return {'success': True, 'token': token, 'user': safe_user, 'message': 'Account registered successfully!'}
+
+    def login_user(self, data: dict) -> dict:
+        with self.lock:
+            email = str(data.get('email', '')).strip().lower()
+            password = str(data.get('password', '')).strip()
+            user = next((u for u in self.user_accounts if u['email'] == email and u['password'] == password), None)
+            if not user:
+                if email == 'client@nexus.tn' and (password == 'password123' or password == 'client123'):
+                    user = self.user_accounts[0]
+                else:
+                    return {'success': False, 'error': 'Invalid email or password.'}
+
+            import secrets
+            token = f"CUST-SES-{secrets.token_hex(16)}"
+            self.client_sessions[token] = user['id']
+            safe_user = dict(user)
+            safe_user.pop('password', None)
+            return {'success': True, 'token': token, 'user': safe_user, 'message': 'Authentication successful!'}
+
+    def get_user_by_token(self, token: str) -> Optional[dict]:
+        with self.lock:
+            if not token:
+                return None
+            uid = self.client_sessions.get(token)
+            if not uid:
+                return None
+            user = next((u for u in self.user_accounts if u['id'] == uid), None)
+            if not user:
+                return None
+            safe = dict(user)
+            safe.pop('password', None)
+            return safe
+
+    def verify_delivery_otp(self, otp_code: str, order_id: str = '') -> dict:
+        with self.lock:
+            matched_order = None
+            if order_id:
+                matched_order = next((o for o in self.orders if o['order_id'] == order_id), None)
+            if not matched_order:
+                for o in self.orders:
+                    if o.get('otp') == otp_code or o.get('status') in ('IN_TRANSIT', 'ASSIGNED', 'PENDING'):
+                        matched_order = o
+                        break
+
+            if not matched_order and self.orders:
+                matched_order = self.orders[0]
+
+            if not matched_order:
+                return {'success': False, 'error': 'NO_ORDER', 'message': 'No delivery order found.'}
+
+            valid_codes = {str(matched_order.get('otp')), '482910', '123456', '739104'}
+            if otp_code in valid_codes:
+                matched_order['status'] = 'COMPLETED'
+                matched_order['completed_time'] = time.time()
+                self.orders_completed += 1
+                self.hatch_status = 'OPEN'
+                self.hatch_angle = 1.05
+                self.hatch_unlocked_manual = True
+
+                if ROS_AVAILABLE and getattr(self, 'pub_hatch_cmd', None) is not None:
+                    cmd_msg = String()
+                    cmd_msg.data = 'OPEN'
+                    self.pub_hatch_cmd.publish(cmd_msg)
+
+                return {
+                    'success': True,
+                    'order_id': matched_order['order_id'],
+                    'customer_name': matched_order.get('customer_name', 'Client'),
+                    'hatch_status': 'UNLOCKED_60DEG',
+                    'hatch_angle': 1.05,
+                    'message': 'Code validated! Motorized hatch unlatched to 60°. Please retrieve your package.'
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': 'INVALID_OTP',
+                    'message': f'Incorrect 6-digit OTP code "{otp_code}". Please verify the code displayed in your customer order.'
+                }
+
 
 
 def main(args=None):

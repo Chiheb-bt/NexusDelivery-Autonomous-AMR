@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusDelivery — Fleet Engineer & Supervisor Cockpit</title>
+  <meta name="description" content="Industrial mission control cockpit for robotics engineers, fleet supervisors, and field telemetry operators.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="supervisor.css">
+</head>
+<body class="cockpit-theme">
+
+  <!-- ========================================================================= -->
+  <!-- 1. MISSION CONTROL TOP HEADER                                             -->
+  <!-- ========================================================================= -->
+  <header class="cockpit-header">
+    <div class="cockpit-header-inner">
+      
+      <!-- Brand & Rover Identifier -->
+      <div class="brand-cockpit-group">
+        <div class="rover-badge-pulse">
+          <span class="rover-dot"></span>
+        </div>
+        <div class="rover-meta">
+          <div class="rover-title">
+            <span class="rover-id">NEXUS-AMR-01</span>
+            <span class="platform-badge">TRL 3 PROTOTYPE</span>
+          </div>
+          <div class="rover-sub">Chiheb Robotics Fleet Ops • Autonomous Sidewalk Delivery</div>
+        </div>
+      </div>
+
+      <!-- Real-Time Telemetry Badges -->
+      <div class="telemetry-ribbon">
+        <div class="ribbon-metric">
+          <span class="rm-k">ROS 2 HUMBLE</span>
+          <span class="rm-v text-emerald" id="topRosStatus">ACTIVE (50 Hz)</span>
+        </div>
+        <div class="ribbon-metric hide-mobile">
+          <span class="rm-k">BATTERY (8S)</span>
+          <span class="rm-v text-cyan" id="topBattery">25.6V (98%)</span>
+        </div>
+        <div class="ribbon-metric hide-mobile">
+          <span class="rm-k">HAILO-8L NPU</span>
+          <span class="rm-v text-cyan" id="topNpu">138.4 FPS (7.2ms)</span>
+        </div>
+        <div class="ribbon-metric">
+          <span class="rm-k">SAFETY FSM</span>
+          <span class="rm-v text-emerald" id="topSafetyFsm">NORMAL_OP</span>
+        </div>
+      </div>
+
+      <!-- Cockpit Actions & Navigation -->
+      <div class="cockpit-actions">
+        <!-- Switch to Customer Portal -->
+        <a href="/client" class="client-portal-link" title="Open Customer Delivery Storefront & Live Tracker">
+          <span class="cp-icon">🛍️</span>
+          <span>Customer App</span>
+        </a>
+
+        <!-- Operator PIN Badge -->
+        <div class="operator-auth-badge" id="operatorBadge" onclick="promptOperatorPin()">
+          <span class="badge-icon">🛡️</span>
+          <span class="badge-text" id="operatorStatusText">OPERATOR SECURE</span>
+        </div>
+
+        <!-- Master Emergency Stop Button -->
+        <button class="btn-master-estop" id="masterEstopBtn" onclick="toggleMasterEstop()">
+          <span class="estop-light"></span>
+          <span>E-STOP</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. QUAD MISSION CONTROL GRID                                              -->
+  <!-- ========================================================================= -->
+  <main class="cockpit-grid">
+
+    <!-- ======================================================================= -->
+    <!-- PANE 1: PERCEPTION & AI VISION HUD                                      -->
+    <!-- ======================================================================= -->
+    <section class="cockpit-pane pane-perception">
+      <div class="pane-header">
+        <div class="pane-title-group">
+          <span class="pane-icon">👁️</span>
+          <h2>AI Vision & Depth Perception HUD</h2>
+        </div>
+        <div class="camera-mode-tabs" role="tablist">
+          <button class="cam-tab active" onclick="setCameraMode('ai_hud', this)">AI YOLO HUD</button>
+          <button class="cam-tab" onclick="setCameraMode('raw_rgb', this)">Raw RGB</button>
+          <button class="cam-tab" onclick="setCameraMode('depth', this)">Active IR Depth</button>
+        </div>
+      </div>
+
+      <!-- Live Stream Viewport -->
+      <div class="video-hud-viewport" id="videoHudViewport">
+        <img src="/stream/camera.mjpg" id="liveCameraStream" class="camera-stream-img" alt="Live Intel RealSense D435i Stream" onerror="handleStreamFallback(this)">
+        <canvas id="cameraOverlayCanvas" class="camera-overlay-canvas" width="640" height="480"></canvas>
+
+        <!-- Dynamic HUD Overlay Widgets -->
+        <div class="hud-top-bar">
+          <div class="hud-pill"><span class="live-tag">REC</span> 640x480 @ 30 FPS</div>
+          <div class="hud-pill" id="hudHailoStats">HAILO-8L: 13.0 TOPS • 7.18 ms</div>
+          <div class="hud-pill text-emerald" id="hudTtcMetric">TTC: &gt; 10.0 s (CLEAR)</div>
+        </div>
+
+        <div class="hud-bottom-bar">
+          <div class="hud-corridor-box">
+            <span class="box-title">GROUND PLANE CORRIDOR:</span>
+            <span class="box-val text-emerald" id="hudCorridorStatus">CLEAR (2.4m WIDTH)</span>
+          </div>
+          <div class="hud-obstacle-box">
+            <span class="box-title">CLOSEST OBSTACLE:</span>
+            <span class="box-val text-cyan" id="hudObstacleDist">CLEAR (&gt; 4.5m)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Perception Telemetry Bar -->
+      <div class="perception-metrics-grid">
+        <div class="stat-card">
+          <span class="sc-label">YOLOv8n DETECTIONS</span>
+          <span class="sc-val text-cyan" id="metricDetections">1 Pedestrian (Conf 0.94)</span>
+        </div>
+        <div class="stat-card">
+          <span class="sc-label">DEPTH MIN CORRIDOR</span>
+          <span class="sc-val text-emerald" id="metricDepthMin">1.05 m</span>
+        </div>
+        <div class="stat-card">
+          <span class="sc-label">CROSSWALK TRAFFIC LIGHT</span>
+          <span class="sc-val text-emerald" id="metricTrafficLight">GREEN (GO)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- PANE 2: TOPOLOGICAL NAVIGATION & WAYPOINT DISPATCH                      -->
+    <!-- ======================================================================= -->
+    <section class="cockpit-pane pane-navigation">
+      <div class="pane-header">
+        <div class="pane-title-group">
+          <span class="pane-icon">🗺️</span>
+          <h2>Topological Navigation & Dispatch</h2>
+        </div>
+        <div class="map-quick-tools">
+          <button class="tool-btn" onclick="centerRoverOnMap()">🎯 Center</button>
+          <button class="tool-btn" onclick="clearDispatchRoute()">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- Interactive 2D Navigation Map -->
+      <div class="nav-map-container">
+        <canvas id="cockpitNavCanvas" class="cockpit-map-canvas" width="640" height="420"></canvas>
+        <div class="map-coordinates-hud">
+          <span>X: <strong id="mapCoordX">-14.20</strong></span>
+          <span>Y: <strong id="mapCoordY">15.00</strong></span>
+          <span>YAW: <strong id="mapCoordYaw">90.0°</strong></span>
+        </div>
+      </div>
+
+      <!-- Quick Dispatch Preset Hubs -->
+      <div class="dispatch-presets-bar">
+        <span class="presets-label">Click Map or Dispatch Preset Bay:</span>
+        <div class="presets-chips">
+          <button class="preset-chip" onclick="dispatchToBay('DEPOT', -31.5, 2.5)">📮 Depot Post Office</button>
+          <button class="preset-chip active" onclick="dispatchToBay('CLIENT_1', -14.2, 15.0)">🏠 Bay 1: North Ave</button>
+          <button class="preset-chip" onclick="dispatchToBay('CLIENT_2', -14.2, 28.0)">🏢 Bay 2: Commercial</button>
+          <button class="preset-chip" onclick="dispatchToBay('CLIENT_3', -14.2, 38.0)">🏛️ Bay 3: North Plaza</button>
+          <button class="preset-chip" onclick="dispatchToBay('CLIENT_4', -43.8, 15.0)">☕ Bay 4: West Blvd</button>
+          <button class="preset-chip" onclick="dispatchToBay('CLIENT_5', -6.0, 0.0)">🥐 Bay 5: Central Sq</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- PANE 3: HARDWARE DIAGNOSTICS DECK                                       -->
+    <!-- ======================================================================= -->
+    <section class="cockpit-pane pane-hardware">
+      <div class="pane-header">
+        <div class="pane-title-group">
+          <span class="pane-icon">⚡</span>
+          <h2>Powertrain & Hardware Diagnostics</h2>
+        </div>
+        <span class="hw-spec-tag">25.6V LiFePO4 • ODrive S1 • RPi 5</span>
+      </div>
+
+      <div class="hardware-decks-container">
+        
+        <!-- Battery BMS Card -->
+        <div class="hw-deck-card">
+          <div class="deck-card-header">
+            <h4>25.6V 8S LiFePO4 Battery Pack</h4>
+            <span class="deck-state-chip text-emerald">OPTIMAL BMS</span>
+          </div>
+
+          <div class="battery-meter-visual">
+            <div class="battery-bar-fill" id="bmsSocFill" style="width: 98%;"></div>
+            <span class="battery-soc-label" id="bmsSocText">98% SOC (502 Wh / 512 Wh)</span>
+          </div>
+
+          <!-- Cell Balancing Grid (8 Cells) -->
+          <div class="cell-voltages-grid">
+            <div class="cell-item"><span>C1</span><strong>3.20V</strong></div>
+            <div class="cell-item"><span>C2</span><strong>3.21V</strong></div>
+            <div class="cell-item"><span>C3</span><strong>3.20V</strong></div>
+            <div class="cell-item"><span>C4</span><strong>3.20V</strong></div>
+            <div class="cell-item"><span>C5</span><strong>3.22V</strong></div>
+            <div class="cell-item"><span>C6</span><strong>3.21V</strong></div>
+            <div class="cell-item"><span>C7</span><strong>3.20V</strong></div>
+            <div class="cell-item"><span>C8</span><strong>3.21V</strong></div>
+          </div>
+
+          <div class="deck-telemetry-row">
+            <div><span class="dt-k">PACK VOLTAGE:</span><strong class="dt-v text-cyan">25.62 V</strong></div>
+            <div><span class="dt-k">CURRENT DRAW:</span><strong class="dt-v text-cyan" id="bmsCurrentDraw">2.18 A</strong></div>
+            <div><span class="dt-k">PACK TEMP:</span><strong class="dt-v text-emerald">26.4°C</strong></div>
+          </div>
+        </div>
+
+        <!-- ODrive S1 & Compute Deck -->
+        <div class="hw-deck-card">
+          <div class="deck-card-header">
+            <h4>Dual ODrive S1 Motor Controllers</h4>
+            <span class="deck-state-chip text-emerald">CAN 2.0B ONLINE</span>
+          </div>
+
+          <div class="motors-telemetry-row">
+            <div class="motor-unit">
+              <h5>LEFT DRIVE (Axis 0)</h5>
+              <div class="mu-stat"><span>Phase Current:</span> <strong id="motorLeftCurrent">1.45 A</strong></div>
+              <div class="mu-stat"><span>Coil Temp:</span> <strong id="motorLeftTemp">31.2°C</strong></div>
+              <div class="mu-stat"><span>Velocity:</span> <strong id="motorLeftVel">4.10 rad/s</strong></div>
+            </div>
+            <div class="motor-unit">
+              <h5>RIGHT DRIVE (Axis 1)</h5>
+              <div class="mu-stat"><span>Phase Current:</span> <strong id="motorRightCurrent">1.42 A</strong></div>
+              <div class="mu-stat"><span>Coil Temp:</span> <strong id="motorRightTemp">31.5°C</strong></div>
+              <div class="mu-stat"><span>Velocity:</span> <strong id="motorRightVel">4.12 rad/s</strong></div>
+            </div>
+          </div>
+
+          <div class="compute-subdeck">
+            <div class="cs-item">
+              <span class="cs-k">RPi 5 CPU:</span>
+              <strong class="cs-v text-cyan" id="rpiCpuLoad">22.4% (38.2°C)</strong>
+            </div>
+            <div class="cs-item">
+              <span class="cs-k">HAILO-8L NPU:</span>
+              <strong class="cs-v text-cyan" id="hailoLoad">24.5% (48.1°C)</strong>
+            </div>
+            <div class="cs-item">
+              <span class="cs-k">CARGO HATCH:</span>
+              <strong class="cs-v text-amber" id="cockpitHatchStatus">LOCKED (0.0°)</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- PANE 4: REMOTE TELEOPERATION & MISSION CONSOLE                          -->
+    <!-- ======================================================================= -->
+    <section class="cockpit-pane pane-teleop">
+      <div class="pane-header">
+        <div class="pane-title-group">
+          <span class="pane-icon">🕹️</span>
+          <h2>Manual Teleoperation & Terminal Console</h2>
+        </div>
+        <span class="teleop-mode-pill" id="teleopModePill">AUTONOMOUS DISPATCH</span>
+      </div>
+
+      <div class="teleop-body-grid">
+        
+        <!-- Controls Side -->
+        <div class="teleop-controls-side">
+          <div class="dpad-container">
+            <button class="dpad-btn dpad-up" onmousedown="sendTeleop(0.6, 0.0)" onmouseup="sendTeleop(0.0, 0.0)">▲</button>
+            <div class="dpad-mid-row">
+              <button class="dpad-btn dpad-left" onmousedown="sendTeleop(0.0, 0.6)" onmouseup="sendTeleop(0.0, 0.0)">◀</button>
+              <button class="dpad-btn dpad-stop" onclick="sendTeleop(0.0, 0.0)">■</button>
+              <button class="dpad-btn dpad-right" onmousedown="sendTeleop(0.0, -0.6)" onmouseup="sendTeleop(0.0, 0.0)">▶</button>
+            </div>
+            <button class="dpad-btn dpad-down" onmousedown="sendTeleop(-0.4, 0.0)" onmouseup="sendTeleop(0.0, 0.0)">▼</button>
+          </div>
+          <span class="keyboard-hint">Keyboard Drive: <strong>W / A / S / D</strong> or Arrow Keys</span>
+
+          <div class="hatch-override-buttons">
+            <button class="btn-hatch-action" onclick="toggleHatchManual('open')">🔓 Open Hatch (60°)</button>
+            <button class="btn-hatch-action" onclick="toggleHatchManual('close')">🔒 Close & Lock Hatch</button>
+          </div>
+        </div>
+
+        <!-- Terminal Console Side -->
+        <div class="console-side">
+          <div class="console-header">
+            <span>ROS 2 TELEMETRY & SYSTEM LOGS</span>
+            <button class="console-clear-btn" onclick="clearTerminalLogs()">Clear</button>
+          </div>
+          <div class="console-output" id="cockpitTerminalOutput">
+            <div class="log-line info">[12:44:01] [web_bridge_node] Supervisor Cockpit connected to ROS 2 Humble.</div>
+            <div class="log-line info">[12:44:02] [odrive_can_node] Axis 0 and Axis 1 calibrated. Closed-loop velocity active.</div>
+            <div class="log-line info">[12:44:02] [hailo_yolo_node] YOLOv8n network loaded in HEF format (138.4 FPS benchmark).</div>
+            <div class="log-line success">[12:44:03] [safety_supervisor] 10-State Safety FSM initialized: NORMAL_OPERATION.</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 3. OPERATOR PIN AUTHENTICATION MODAL                                      -->
+  <!-- ========================================================================= -->
+  <div class="pin-modal-backdrop" id="operatorPinModal">
+    <div class="pin-modal-window">
+      <div class="pin-modal-header">
+        <span class="pin-shield-icon">🛡️</span>
+        <h3>Operator Security Authorization</h3>
+        <p>Enter the fleet operator security PIN to unlock remote vehicle overrides.</p>
+      </div>
+
+      <form onsubmit="handleOperatorPinSubmit(event)">
+        <div class="form-group">
+          <label>Operator Security PIN / Token</label>
+          <input type="password" id="inputOperatorPin" class="pin-input mono" placeholder="Enter PIN (e.g. from NEXUS_OPERATOR_PIN)" required>
+        </div>
+
+        <div class="pin-preset-helper">
+          <span>Demo Evaluation Hint:</span>
+          <button type="button" class="btn-autofill-pin" onclick="autofillDemoPin()">Use Session Token</button>
+        </div>
+
+        <div class="pin-feedback" id="operatorPinFeedback"></div>
+
+        <div class="pin-modal-actions">
+          <button type="button" class="btn-pin-cancel" onclick="closeOperatorPinModal()">Cancel</button>
+          <button type="submit" class="btn-pin-submit">Authorize Operator</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Master E-Stop Flashing Banner -->
+  <div class="estop-active-banner" id="estopBanner" style="display: none;">
+    <div class="banner-inner">
+      <span class="banner-icon">⚠️</span>
+      <strong>EMERGENCY STOP ENGAGED: ALL MOTOR POWER CUT OFF</strong>
+      <button class="btn-reset-estop" onclick="resetMasterEstop()">RESET E-STOP</button>
+    </div>
+  </div>
+
+  <!-- Supervisor Cockpit Logic -->
+  <script src="supervisor.js"></script>
+</body>
+</html>
