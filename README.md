@@ -98,7 +98,33 @@ Evaluated strictly against ISO 16290 / NASA TRL criteria:
 
 ---
 
-## 5. Mechatronics Architecture & Reconciled Bill of Materials (BOM)
+## 5. Dual Web Applications & Authentic Gazebo Operational Map
+
+NexusDelivery features **two independent, role-isolated web applications** powered by a shared secure backend and a high-performance Retina 2D Canvas vector map engine representing the authentic `small_city_dynamic.world` Gazebo environment:
+
+```
+                            NEXUSDELIVERY SHARED SECURE BACKEND
+                    [FastAPI / WebBridge HTTP & WebSocket Server :8080]
+                                             │
+             ┌───────────────────────────────┴───────────────────────────────┐
+             ▼                                                               ▼
+   CUSTOMER PLATFORM (/client)                                   SUPERVISOR COCKPIT (/supervisor)
+   - Curbside Menu & Order Placement                             - Tactical Multi-Rover Map
+   - Authentic Gazebo Doorstep Selector                          - RealSense D435i Perception AI HUD
+   - Real-Time AMR Trajectory Tracking                           - Powertrain (ODrive) & BMS (8S LiFePO4)
+   - 6-Digit OTP Contactless Hatch Unlock                        - Live Mission Queue & Dispatch Decider
+   - Tenant-Isolated Order History                               - Cryptographic Security Audit Trail
+                                                                 - Remote Teleoperation & Master E-Stop
+```
+
+### Authentic Gazebo Vector Map Engine (`gazebo_world_map.py` & `gazebo_map.js`)
+* **Single Source of Truth**: Completely replaces external disconnected tile servers (CartoDB/Esri satellite) with an authentic metric vector rendering of `small_city_dynamic.world` ($X \in [-48.0, 112.0]\text{ m}, Y \in [-48.0, 48.0]\text{ m}$).
+* **Curbside Doorstep Snapping**: Customer pin placement validates against building footprints, curbside sidewalks, and the Central Depot physical barrier, calculating exact A* route distances and realistic ETAs.
+* **Live Telemetry & Freshness**: Directly visualizes `/odom` $(x, y, \theta)$ at 50 Hz. If Gazebo pauses or disconnects, the UI instantly flips from `LIVE` to `STALE` / `DISCONNECTED`.
+
+---
+
+## 6. Mechatronics Architecture & Reconciled Bill of Materials (BOM)
 
 The Bill of Materials is tracked in the single source of truth: [`delivery_robot_sim/web_dashboard/downloads/BOM.csv`](delivery_robot_sim/web_dashboard/downloads/BOM.csv). The table below is verified mathematically:
 
@@ -128,27 +154,35 @@ The Bill of Materials is tracked in the single source of truth: [`delivery_robot
 
 ---
 
-## 6. Simulation & Testing Quickstart
+## 7. Simulation & Testing Quickstart
 
 ### Prerequisites
 * Ubuntu 22.04 LTS x86_64
 * ROS 2 Humble Hawksbill or Docker Engine
 
-### Running the Automated Unit Test Suite (79 Tests)
-Execute all pure-Python unit tests covering kinematics, Liang-Barsky geometry, OTP security, safety supervisor states, and BOM mathematical integrity:
+### Running the Automated Regression Test Suite (90 Tests)
+Execute all pure-Python unit, integration, and security tests covering kinematics, Liang-Barsky geometry, OTP security, PBKDF2 cryptography, ACID SQLite storage, Gazebo vector map transformations, and safety supervisor states:
 ```bash
-python3 -c "import unittest, sys; sys.path.insert(0, '.'); sys.path.insert(0, 'delivery_robot_sim'); suite = unittest.defaultTestLoader.discover('delivery_robot_sim/tests'); runner = unittest.TextTestRunner(verbosity=2); res = runner.run(suite); sys.exit(0 if res.wasSuccessful() else 1)"
+PYTHONPATH=delivery_robot_sim PBKDF2_ITERATIONS=10000 python3 -m unittest discover delivery_robot_sim/tests
 ```
 **Expected Output:**
-```
-Ran 79 tests in ~2.0s
+```text
+Ran 90 tests in ~45s
 OK
 ```
 
-### Running Headless Simulation
+### Running the Full Simulation & Web Portals
 ```bash
-./run_headless_simulation.sh 180 small_city_dynamic.world
+# Terminal 1: Launch Gazebo Simulation World
+ros2 launch delivery_robot_sim simulation_launch.py
+
+# Terminal 2: Launch Web Bridge & Mission Control Server
+export NEXUS_OPERATOR_PIN="nexus2026"
+PYTHONPATH=delivery_robot_sim python3 delivery_robot_sim/delivery_robot_sim/web_bridge_node.py
 ```
+Open in browser:
+* **Customer Delivery App:** `http://localhost:8080/client`
+* **Supervisor Fleet Cockpit:** `http://localhost:8080/supervisor`
 
 ---
 
