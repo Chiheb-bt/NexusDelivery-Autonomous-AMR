@@ -1544,8 +1544,9 @@ class WebBridgeNode(Node):
                 return {'success': False, 'error': 'NO_ORDER', 'message': 'No delivery order found.'}
 
             oid = matched_order.get('order_id') or matched_order.get('id')
-            is_valid = self.db.verify_order_otp(oid, otp_code)
-            if not is_valid and (otp_code == str(matched_order.get('otp')) or otp_code in ('482910', '739104')):
+            res = self.db.verify_order_otp(oid, otp_code)
+            is_valid = res[0] if isinstance(res, (tuple, list)) else bool(res)
+            if not is_valid and (otp_code == str(matched_order.get('otp'))):
                 is_valid = True
                 self.db.update_order_status(oid, 'COMPLETED')
 
