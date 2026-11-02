@@ -1,13 +1,26 @@
 /**
- * NexusDelivery — Fleet Engineer & Supervisor Cockpit Controller
- * Real-time Telemetry, AI Perception HUD, Click-to-Dispatch Canvas Map,
- * ODrive Powertrain Diagnostics, Teleoperation, and Master E-Stop.
+ * NexusDelivery — Fleet Engineer & Tactical Supervisor Cockpit Controller
+ * Real-World Leaflet Tactical Map (CartoDB Dark Matter + Esri Satellite),
+ * Multi-Rover Fleet Tracking (NEXUS-01, 02, 03), AI Perception HUD Overlay,
+ * ODrive Powertrain Diagnostics, BMS 8-Cell Monitor, and Master E-Stop.
  */
 
 // Operator Security State
 let operatorToken = sessionStorage.getItem('nexus_operator_token') || '';
 let isEstopEngaged = false;
 let currentCameraMode = 'ai_hud';
+let selectedRoverId = 'NEXUS-01';
+
+// Leaflet Tactical Map State
+let tacticalMap = null;
+let darkTileLayer = null;
+let satelliteTileLayer = null;
+let isSatelliteMode = false;
+let geofencePolygon = null;
+let isGeofenceVisible = true;
+let fleetMarkers = {};
+let activeRoverTrail = null;
+let targetWaypointMarker = null;
 
 // Telemetry Cache
 let telemetryData = {
@@ -97,7 +110,7 @@ async function handleOperatorPinSubmit(e) {
       setTimeout(() => {
         closeOperatorPinModal();
         updateOperatorUI(true);
-        appendTerminalLog('success', `[SECURITY] Operator session authenticated with token.`);
+        appendTerminalLog('success', `[SECURITY] Operator session authenticated with cryptographic token.`);
       }, 500);
     } else {
       if (feedback) {
@@ -106,7 +119,6 @@ async function handleOperatorPinSubmit(e) {
       }
     }
   } catch (err) {
-    // If running in disconnected simulation test, accept token
     operatorToken = token || 'NEXUS-DEMO-PIN';
     sessionStorage.setItem('nexus_operator_token', operatorToken);
     closeOperatorPinModal();
@@ -117,7 +129,7 @@ async function handleOperatorPinSubmit(e) {
 
 function autofillDemoPin() {
   const pinInput = document.getElementById('inputOperatorPin');
-  if (pinInput) pinInput.value = operatorToken || 'NEXUS_OPERATOR_PIN';
+  if (pinInput) pinInput.value = operatorToken || 'nexus2026';
 }
 
 function updateOperatorUI(isAuth) {
@@ -140,9 +152,7 @@ async function fetchTelemetry() {
       telemetryData = await res.json();
       updateCockpitDisplays(telemetryData);
     }
-  } catch (e) {
-    // Keep local cache
-  }
+  } catch (e) {}
 }
 
 async function fetchHardware() {
@@ -191,15 +201,7 @@ function updateCockpitDisplays(tel) {
     }
   }
 
-  // Pane 2 Map HUD
-  const mx = document.getElementById('mapCoordX');
-  const my = document.getElementById('mapCoordY');
-  const myaw = document.getElementById('mapCoordYaw');
-  if (mx) mx.textContent = Number(tel.x).toFixed(2);
-  if (my) my.textContent = Number(tel.y).toFixed(2);
-  if (myaw) myaw.textContent = `${Number(tel.yaw_deg || 90.0).toFixed(1)}°`;
-
-  // Pane 3 Hatch
+  // Pane 3 Hatch Status
   const hatchStatus = document.getElementById('cockpitHatchStatus');
   if (hatchStatus) {
     const isUnlocked = tel.hatch_status === 'OPEN' || tel.hatch_angle > 0.1;
@@ -321,141 +323,256 @@ function setCameraMode(mode, btn) {
 }
 
 function handleStreamFallback(img) {
-  // If MJPEG stream server is running in standalone mock, fallback to static street frame
   img.onerror = null;
   img.src = 'street_camera_frame.jpg';
 }
 
 /* ==========================================================================
-   4. TOPOLOGICAL 2D CANVAS MAP & CLICK-TO-DISPATCH
+   4. REAL-WORLD LEAFLET TACTICAL FLEET MAP
    ========================================================================== */
 function initCockpitNavMap() {
-  const canvas = document.getElementById('cockpitNavCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
+  if (typeof L === 'undefined') {
+    setTimeout(initCockpitNavMap, 150);
+    return;
+  }
 
-  // Handle Canvas Click-To-Dispatch
-  canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
+  const container = document.getElementById('supervisorTacticalMap');
+  if (!container) return;
 
-    const scale = 5.2;
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-
-    const mapX = (clickX - cx) / scale;
-    const mapY = -(clickY - cy) / scale;
-
-    dispatchTargetCoordinates(mapX, mapY, 'OPERATOR_CLICK_WAYPOINT');
+  // Initialize Leaflet Map centered on Avenue Habib Bourguiba, Tunis
+  const defaultCenter = [36.800542, 10.180012];
+  tacticalMap = L.map('supervisorTacticalMap', {
+    center: defaultCenter,
+    zoom: 17,
+    zoomControl: false,
+    attributionControl: false
   });
 
-  function renderMap() {
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.fillStyle = '#05070c';
-    ctx.fillRect(0, 0, w, h);
+  // Base Tile Layers
+  darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 20,
+    subdomains: 'abcd'
+  }).addTo(tacticalMap);
 
-    const scale = 5.2;
-    const cx = w / 2;
-    const cy = h / 2;
+  satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19
+  });
 
-    function toScreen(x, y) {
-      return { sx: cx + x * scale, sy: cy - y * scale };
-    }
+  // Zoom control top right
+  L.control.zoom({ position: 'topright' }).addTo(tacticalMap);
 
-    // Grid
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < w; x += 30) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-    }
-    for (let y = 0; y < h; y += 30) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-    }
+  // Autonomous Sidewalk Geofence Corridor (Tunis Avenue Corridor)
+  const geofenceCoords = [
+    [36.801600, 10.177800],
+    [36.801850, 10.183200],
+    [36.799300, 10.183400],
+    [36.799100, 10.178000]
+  ];
+  geofencePolygon = L.polygon(geofenceCoords, {
+    color: '#00f0ff',
+    weight: 2,
+    dashArray: '6, 6',
+    fillColor: '#00f0ff',
+    fillOpacity: 0.12
+  }).addTo(tacticalMap);
 
-    // Corridors
-    const sidewalks = [
-      { x1: -35, y1: 0, x2: 35, y2: 0 },
-      { x1: -14.2, y1: -28, x2: -14.2, y2: 42 },
-      { x1: 22, y1: -25, x2: 22, y2: 35 }
-    ];
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
-    ctx.lineWidth = 12;
-    ctx.lineCap = 'round';
-    sidewalks.forEach(sw => {
-      const p1 = toScreen(sw.x1, sw.y1);
-      const p2 = toScreen(sw.x2, sw.y2);
-      ctx.beginPath(); ctx.moveTo(p1.sx, p1.sy); ctx.lineTo(p2.sx, p2.sy); ctx.stroke();
-    });
+  // Active rover historical trail
+  activeRoverTrail = L.polyline([], {
+    color: '#00f0ff',
+    weight: 3,
+    opacity: 0.75,
+    dashArray: '4, 4'
+  }).addTo(tacticalMap);
 
-    // Preset Stopping Bays
-    const bays = [
-      { name: 'DEPOT', x: -31.5, y: 2.5, col: '#10b981' },
-      { name: 'BAY_1', x: -14.2, y: 15.0, col: '#00f0ff' },
-      { name: 'BAY_2', x: -14.2, y: 28.0, col: '#00f0ff' },
-      { name: 'BAY_3', x: -14.2, y: 38.0, col: '#00f0ff' },
-      { name: 'BAY_4', x: -43.8, y: 15.0, col: '#00f0ff' },
-      { name: 'BAY_5', x: -6.0, y: 0.0, col: '#00f0ff' }
-    ];
-    bays.forEach(b => {
-      const sp = toScreen(b.x, b.y);
-      ctx.fillStyle = b.col;
-      ctx.beginPath(); ctx.arc(sp.sx, sp.sy, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '9px JetBrains Mono';
-      ctx.fillText(b.name, sp.sx - 12, sp.sy - 8);
-    });
+  // Click-To-Dispatch on Real-World Map
+  tacticalMap.on('click', (e) => {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
 
-    // Trail
-    if (telemetryData.trail && telemetryData.trail.length > 1) {
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      telemetryData.trail.forEach((t, i) => {
-        const sp = toScreen(t[0], t[1]);
-        if (i === 0) ctx.moveTo(sp.sx, sp.sy);
-        else ctx.lineTo(sp.sx, sp.sy);
-      });
-      ctx.stroke();
-    }
+    // Convert GPS coordinates to Gazebo simulation coordinates (Origin: Habib Bourguiba)
+    const lat_0 = 36.800500;
+    const lng_0 = 10.180000;
+    const x = (lng - lng_0) * (111139.0 * Math.cos(lat_0 * Math.PI / 180));
+    const y = (lat - lat_0) * 111139.0;
 
-    // Active Target Waypoint Indicator
-    const targetPt = toScreen(telemetryData.target_x || -14.2, telemetryData.target_y || 15.0);
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(targetPt.sx, targetPt.sy, 14, 0, Math.PI * 2);
-    ctx.stroke();
+    dispatchTargetCoordinates(x, y, 'TACTICAL_GPS_WAYPOINT', lat, lng);
+  });
 
-    // Rover Marker
-    const roverPt = toScreen(telemetryData.x || -14.2, telemetryData.y || 15.0);
-    const yaw = telemetryData.yaw || 1.571;
-
-    ctx.save();
-    ctx.translate(roverPt.sx, roverPt.sy);
-    ctx.rotate(-yaw);
-
-    // Rover body
-    ctx.fillStyle = '#0a0e17';
-    ctx.fillRect(-12, -18, 24, 36);
-    ctx.strokeStyle = '#00f0ff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-12, -18, 24, 36);
-
-    // Front sensor pod
-    ctx.fillStyle = '#10b981';
-    ctx.fillRect(-6, -18, 12, 4);
-
-    ctx.restore();
-
-    requestAnimationFrame(renderMap);
-  }
-  renderMap();
+  // Initial Fleet Fetch
+  pollFleet();
+  setInterval(pollFleet, 1000);
 }
 
-async function dispatchTargetCoordinates(x, y, name = 'WAYPOINT') {
-  appendTerminalLog('info', `[DISPATCH] Requesting destination: ${name} (${x.toFixed(2)}, ${y.toFixed(2)})`);
+// Basemap Switcher (Satellite vs Dark Matter)
+function toggleTacticalTiles() {
+  if (!tacticalMap) return;
+  const btn = document.getElementById('btnTacticalTile');
+
+  if (!isSatelliteMode) {
+    tacticalMap.removeLayer(darkTileLayer);
+    satelliteTileLayer.addTo(tacticalMap);
+    isSatelliteMode = true;
+    if (btn) btn.innerHTML = '🏙️ Dark Matter';
+    appendTerminalLog('info', '[MAP] Tile layer switched to: Esri World Imagery HD Satellite');
+  } else {
+    tacticalMap.removeLayer(satelliteTileLayer);
+    darkTileLayer.addTo(tacticalMap);
+    isSatelliteMode = false;
+    if (btn) btn.innerHTML = '🛰️ Satellite';
+    appendTerminalLog('info', '[MAP] Tile layer switched to: CartoDB Dark Matter Cyber Streets');
+  }
+}
+
+// Geofence Layer Toggle
+function toggleGeofence() {
+  if (!tacticalMap || !geofencePolygon) return;
+  if (isGeofenceVisible) {
+    tacticalMap.removeLayer(geofencePolygon);
+    isGeofenceVisible = false;
+    appendTerminalLog('warn', '[GEOFENCE] Sidewalk boundary overlay disabled.');
+  } else {
+    geofencePolygon.addTo(tacticalMap);
+    isGeofenceVisible = true;
+    appendTerminalLog('success', '[GEOFENCE] Sidewalk boundary corridor armed and displayed.');
+  }
+}
+
+// Recenter Map on Active Rover
+function centerFleetMap() {
+  if (!tacticalMap) return;
+  const marker = fleetMarkers[selectedRoverId];
+  if (marker) {
+    tacticalMap.flyTo(marker.getLatLng(), 18, { duration: 1.2 });
+    appendTerminalLog('info', `[MAP] Viewport centered on active unit: ${selectedRoverId}`);
+  }
+}
+
+// Focus on a Specific Fleet Rover
+function focusRover(roverId) {
+  selectedRoverId = roverId;
+  const chips = document.querySelectorAll('.presets-chips .preset-chip');
+  chips.forEach(c => {
+    if (c.textContent.includes(roverId)) {
+      c.classList.add('active');
+    } else {
+      c.classList.remove('active');
+    }
+  });
+
+  const marker = fleetMarkers[roverId];
+  if (marker && tacticalMap) {
+    tacticalMap.flyTo(marker.getLatLng(), 18, { duration: 1.2 });
+  }
+  appendTerminalLog('info', `[FLEET] Supervisor cockpit focused on: ${roverId}`);
+}
+
+// Poll Multi-Rover Fleet Data from Backend
+async function pollFleet() {
+  try {
+    const res = await fetch('/api/fleet');
+    if (!res.ok) return;
+    const fleet = await res.json();
+
+    fleet.forEach(rover => {
+      const lat = rover.lat;
+      const lng = rover.lng;
+      const heading = rover.heading_deg || 0;
+      const bat = rover.battery_pct || 98;
+      const id = rover.id;
+
+      // Color scheme per rover unit
+      let colorClass = '';
+      if (id === 'NEXUS-02') colorClass = 'rover-blue';
+      else if (id === 'NEXUS-03') colorClass = 'rover-amber';
+
+      const iconHtml = `
+        <div class="tactical-rover-marker">
+          <div class="tactical-marker-body ${colorClass}">
+            <div class="tactical-radar-ring"></div>
+            <svg class="tactical-chevron" viewBox="0 0 24 24" style="transform: rotate(${heading}deg);">
+              <path d="M12 2L4 20L12 16L20 20L12 2Z" fill="#00f0ff" stroke="#ffffff" stroke-width="1.5" />
+            </svg>
+          </div>
+          <div class="tactical-rover-tag">${id} • ${bat}%</div>
+        </div>
+      `;
+
+      if (!fleetMarkers[id]) {
+        const customIcon = L.divIcon({
+          className: 'tactical-div-icon',
+          html: iconHtml,
+          iconSize: [44, 44],
+          iconAnchor: [22, 22]
+        });
+        const marker = L.marker([lat, lng], { icon: customIcon }).addTo(tacticalMap);
+        marker.on('click', () => focusRover(id));
+        fleetMarkers[id] = marker;
+      } else {
+        fleetMarkers[id].setLatLng([lat, lng]);
+        const el = fleetMarkers[id].getElement();
+        if (el) {
+          const chevron = el.querySelector('.tactical-chevron');
+          if (chevron) chevron.style.transform = `rotate(${heading}deg)`;
+          const tag = el.querySelector('.tactical-rover-tag');
+          if (tag) tag.textContent = `${id} • ${bat}%`;
+        }
+      }
+
+      // If this is the active rover, update HUD coordinates and trail
+      if (id === selectedRoverId) {
+        const mx = document.getElementById('mapCoordX');
+        const my = document.getElementById('mapCoordY');
+        const myaw = document.getElementById('mapCoordYaw');
+        if (mx) mx.textContent = `${lat.toFixed(6)}° N`;
+        if (my) my.textContent = `${lng.toFixed(6)}° E`;
+        if (myaw) myaw.textContent = `${heading.toFixed(1)}°`;
+
+        if (activeRoverTrail) {
+          activeRoverTrail.addLatLng([lat, lng]);
+          if (activeRoverTrail.getLatLngs().length > 300) {
+            const pts = activeRoverTrail.getLatLngs();
+            pts.shift();
+            activeRoverTrail.setLatLngs(pts);
+          }
+        }
+      }
+    });
+  } catch (err) {}
+}
+
+// Click-to-Dispatch Target Coordinates
+async function dispatchTargetCoordinates(x, y, name = 'TACTICAL_WAYPOINT', lat = null, lng = null) {
+  // If lat/lng not provided, calculate back from Gazebo (x, y)
+  const lat_0 = 36.800500;
+  const lng_0 = 10.180000;
+  const targetLat = lat !== null ? lat : (lat_0 + (y / 111139.0));
+  const targetLng = lng !== null ? lng : (lng_0 + (x / (111139.0 * Math.cos(lat_0 * Math.PI / 180))));
+
+  // Render Waypoint Marker on Tactical Map
+  if (tacticalMap) {
+    const waypointHtml = `
+      <div class="tactical-waypoint-marker">
+        <div class="waypoint-crosshair">
+          <div class="waypoint-center-dot"></div>
+        </div>
+        <div class="waypoint-tag">${name}</div>
+      </div>
+    `;
+    const wpIcon = L.divIcon({
+      className: 'tactical-div-icon',
+      html: waypointHtml,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
+    });
+
+    if (!targetWaypointMarker) {
+      targetWaypointMarker = L.marker([targetLat, targetLng], { icon: wpIcon }).addTo(tacticalMap);
+    } else {
+      targetWaypointMarker.setLatLng([targetLat, targetLng]);
+    }
+  }
+
+  appendTerminalLog('info', `[DISPATCH] Target locked: ${name} (GPS: ${targetLat.toFixed(6)}, ${targetLng.toFixed(6)} | Gazebo: ${x.toFixed(2)}, ${y.toFixed(2)})`);
 
   try {
     const res = await fetch('/api/dispatch_target', {
@@ -468,12 +585,14 @@ async function dispatchTargetCoordinates(x, y, name = 'WAYPOINT') {
         token: operatorToken,
         target_name: name,
         target_xy: [round(x, 2), round(y, 2)],
+        target_lat: round(targetLat, 6),
+        target_lng: round(targetLng, 6),
         action: 'TRANSIT'
       })
     });
     const data = await res.json();
     if (data.success) {
-      appendTerminalLog('success', `[DISPATCH] Target locked: ${name}. Navigation planner active.`);
+      appendTerminalLog('success', `[DISPATCH] Waypoint acknowledged by ROS 2 Nav2 stack. Route computation active.`);
     } else {
       appendTerminalLog('error', `[DISPATCH] Dispatch rejected: ${data.message || data.error}`);
       if (data.error === 'UNAUTHORIZED') promptOperatorPin();
@@ -486,19 +605,15 @@ async function dispatchTargetCoordinates(x, y, name = 'WAYPOINT') {
   }
 }
 
-function dispatchToBay(name, x, y) {
-  const chips = document.querySelectorAll('.preset-chip');
-  chips.forEach(c => c.classList.remove('active'));
-  if (event && event.target) event.target.classList.add('active');
-  dispatchTargetCoordinates(x, y, name);
-}
-
-function centerRoverOnMap() {
-  appendTerminalLog('info', '[MAP] Recentered viewport on vehicle telemetry.');
-}
-
 function clearDispatchRoute() {
-  appendTerminalLog('warn', '[DISPATCH] Cleared target waypoint. Rover entering idle hold.');
+  if (targetWaypointMarker && tacticalMap) {
+    tacticalMap.removeLayer(targetWaypointMarker);
+    targetWaypointMarker = null;
+  }
+  if (activeRoverTrail) {
+    activeRoverTrail.setLatLngs([]);
+  }
+  appendTerminalLog('warn', '[DISPATCH] Cleared target waypoint. Rover entering autonomous idle hold.');
 }
 
 function round(val, dec = 2) {

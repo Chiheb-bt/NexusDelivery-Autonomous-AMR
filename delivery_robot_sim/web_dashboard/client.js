@@ -1,7 +1,8 @@
 /**
  * NexusDelivery — Autonomous Customer Experience Engine
- * Real-time Order Tracking, E-Commerce, 2D Radar Canvas, Web Audio Synthesizer,
- * and Doorstep 6-Digit OTP Hatch Unlocking.
+ * Real-World Leaflet Interactive Map (CartoDB Dark Matter + Esri Satellite),
+ * Draggable Doorstep Pin, GPS Geolocation, Live Rover Tracking, Web Audio API,
+ * and 6-Digit OTP Hatch Unlocking.
  */
 
 // Global State
@@ -12,12 +13,44 @@ let activeOrder = null;
 let currentOtpBuffer = '';
 let audioEnabled = true;
 let audioCtx = null;
-let mapAnimId = null;
+
+// Leaflet Map State
+let worldMap = null;
+let darkTileLayer = null;
+let satelliteTileLayer = null;
+let isSatelliteMode = false;
+let userDoorstepMarker = null;
+let roverMapMarker = null;
+let routePolyline = null;
+
+// Current Selected Doorstep GPS Coordinates (Default: Avenue Habib Bourguiba, Tunis)
+let selectedDoorstep = {
+  lat: 36.800542,
+  lng: 10.180012,
+  address: 'Avenue Habib Bourguiba, Tunis (Curbside Bay 1)'
+};
+
+// Depot Hub Coordinates (Tunis Central Hub)
+const DEPOT_COORDS = {
+  lat: 36.801200,
+  lng: 10.178500,
+  name: 'Tunis Central Hub (Depot)'
+};
+
+// Global City Presets for Hackathon Demo
+const CITY_PRESETS = {
+  tunis: { lat: 36.800542, lng: 10.180012, zoom: 16, name: 'Tunis City Center' },
+  silicon_valley: { lat: 37.4275, lng: -122.1697, zoom: 16, name: 'Stanford / Silicon Valley' },
+  paris: { lat: 48.8698, lng: 2.3075, zoom: 16, name: 'Paris Champs-Élysées' },
+  tokyo: { lat: 35.6595, lng: 139.7004, zoom: 16, name: 'Tokyo Shibuya' }
+};
 
 // Telemetry Cache
 let latestTelemetry = {
   x: -14.2,
   y: 15.0,
+  gps_lat: 36.800542,
+  gps_lng: 10.180012,
   yaw: 1.571,
   actual_v: 0.82,
   mission_state: 'NAVIGATING_TO_CLIENT',
@@ -37,7 +70,7 @@ const FALLBACK_PRODUCTS = [
 ];
 
 /* ==========================================================================
-   1. WEB AUDIO SYNTHESIZER (NO EXTERNAL AUDIO FILES REQUIRED)
+   1. WEB AUDIO SYNTHESIZER
    ========================================================================== */
 function getAudioContext() {
   if (!audioCtx) {
@@ -88,8 +121,7 @@ function playChime(type) {
       osc1.stop(now + 0.22);
       osc2.stop(now + 0.22);
     } else if (type === 'success') {
-      // Triumphant OTP Unlock Major Chord
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C - E - G - C
+      const notes = [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -116,9 +148,7 @@ function playChime(type) {
       osc.start(now);
       osc.stop(now + 0.18);
     }
-  } catch (err) {
-    // Audio context may be blocked by browser policy until gesture
-  }
+  } catch (err) {}
 }
 
 function toggleClientAudio() {
@@ -130,7 +160,235 @@ function toggleClientAudio() {
 }
 
 /* ==========================================================================
-   2. CUSTOMER AUTHENTICATION & SESSION MANAGEMENT
+   2. REAL-WORLD LEAFLET INTERACTIVE MAP IMPLEMENTATION
+   ========================================================================== */
+function initRealWorldMap() {
+  const mapContainer = document.getElementById('worldDeliveryMap');
+  if (!mapContainer || typeof L === 'undefined') return;
+
+  // Initialize Leaflet Map centered on Tunis
+  worldMap = L.map('worldDeliveryMap', {
+    zoomControl: false,
+    attributionControl: false
+  }).setView([selectedDoorstep.lat, selectedDoorstep.lng], 16);
+
+  // Custom Zoom Control at Top Right
+  L.control.zoom({ position: 'topright' }).addTo(worldMap);
+
+  // CartoDB Dark Matter Base Tiles (Futuristic Cyberpunk Dark Streets)
+  darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd'
+  }).addTo(worldMap);
+
+  // Esri World Imagery (High-Resolution Satellite)
+  satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19
+  });
+
+  // Add Depot Marker
+  const depotIcon = L.divIcon({
+    className: 'custom-depot-marker',
+    html: '<div class="rover-pulse-icon" style="background: rgba(99, 102, 241, 0.4); border-color: #6366f1;">📮</div>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+  L.marker([DEPOT_COORDS.lat, DEPOT_COORDS.lng], { icon: depotIcon })
+    .addTo(worldMap)
+    .bindPopup('<b>Nexus Depot Central Hub</b><br>Autonomous dispatch depot & parcel loading station');
+
+  // Add Initial Doorstep Pin
+  updateDoorstepPin(selectedDoorstep.lat, selectedDoorstep.lng, selectedDoorstep.address);
+
+  // Add Rover Marker
+  const roverIcon = L.divIcon({
+    className: 'custom-rover-marker',
+    html: '<div class="rover-pulse-icon">⚡</div>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+  roverMapMarker = L.marker([latestTelemetry.gps_lat, latestTelemetry.gps_lng], { icon: roverIcon })
+    .addTo(worldMap)
+    .bindPopup('<b>NEXUS-AMR-01</b><br>Cruising on Sidewalk (0.82 m/s)');
+
+  // Map Click Listener: User taps ANYWHERE in the world to set delivery doorstep!
+  worldMap.on('click', (e) => {
+    playChime('click');
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+    const approxAddr = formatAddressFromCoords(lat, lng);
+    updateDoorstepPin(lat, lng, approxAddr);
+    showToast(`📍 Doorstep set to: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`);
+  });
+}
+
+function updateDoorstepPin(lat, lng, addressName) {
+  selectedDoorstep.lat = lat;
+  selectedDoorstep.lng = lng;
+  selectedDoorstep.address = addressName;
+
+  if (!userDoorstepMarker && worldMap) {
+    const doorstepIcon = L.divIcon({
+      className: 'custom-doorstep-marker',
+      html: '<div class="doorstep-pulse-icon">🏠</div>',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+    userDoorstepMarker = L.marker([lat, lng], {
+      icon: doorstepIcon,
+      draggable: true
+    }).addTo(worldMap);
+
+    userDoorstepMarker.on('dragend', (ev) => {
+      const pos = ev.target.getLatLng();
+      updateDoorstepPin(pos.lat, pos.lng, formatAddressFromCoords(pos.lat, pos.lng));
+      playChime('click');
+    });
+  } else if (userDoorstepMarker) {
+    userDoorstepMarker.setLatLng([lat, lng]);
+  }
+
+  // Draw Glowing Trajectory from Depot to Doorstep
+  drawRouteToDoorstep(lat, lng);
+
+  // Update UI Stats in Floating Card
+  const addrEl = document.getElementById('pinSelectedAddress');
+  const coordsEl = document.getElementById('pinGpsCoords');
+  const distEl = document.getElementById('pinDistanceVal');
+  const etaEl = document.getElementById('pinEtaVal');
+  const cartBadge = document.getElementById('cartSelectedDoorstepBadge');
+
+  if (addrEl) addrEl.textContent = addressName;
+  if (coordsEl) coordsEl.textContent = `${lat.toFixed(6)}° N, ${lng.toFixed(6)}° E`;
+
+  // Geodesic distance calculation
+  const distKm = computeDistanceKm(DEPOT_COORDS.lat, DEPOT_COORDS.lng, lat, lng);
+  const etaMin = Math.max(3, Math.round((distKm / 3.0) * 60)); // 3 km/h sidewalk cruising
+  if (distEl) distEl.textContent = `${distKm.toFixed(2)} km`;
+  if (etaEl) etaEl.textContent = `${etaMin}–${etaMin + 3} min`;
+  if (cartBadge) cartBadge.textContent = `📍 ${addressName} (${lat.toFixed(4)}°, ${lng.toFixed(4)}°)`;
+}
+
+function drawRouteToDoorstep(destLat, destLng) {
+  if (!worldMap) return;
+
+  // Generate realistic sidewalk polyline path with 2 intermediate corner points
+  const p0 = [DEPOT_COORDS.lat, DEPOT_COORDS.lng];
+  const p1 = [DEPOT_COORDS.lat, destLng];
+  const p2 = [destLat, destLng];
+  const pathPoints = [p0, p1, p2];
+
+  if (routePolyline) {
+    routePolyline.setLatLngs(pathPoints);
+  } else {
+    routePolyline = L.polyline(pathPoints, {
+      color: '#00f0ff',
+      weight: 4,
+      opacity: 0.85,
+      dashArray: '8, 8'
+    }).addTo(worldMap);
+  }
+}
+
+function toggleMapTiles() {
+  playChime('click');
+  if (!worldMap) return;
+
+  isSatelliteMode = !isSatelliteMode;
+  const tileIcon = document.getElementById('tileIcon');
+  const tileText = document.getElementById('tileText');
+
+  if (isSatelliteMode) {
+    worldMap.removeLayer(darkTileLayer);
+    satelliteTileLayer.addTo(worldMap);
+    if (tileIcon) tileIcon.textContent = '🌃';
+    if (tileText) tileText.textContent = 'Cyber Dark View';
+    showToast('Switched to High-Resolution Satellite View 🛰️');
+  } else {
+    worldMap.removeLayer(satelliteTileLayer);
+    darkTileLayer.addTo(worldMap);
+    if (tileIcon) tileIcon.textContent = '🛰️';
+    if (tileText) tileText.textContent = 'Satellite View';
+    showToast('Switched to Cyberpunk Dark Streets 🌃');
+  }
+}
+
+function switchCity(cityKey, btnEl) {
+  playChime('click');
+  const preset = CITY_PRESETS[cityKey];
+  if (!preset || !worldMap) return;
+
+  const buttons = document.querySelectorAll('.city-pill');
+  buttons.forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  worldMap.flyTo([preset.lat, preset.lng], preset.zoom, { duration: 1.5 });
+  updateDoorstepPin(preset.lat, preset.lng, `${preset.name} (Doorstep Drop)`);
+  showToast(`Centered on ${preset.name} 🌍`);
+}
+
+function locateUserGps() {
+  playChime('click');
+  if (!navigator.geolocation) {
+    showToast('Geolocation not supported by this browser.');
+    return;
+  }
+
+  showToast('Locating your GPS position...');
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      if (worldMap) {
+        worldMap.flyTo([lat, lng], 17, { duration: 1.5 });
+        updateDoorstepPin(lat, lng, 'My Live GPS Doorstep Location');
+        playChime('success');
+        showToast('📍 Pin dropped at your live GPS location!');
+      }
+    },
+    (err) => {
+      showToast('Could not access live GPS. Using Tunis City Center.');
+      switchCity('tunis', document.querySelector('.city-pill'));
+    },
+    { timeout: 8000 }
+  );
+}
+
+function confirmDoorstepLocation() {
+  playChime('success');
+  showToast(`Doorstep locked! Autonomous rovers will navigate to this pin 🚀`);
+  const catSection = document.getElementById('storeCatalogSection');
+  if (catSection) catSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+function formatAddressFromCoords(lat, lng) {
+  if (Math.abs(lat - 36.8005) < 0.05 && Math.abs(lng - 10.1800) < 0.05) {
+    return `Avenue Habib Bourguiba, Tunis (Curbside Bay)`;
+  } else if (Math.abs(lat - 37.4275) < 0.1) {
+    return `Stanford University Ave, Palo Alto, CA`;
+  } else if (Math.abs(lat - 48.8698) < 0.1) {
+    return `Avenue des Champs-Élysées, Paris`;
+  } else if (Math.abs(lat - 35.6595) < 0.1) {
+    return `Shibuya Crossing, Tokyo`;
+  } else {
+    return `GPS Doorstep (${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E)`;
+  }
+}
+
+function computeDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/* ==========================================================================
+   3. CUSTOMER AUTHENTICATION & SESSION MANAGEMENT
    ========================================================================== */
 async function initAuth() {
   const token = localStorage.getItem('nexus_client_token');
@@ -151,18 +409,14 @@ async function initAuth() {
         return;
       }
     }
-  } catch (err) {
-    console.warn('Auth check offline or failed, using demo fallback:', err);
-  }
+  } catch (err) {}
 
-  // Fallback demo user if token is present
   currentUser = {
     id: 'USR-001',
     name: 'Sophie Laurent',
     email: 'client@nexus.tn',
     phone: '+216 20 123 456',
-    address: '12 North Avenue, Apt 4B',
-    location_bay: 'CLIENT_1_NORTH_AVENUE'
+    address: 'Avenue Habib Bourguiba, Tunis'
   };
   renderUserAuthSlot(currentUser);
 }
@@ -180,11 +434,8 @@ function renderUserAuthSlot(user) {
         <button class="btn-signout-mini" onclick="logoutClient()" title="Sign Out">✕</button>
       </div>
     `;
-    // Update recipient info in tracking section if default
     const nameEl = document.getElementById('trackingRecipientName');
-    const addrEl = document.getElementById('trackingRecipientAddress');
     if (nameEl) nameEl.textContent = user.name;
-    if (addrEl && user.address) addrEl.textContent = user.address;
   } else {
     slot.innerHTML = `
       <button class="btn-primary-auth" id="btnOpenAuthModal" onclick="openAuthModal('login')">
@@ -251,27 +502,22 @@ async function handleLoginSubmit(e) {
       showToast(`Welcome back, ${currentUser.name}! 🚀`);
     } else {
       playChime('error');
-      if (errorEl) errorEl.textContent = data.error || 'Authentication failed. Please check credentials.';
+      if (errorEl) errorEl.textContent = data.error || 'Authentication failed.';
     }
   } catch (err) {
-    console.error('Login error:', err);
-    // Demo fallback login
     if (email === 'client@nexus.tn') {
       currentUser = {
         id: 'USR-001',
         name: 'Sophie Laurent',
         email: 'client@nexus.tn',
         phone: '+216 20 123 456',
-        address: '12 North Avenue, Apt 4B',
-        location_bay: 'CLIENT_1_NORTH_AVENUE'
+        address: 'Avenue Habib Bourguiba, Tunis'
       };
       localStorage.setItem('nexus_client_token', 'CUST-DEMO-TOKEN');
       renderUserAuthSlot(currentUser);
       closeAuthModal();
       playChime('success');
-      showToast(`Welcome back, Sophie Laurent! (Demo Mode)`);
-    } else {
-      if (errorEl) errorEl.textContent = 'Server connection error. Please try again.';
+      showToast(`Welcome back, Sophie Laurent! (Demo)`);
     }
   }
 }
@@ -283,15 +529,13 @@ async function handleRegisterSubmit(e) {
   const email = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPassword').value.trim();
   const address = document.getElementById('regAddress').value.trim();
-  const location_bay = document.getElementById('regBaySelect').value;
   const errorEl = document.getElementById('registerErrorMsg');
-  if (errorEl) errorEl.textContent = '';
 
   try {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone, email, password, address, location_bay })
+      body: JSON.stringify({ name, phone, email, password, address })
     });
     const data = await res.json();
     if (data.success && data.token) {
@@ -300,14 +544,13 @@ async function handleRegisterSubmit(e) {
       renderUserAuthSlot(currentUser);
       closeAuthModal();
       playChime('success');
-      showToast(`Account created! Welcome to NexusDelivery, ${currentUser.name}! 🎉`);
+      showToast(`Account created! Welcome, ${currentUser.name}! 🎉`);
     } else {
       playChime('error');
-      if (errorEl) errorEl.textContent = data.error || 'Registration failed. Email may already be in use.';
+      if (errorEl) errorEl.textContent = data.error || 'Registration failed.';
     }
   } catch (err) {
-    console.error('Registration error:', err);
-    if (errorEl) errorEl.textContent = 'Failed to submit registration. Please verify connection.';
+    if (errorEl) errorEl.textContent = 'Network error. Please try again.';
   }
 }
 
@@ -320,7 +563,7 @@ function logoutClient() {
 }
 
 /* ==========================================================================
-   3. CATALOG & CART MANAGEMENT
+   4. CATALOG & CART MANAGEMENT
    ========================================================================== */
 async function loadCatalog() {
   try {
@@ -402,13 +645,11 @@ function updateCartUI() {
   const totalCount = clientCart.reduce((sum, item) => sum + item.qty, 0);
   const subtotal = clientCart.reduce((sum, item) => sum + item.qty * item.price, 0);
 
-  // Header badges
   const badge = document.getElementById('cartBadgeCount');
   const headerTotal = document.getElementById('cartHeaderTotal');
   if (badge) badge.textContent = totalCount;
   if (headerTotal) headerTotal.textContent = `$${subtotal.toFixed(2)}`;
 
-  // Drawer items
   const drawerList = document.getElementById('drawerCartItemsList');
   if (drawerList) {
     if (clientCart.length === 0) {
@@ -436,7 +677,6 @@ function updateCartUI() {
     }
   }
 
-  // Bill Totals
   const subtotalEl = document.getElementById('billSubtotal');
   const totalEl = document.getElementById('billTotal');
   if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
@@ -453,10 +693,6 @@ function toggleCartDrawer() {
   }
 }
 
-function onDestinationChange() {
-  playChime('click');
-}
-
 async function checkoutOrder() {
   playChime('click');
   if (clientCart.length === 0) {
@@ -464,8 +700,6 @@ async function checkoutOrder() {
     return;
   }
 
-  const select = document.getElementById('cartDestSelect');
-  const custId = select ? select.value : 'CUST-001';
   const btn = document.getElementById('btnCheckoutDispatch');
   const btnText = document.getElementById('checkoutBtnText');
   const spinner = document.getElementById('checkoutSpinner');
@@ -476,7 +710,11 @@ async function checkoutOrder() {
 
   try {
     const payload = {
-      customer_id: custId,
+      customer_id: currentUser ? currentUser.customer_id : 'CUST-001',
+      customer_name: currentUser ? currentUser.name : 'Sophie Laurent',
+      target_lat: selectedDoorstep.lat,
+      target_lng: selectedDoorstep.lng,
+      delivery_address: selectedDoorstep.address,
       items: clientCart.map(c => ({ id: c.id, name: c.name, qty: c.qty })),
       priority: 1
     };
@@ -491,7 +729,7 @@ async function checkoutOrder() {
     if (data.success && data.order) {
       activeOrder = data.order;
       playChime('success');
-      showToast(`Order ${data.order.order_id} Dispatched! Autonomous Rover En Route 🚀`);
+      showToast(`Order ${data.order.order_id} Dispatched to Doorstep! Rover En Route 🚀`);
       clientCart = [];
       updateCartUI();
       toggleCartDrawer();
@@ -501,21 +739,17 @@ async function checkoutOrder() {
       throw new Error(data.error || 'Dispatch error');
     }
   } catch (err) {
-    console.warn('Backend order dispatch failed, using simulated response:', err);
-    // Simulated fallback order
     const simOrder = {
       order_id: `ORD-00${Math.floor(Math.random() * 90 + 10)}`,
-      customer_id: custId,
       customer_name: currentUser ? currentUser.name : 'Sophie Laurent',
-      delivery_name: 'CLIENT_1_NORTH_AVENUE',
-      delivery_xy: [-14.2, 15.0],
+      delivery_name: selectedDoorstep.address,
       status: 'IN_TRANSIT',
       otp: `${Math.floor(100000 + Math.random() * 900000)}`,
       items: [...clientCart]
     };
     activeOrder = simOrder;
     playChime('success');
-    showToast(`Order ${simOrder.order_id} Dispatched! Rover En Route 🚀`);
+    showToast(`Order ${simOrder.order_id} Dispatched to Doorstep! 🚀`);
     clientCart = [];
     updateCartUI();
     toggleCartDrawer();
@@ -535,54 +769,37 @@ function scrollToTracking() {
 }
 
 /* ==========================================================================
-   4. LIVE ORDER TRACKING & RADAR CANVAS
+   5. LIVE TELEMETRY & STREAM POLLING
    ========================================================================== */
 function updateOrderTrackingUI(order) {
   if (!order) return;
   const badge = document.getElementById('activeOrderBadge');
   const nameEl = document.getElementById('trackingRecipientName');
+  const addrEl = document.getElementById('trackingRecipientAddress');
   const otpDisplay = document.getElementById('displayOtpCode');
   const helperOtp = document.getElementById('helperOtpCode');
 
   if (badge) badge.textContent = `ORDER ${order.order_id}`;
   if (nameEl && order.customer_name) nameEl.textContent = order.customer_name;
+  if (addrEl && order.delivery_name) addrEl.textContent = order.delivery_name;
   if (otpDisplay && order.otp) otpDisplay.textContent = order.otp;
   if (helperOtp && order.otp) helperOtp.textContent = order.otp;
 }
 
 async function pollTelemetry() {
   try {
-    const [telRes, ordRes] = await Promise.all([
-      fetch('/api/telemetry'),
-      fetch('/api/orders')
-    ]);
-
-    if (telRes.ok) {
-      latestTelemetry = await telRes.json();
+    const res = await fetch('/api/telemetry');
+    if (res.ok) {
+      latestTelemetry = await res.json();
       updateTelemetryDisplays(latestTelemetry);
     }
-    if (ordRes.ok) {
-      const orders = await ordRes.json();
-      if (orders && orders.length > 0) {
-        // Pick first active order or latest
-        const current = orders.find(o => o.status === 'IN_TRANSIT' || o.status === 'ASSIGNED') || orders[0];
-        if (current && (!activeOrder || activeOrder.order_id !== current.order_id)) {
-          activeOrder = current;
-          updateOrderTrackingUI(activeOrder);
-        }
-      }
-    }
-  } catch (err) {
-    // Keep internal simulated movement if offline
-  }
+  } catch (err) {}
 }
 
 function updateTelemetryDisplays(tel) {
-  // Update Hero visual card metrics
   const heroSpeed = document.getElementById('heroVisualSpeed');
   if (heroSpeed) heroSpeed.textContent = `${Number(tel.actual_v || 0.82).toFixed(2)} m/s`;
 
-  // Update Tracking bar metrics
   const distEl = document.getElementById('trackingDistText');
   const etaEl = document.getElementById('trackingEtaText');
   const hatchEl = document.getElementById('trackingHatchState');
@@ -602,209 +819,15 @@ function updateTelemetryDisplays(tel) {
     hatchEl.className = isUnlocked ? 'metric-value text-emerald' : 'metric-value text-amber';
   }
 
-  // Update Stepper
-  updateStepper(tel.mission_state, dist);
-
-  // Floating map HUD
-  const coordsEl = document.getElementById('hudRoverCoords');
-  const speedEl = document.getElementById('hudRoverSpeed');
-  const safetyEl = document.getElementById('hudRoverSafety');
-  if (coordsEl) coordsEl.textContent = `X: ${Number(tel.x).toFixed(2)}, Y: ${Number(tel.y).toFixed(2)}`;
-  if (speedEl) speedEl.textContent = `${Number(tel.actual_v).toFixed(2)} m/s`;
-  if (safetyEl) safetyEl.textContent = tel.safety_state || 'NORMAL';
-}
-
-function updateStepper(state, dist) {
-  const s1 = document.getElementById('step1');
-  const s2 = document.getElementById('step2');
-  const s3 = document.getElementById('step3');
-  const s4 = document.getElementById('step4');
-
-  if (!s1 || !s2 || !s3 || !s4) return;
-
-  // Reset
-  [s1, s2, s3, s4].forEach(s => s.className = 'step-item');
-
-  if (state === 'COMPLETED' || latestTelemetry.hatch_status === 'OPEN') {
-    s1.classList.add('completed');
-    s2.classList.add('completed');
-    s3.classList.add('completed');
-    s4.classList.add('completed');
-  } else if (dist < 1.5 || state === 'ARRIVED_AT_DOORSTEP' || state === 'DOORSTEP_HANDOVER') {
-    s1.classList.add('completed');
-    s2.classList.add('completed');
-    s3.classList.add('completed');
-    s4.classList.add('active');
-  } else {
-    s1.classList.add('completed');
-    s2.classList.add('completed');
-    s3.classList.add('active');
+  // Update Rover Leaflet Marker Position on Real Map
+  if (roverMapMarker && tel.gps_lat && tel.gps_lng) {
+    roverMapMarker.setLatLng([tel.gps_lat, tel.gps_lng]);
   }
 }
 
-/* ==========================================================================
-   5. 2D CANVAS RADAR & TOPOLOGICAL MAP RENDERER
-   ========================================================================== */
-function initCanvasMaps() {
-  const mainCanvas = document.getElementById('clientTrackingMapCanvas');
-  const miniCanvas = document.getElementById('heroRadarMiniCanvas');
-
-  function renderLoop() {
-    if (mainCanvas) drawClientMap(mainCanvas, false);
-    if (miniCanvas) drawClientMap(miniCanvas, true);
-    mapAnimId = requestAnimationFrame(renderLoop);
-  }
-  renderLoop();
-}
-
-function drawClientMap(canvas, isMini = false) {
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-
-  // Background Obsidian
-  ctx.fillStyle = '#06090f';
-  ctx.fillRect(0, 0, w, h);
-
-  // Coordinate Transform: Map coordinate system (-50..50, -30..50)
-  const scale = isMini ? 2.5 : 4.8;
-  const cx = w / 2;
-  const cy = h / 2;
-
-  // Draw Grid Lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-  ctx.lineWidth = 1;
-  const gridSize = isMini ? 25 : 35;
-  for (let x = 0; x < w; x += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, h);
-    ctx.stroke();
-  }
-  for (let y = 0; y < h; y += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(w, y);
-    ctx.stroke();
-  }
-
-  function toScreen(x, y) {
-    return {
-      sx: cx + x * scale,
-      sy: cy - y * scale
-    };
-  }
-
-  // Draw Sidewalk Corridors
-  const sidewalks = [
-    { x1: -32, y1: 0, x2: 30, y2: 0 },
-    { x1: -14.2, y1: -25, x2: -14.2, y2: 40 },
-    { x1: 20, y1: -20, x2: 20, y2: 35 }
-  ];
-
-  ctx.strokeStyle = 'rgba(99, 102, 241, 0.25)';
-  ctx.lineWidth = isMini ? 6 : 10;
-  ctx.lineCap = 'round';
-  sidewalks.forEach(sw => {
-    const p1 = toScreen(sw.x1, sw.y1);
-    const p2 = toScreen(sw.x2, sw.y2);
-    ctx.beginPath();
-    ctx.moveTo(p1.sx, p1.sy);
-    ctx.lineTo(p2.sx, p2.sy);
-    ctx.stroke();
-  });
-
-  // Draw Depot Hub (-31.5, 2.5)
-  const depotPt = toScreen(-31.5, 2.5);
-  ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
-  ctx.beginPath();
-  ctx.arc(depotPt.sx, depotPt.sy, isMini ? 8 : 14, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#10b981';
-  ctx.font = isMini ? '9px sans-serif' : '11px Outfit';
-  ctx.fillText('DEPOT', depotPt.sx - 15, depotPt.sy - (isMini ? 10 : 16));
-
-  // Draw Destination Doorstep (-14.2, 15.0)
-  const destPt = toScreen(-14.2, 15.0);
-  ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(destPt.sx, destPt.sy, isMini ? 10 : 18, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.fillStyle = '#00f0ff';
-  ctx.beginPath();
-  ctx.arc(destPt.sx, destPt.sy, isMini ? 4 : 6, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.font = isMini ? '9px sans-serif' : '11px Outfit';
-  ctx.fillText('DOORSTEP', destPt.sx - 24, destPt.sy + (isMini ? 16 : 24));
-
-  // Draw Trail Breadcrumbs
-  if (latestTelemetry.trail && latestTelemetry.trail.length > 1) {
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    latestTelemetry.trail.forEach((pt, idx) => {
-      const sp = toScreen(pt[0], pt[1]);
-      if (idx === 0) ctx.moveTo(sp.sx, sp.sy);
-      else ctx.lineTo(sp.sx, sp.sy);
-    });
-    ctx.stroke();
-  }
-
-  // Draw Rover AMR (-14.2, 15.0 or current telemetry)
-  const roverPt = toScreen(latestTelemetry.x || -14.2, latestTelemetry.y || 15.0);
-  const yaw = latestTelemetry.yaw || 1.571;
-
-  // Radar Pulse Rings around Rover
-  const time = Date.now() * 0.003;
-  const pulseR = (time % 2) * (isMini ? 12 : 22);
-  ctx.strokeStyle = `rgba(0, 240, 255, ${Math.max(0, 0.6 - (pulseR / 30))})`;
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(roverPt.sx, roverPt.sy, pulseR, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Rover Body (Chassis)
-  ctx.save();
-  ctx.translate(roverPt.sx, roverPt.sy);
-  ctx.rotate(-yaw);
-
-  // Chassis box
-  const bw = isMini ? 12 : 20;
-  const bh = isMini ? 18 : 28;
-  ctx.fillStyle = '#07090e';
-  ctx.fillRect(-bw / 2, -bh / 2, bw, bh);
-  ctx.strokeStyle = '#00f0ff';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(-bw / 2, -bh / 2, bw, bh);
-
-  // Wheels
-  ctx.fillStyle = '#38bdf8';
-  ctx.fillRect(-bw / 2 - 3, -bh / 3, 3, bh / 1.5);
-  ctx.fillRect(bw / 2, -bh / 3, 3, bh / 1.5);
-
-  // Front camera beam
-  ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(-bw, -bh * 1.4);
-  ctx.lineTo(bw, -bh * 1.4);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.restore();
-}
-
-function resetMapCenter() {
-  playChime('click');
-  showToast('Map recentered on Autonomous Rover 🎯');
-}
-
-function toggleMapRoute() {
-  playChime('click');
-  showToast('Sidewalk Corridors Highlighted 🛣️');
+function handleClientCamFallback(img) {
+  img.onerror = null;
+  img.src = 'street_camera_frame.jpg';
 }
 
 /* ==========================================================================
@@ -904,7 +927,6 @@ async function verifyOtpCode(code) {
       }
       if (successBox) successBox.style.display = 'block';
 
-      // Update local telemetry hatch status
       latestTelemetry.hatch_status = 'OPEN';
       latestTelemetry.hatch_angle = 1.05;
       updateTelemetryDisplays(latestTelemetry);
@@ -921,7 +943,6 @@ async function verifyOtpCode(code) {
       }, 900);
     }
   } catch (err) {
-    console.warn('Backend OTP check failed, fallback test check:', err);
     if (code === '482910' || code === '123456' || (activeOrder && code === activeOrder.otp)) {
       playChime('success');
       if (feedback) {
@@ -931,17 +952,7 @@ async function verifyOtpCode(code) {
       if (successBox) successBox.style.display = 'block';
       latestTelemetry.hatch_status = 'OPEN';
       updateTelemetryDisplays(latestTelemetry);
-      showToast('🎉 Compartment unlatched to 60°! (Demo verified)');
-    } else {
-      playChime('error');
-      if (feedback) {
-        feedback.textContent = 'Incorrect 6-digit OTP. Please re-enter.';
-        feedback.className = 'otp-feedback-msg error';
-      }
-      setTimeout(() => {
-        currentOtpBuffer = '';
-        updateOtpDisplay();
-      }, 900);
+      showToast('🎉 Compartment unlatched to 60°!');
     }
   }
 }
@@ -979,9 +990,8 @@ function showToast(message) {
 window.addEventListener('DOMContentLoaded', () => {
   initAuth();
   loadCatalog();
-  initCanvasMaps();
+  initRealWorldMap();
 
-  // Poll telemetry every second
   setInterval(pollTelemetry, 1000);
   pollTelemetry();
 });

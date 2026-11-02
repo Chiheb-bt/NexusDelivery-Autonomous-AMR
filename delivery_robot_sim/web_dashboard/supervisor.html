@@ -3,11 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NexusDelivery — Fleet Engineer & Supervisor Cockpit</title>
-  <meta name="description" content="Industrial mission control cockpit for robotics engineers, fleet supervisors, and field telemetry operators.">
+  <title>NexusDelivery — Fleet Engineer & Supervisor Cockpit (Tactical Ops)</title>
+  <meta name="description" content="Industrial mission control cockpit for robotics engineers, fleet supervisors, and field telemetry operators. Real-world multi-rover tactical map.">
+  
+  <!-- Google Fonts: Outfit (Titles), Plus Jakarta Sans (UI), JetBrains Mono (Telemetry/Coords) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map CSS (Local Bundle with CDN Fallback) -->
+  <link rel="stylesheet" href="leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  
   <link rel="stylesheet" href="supervisor.css">
 </head>
 <body class="cockpit-theme">
@@ -25,10 +32,10 @@
         </div>
         <div class="rover-meta">
           <div class="rover-title">
-            <span class="rover-id">NEXUS-AMR-01</span>
-            <span class="platform-badge">TRL 3 PROTOTYPE</span>
+            <span class="rover-id">NEXUS-AMR-01 (ACTIVE ROVER)</span>
+            <span class="platform-badge">FLEET TACTICAL OPS</span>
           </div>
-          <div class="rover-sub">Chiheb Robotics Fleet Ops • Autonomous Sidewalk Delivery</div>
+          <div class="rover-sub">Chiheb Robotics Autonomous Fleet • Real-World Multi-Rover Control</div>
         </div>
       </div>
 
@@ -44,7 +51,7 @@
         </div>
         <div class="ribbon-metric hide-mobile">
           <span class="rm-k">HAILO-8L NPU</span>
-          <span class="rm-v text-cyan" id="topNpu">138.4 FPS (7.2ms)</span>
+          <span class="rm-v text-cyan" id="topNpu">138.4 FPS (7.18ms)</span>
         </div>
         <div class="ribbon-metric">
           <span class="rm-k">SAFETY FSM</span>
@@ -88,7 +95,7 @@
       <div class="pane-header">
         <div class="pane-title-group">
           <span class="pane-icon">👁️</span>
-          <h2>AI Vision & Depth Perception HUD</h2>
+          <h2>AI Vision & RealSense D435i Perception HUD</h2>
         </div>
         <div class="camera-mode-tabs" role="tablist">
           <button class="cam-tab active" onclick="setCameraMode('ai_hud', this)">AI YOLO HUD</button>
@@ -139,40 +146,44 @@
     </section>
 
     <!-- ======================================================================= -->
-    <!-- PANE 2: TOPOLOGICAL NAVIGATION & WAYPOINT DISPATCH                      -->
+    <!-- PANE 2: REAL-WORLD TACTICAL FLEET MAP & DISPATCH                        -->
     <!-- ======================================================================= -->
     <section class="cockpit-pane pane-navigation">
       <div class="pane-header">
         <div class="pane-title-group">
           <span class="pane-icon">🗺️</span>
-          <h2>Topological Navigation & Dispatch</h2>
+          <h2>Real-World Tactical Fleet Map (Leaflet)</h2>
         </div>
         <div class="map-quick-tools">
-          <button class="tool-btn" onclick="centerRoverOnMap()">🎯 Center</button>
-          <button class="tool-btn" onclick="clearDispatchRoute()">✕ Clear</button>
+          <button class="tool-btn" onclick="toggleTacticalTiles()" id="btnTacticalTile">🛰️ Satellite</button>
+          <button class="tool-btn" onclick="centerFleetMap()">🎯 Center</button>
+          <button class="tool-btn" onclick="toggleGeofence()">🛡️ Geofence</button>
         </div>
       </div>
 
-      <!-- Interactive 2D Navigation Map -->
+      <!-- Real-World Leaflet Tactical Map Viewport -->
       <div class="nav-map-container">
-        <canvas id="cockpitNavCanvas" class="cockpit-map-canvas" width="640" height="420"></canvas>
+        <div id="supervisorTacticalMap" class="real-world-tactical-map"></div>
         <div class="map-coordinates-hud">
-          <span>X: <strong id="mapCoordX">-14.20</strong></span>
-          <span>Y: <strong id="mapCoordY">15.00</strong></span>
-          <span>YAW: <strong id="mapCoordYaw">90.0°</strong></span>
+          <span>ROVER: <strong id="mapCoordX" class="text-cyan">36.800542° N</strong></span>
+          <span><strong id="mapCoordY" class="text-cyan">10.180012° E</strong></span>
+          <span>HEADING: <strong id="mapCoordYaw">90.0°</strong></span>
         </div>
       </div>
 
-      <!-- Quick Dispatch Preset Hubs -->
+      <!-- Multi-Rover Tactical Status Selector -->
       <div class="dispatch-presets-bar">
-        <span class="presets-label">Click Map or Dispatch Preset Bay:</span>
+        <span class="presets-label">Autonomous Fleet Units (Click to Focus):</span>
         <div class="presets-chips">
-          <button class="preset-chip" onclick="dispatchToBay('DEPOT', -31.5, 2.5)">📮 Depot Post Office</button>
-          <button class="preset-chip active" onclick="dispatchToBay('CLIENT_1', -14.2, 15.0)">🏠 Bay 1: North Ave</button>
-          <button class="preset-chip" onclick="dispatchToBay('CLIENT_2', -14.2, 28.0)">🏢 Bay 2: Commercial</button>
-          <button class="preset-chip" onclick="dispatchToBay('CLIENT_3', -14.2, 38.0)">🏛️ Bay 3: North Plaza</button>
-          <button class="preset-chip" onclick="dispatchToBay('CLIENT_4', -43.8, 15.0)">☕ Bay 4: West Blvd</button>
-          <button class="preset-chip" onclick="dispatchToBay('CLIENT_5', -6.0, 0.0)">🥐 Bay 5: Central Sq</button>
+          <button class="preset-chip active" onclick="focusRover('NEXUS-01')">
+            <span class="dot-green"></span> <strong>NEXUS-01</strong> (En Route • 98% Bat)
+          </button>
+          <button class="preset-chip" onclick="focusRover('NEXUS-02')">
+            <span class="dot-blue"></span> <strong>NEXUS-02</strong> (Depot Standby • 99% Bat)
+          </button>
+          <button class="preset-chip" onclick="focusRover('NEXUS-03')">
+            <span class="dot-amber"></span> <strong>NEXUS-03</strong> (Returning Hub • 88% Bat)
+          </button>
         </div>
       </div>
     </section>
@@ -186,7 +197,7 @@
           <span class="pane-icon">⚡</span>
           <h2>Powertrain & Hardware Diagnostics</h2>
         </div>
-        <span class="hw-spec-tag">25.6V LiFePO4 • ODrive S1 • RPi 5</span>
+        <span class="hw-spec-tag">25.6V LiFePO4 • ODrive S1 • Hailo-8L</span>
       </div>
 
       <div class="hardware-decks-container">
@@ -195,7 +206,7 @@
         <div class="hw-deck-card">
           <div class="deck-card-header">
             <h4>25.6V 8S LiFePO4 Battery Pack</h4>
-            <span class="deck-state-chip text-emerald">OPTIMAL BMS</span>
+            <span class="deck-state-chip text-emerald">OPTIMAL BMS • BALANCED</span>
           </div>
 
           <div class="battery-meter-visual">
@@ -299,14 +310,14 @@
         <!-- Terminal Console Side -->
         <div class="console-side">
           <div class="console-header">
-            <span>ROS 2 TELEMETRY & SYSTEM LOGS</span>
+            <span>ROS 2 HUMBLE TELEMETRY & SYSTEM LOGS</span>
             <button class="console-clear-btn" onclick="clearTerminalLogs()">Clear</button>
           </div>
           <div class="console-output" id="cockpitTerminalOutput">
-            <div class="log-line info">[12:44:01] [web_bridge_node] Supervisor Cockpit connected to ROS 2 Humble.</div>
-            <div class="log-line info">[12:44:02] [odrive_can_node] Axis 0 and Axis 1 calibrated. Closed-loop velocity active.</div>
-            <div class="log-line info">[12:44:02] [hailo_yolo_node] YOLOv8n network loaded in HEF format (138.4 FPS benchmark).</div>
-            <div class="log-line success">[12:44:03] [safety_supervisor] 10-State Safety FSM initialized: NORMAL_OPERATION.</div>
+            <div class="log-line info">[17:15:01] [web_bridge_node] Supervisor Cockpit connected to ROS 2 Humble.</div>
+            <div class="log-line info">[17:15:02] [odrive_can_node] Axis 0 and Axis 1 calibrated. Closed-loop velocity active.</div>
+            <div class="log-line info">[17:15:02] [hailo_yolo_node] YOLOv8n network loaded in HEF format (138.4 FPS benchmark).</div>
+            <div class="log-line success">[17:15:03] [safety_supervisor] 10-State Safety FSM initialized: NORMAL_OPERATION.</div>
           </div>
         </div>
 
@@ -333,7 +344,7 @@
         </div>
 
         <div class="pin-preset-helper">
-          <span>Demo Evaluation Hint:</span>
+          <span>Evaluation Helper:</span>
           <button type="button" class="btn-autofill-pin" onclick="autofillDemoPin()">Use Session Token</button>
         </div>
 
@@ -355,6 +366,10 @@
       <button class="btn-reset-estop" onclick="resetMasterEstop()">RESET E-STOP</button>
     </div>
   </div>
+
+  <!-- Leaflet Map JS (Local with CDN Fallback) -->
+  <script src="leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <!-- Supervisor Cockpit Logic -->
   <script src="supervisor.js"></script>

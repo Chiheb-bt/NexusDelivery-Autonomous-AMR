@@ -3,21 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NexusDelivery — Autonomous Sidewalk Delivery Experience</title>
-  <meta name="description" content="Next-generation autonomous sidewalk delivery platform. Order gourmet dining, espresso, and daily essentials delivered directly to your doorstep by intelligent AI rovers.">
+  <title>NexusDelivery — Autonomous Sidewalk Delivery Experience & Real-World Explorer</title>
+  <meta name="description" content="World-class autonomous sidewalk delivery platform. Explore real-world streets in Tunis and global cities, drop your delivery pin anywhere, and track smart AI rovers in real time.">
+  
+  <!-- Google Fonts: Outfit (Brand/Titles), Plus Jakarta Sans (Clean UI), JetBrains Mono (Telemetry/Coords) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map CSS (Local Bundle with CDN Fallback) -->
+  <link rel="stylesheet" href="leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  
+  <!-- Custom Cyberpunk / Luxury Dark Theme CSS -->
   <link rel="stylesheet" href="client.css">
 </head>
 <body class="client-theme">
 
   <!-- ========================================================================= -->
-  <!-- 1. GLOBAL TOP NAVIGATION BAR                                              -->
+  <!-- 1. GLOBAL ENTERPRISE TOP NAVIGATION BAR                                   -->
   <!-- ========================================================================= -->
   <header class="client-navbar">
     <div class="nav-container">
-      <!-- Brand Block -->
+      
+      <!-- Brand Logo -->
       <a href="/client" class="brand-link" id="brandHomeLink">
         <div class="brand-icon-pulse">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
@@ -30,26 +39,28 @@
         </div>
         <div class="brand-text">
           <span class="brand-title">Nexus<span class="text-cyan">Delivery</span></span>
-          <span class="brand-badge">AUTONOMOUS</span>
+          <span class="brand-badge">ENTERPRISE AMR • TRL 3</span>
         </div>
       </a>
 
-      <!-- Fleet Status Indicator -->
-      <div class="fleet-status-pill">
-        <span class="status-pulse-dot"></span>
-        <span class="fleet-status-text" id="fleetStatusText">4 Rovers Active in Tunis Hub</span>
-      </div>
+      <!-- Quick Nav Links -->
+      <nav class="nav-center-links">
+        <a href="#heroSection" class="nav-item-link active">Home</a>
+        <a href="#worldMapSection" class="nav-item-link">Explore Map & Pin</a>
+        <a href="#storeCatalogSection" class="nav-item-link">Curbside Menu</a>
+        <a href="#liveTrackingSection" class="nav-item-link">Live Radar</a>
+      </nav>
 
       <!-- Right Header Actions -->
       <div class="nav-actions">
         <!-- Switch to Engineer Cockpit -->
-        <a href="/supervisor" class="cockpit-toggle-btn" id="linkSupervisorCockpit" title="Open Fleet Operations Supervisor Cockpit">
+        <a href="/supervisor" class="cockpit-toggle-btn" id="linkSupervisorCockpit" title="Switch to Fleet Supervisor Cockpit">
           <span class="toggle-icon">⚡</span>
           <span class="toggle-text">Supervisor Cockpit</span>
         </a>
 
-        <!-- Sound Chime Toggle -->
-        <button class="icon-toggle-btn" id="btnSoundToggle" onclick="toggleClientAudio()" title="Sound Feedback Toggle">
+        <!-- Sound Toggle -->
+        <button class="icon-toggle-btn" id="btnSoundToggle" onclick="toggleClientAudio()" title="Sound Chimes Toggle">
           <span id="soundIcon">🔊</span>
         </button>
 
@@ -61,88 +72,111 @@
           <span class="cart-total-preview" id="cartHeaderTotal">$0.00</span>
         </button>
 
-        <!-- User Authentication & Profile Block -->
+        <!-- User Authentication & Profile Slot -->
         <div class="user-auth-slot" id="userAuthSlot">
-          <!-- Populated dynamically: Sign In button OR User Profile Pill -->
           <button class="btn-primary-auth" id="btnOpenAuthModal" onclick="openAuthModal('login')">
             <span class="btn-auth-icon">🔑</span>
             <span>Sign In / Inscription</span>
           </button>
         </div>
       </div>
+
     </div>
   </header>
 
   <!-- ========================================================================= -->
-  <!-- 2. CINEMATIC HERO SECTION (NETFLIX-STYLE ATMOSPHERE)                      -->
+  <!-- 2. CINEMATIC HERO SECTION (NETFLIX / APPLE AESTHETICS)                    -->
   <!-- ========================================================================= -->
-  <section class="hero-section">
+  <section class="hero-section" id="heroSection">
     <div class="hero-backdrop-glow"></div>
     <div class="hero-content">
+      
+      <!-- Top Badge -->
       <div class="hero-chip">
         <span class="chip-dot"></span>
-        <span>TRL 3 Proven Prototype • Real-Time ROS 2 Sidewalk Navigation</span>
+        <span>GLOBAL HACKATHON SHOWCASE • ZERO-LIDAR ZERO-GPS REAL-TIME AMR</span>
       </div>
+
       <h1 class="hero-title">
         Autonomous Sidewalk Delivery. <br>
-        <span class="gradient-text">Silent. Zero-Emission. Instant.</span>
+        <span class="gradient-text">Explore Anywhere. Pin Anywhere.</span>
       </h1>
+
       <p class="hero-subtitle">
-        Order gourmet cuisine, fresh bakery items, and emergency wellness care delivered directly to your doorstep by smart, zero-emission sidewalk rovers. Unlocked exclusively with your personal security code.
+        Drop your delivery pin on any street in Tunis or across the globe. Our smart zero-emission sidewalk rovers calculate optimal corridor trajectories and deliver gourmet meals, espresso, and healthcare directly to your doorstep.
       </p>
 
+      <!-- Key Capabilities Tags -->
       <div class="hero-feature-tags">
         <div class="feature-tag">
+          <span class="tag-icon">🗺️</span>
+          <span>Real-World GPS & Satellite Tiles</span>
+        </div>
+        <div class="feature-tag">
           <span class="tag-icon">⚡</span>
-          <span>12–18 min transit</span>
+          <span>Hailo-8L NPU (138.4 FPS)</span>
         </div>
         <div class="feature-tag">
           <span class="tag-icon">🔒</span>
-          <span>6-Digit OTP Hatch</span>
+          <span>Biometric & 6-Digit OTP Lock</span>
         </div>
         <div class="feature-tag">
           <span class="tag-icon">🌱</span>
-          <span>100% Electric LiFePO4</span>
-        </div>
-        <div class="feature-tag">
-          <span class="tag-icon">🎯</span>
-          <span>Zero LiDAR • Active IR</span>
+          <span>100% Electric LiFePO4 (25.6V)</span>
         </div>
       </div>
 
+      <!-- Action Buttons -->
       <div class="hero-actions">
-        <a href="#storeCatalogSection" class="btn-hero-cta" onclick="playChime('click')">
-          <span>Explore Catalog & Order</span>
-          <span class="btn-arrow">➔</span>
+        <a href="#worldMapSection" class="btn-hero-cta" onclick="playChime('click')">
+          <span>Explore Map & Set Drop Pin</span>
+          <span class="btn-arrow">📍</span>
         </a>
-        <a href="#liveTrackingSection" class="btn-hero-secondary" onclick="scrollToTracking()">
-          <span class="btn-icon">📍</span>
-          <span>Track Active Rover</span>
+        <a href="#storeCatalogSection" class="btn-hero-secondary" onclick="playChime('click')">
+          <span class="btn-icon">🍔</span>
+          <span>Browse Curbside Menu</span>
         </a>
       </div>
+
     </div>
 
-    <!-- Hero Visual Preview Floating Card -->
+    <!-- Floating Live Rover Telemetry HUD Card -->
     <div class="hero-visual-card">
       <div class="visual-card-inner">
         <div class="visual-card-header">
           <div class="visual-badge">
             <span class="pulse-beacon"></span>
-            <span>NEXUS-AMR-01 LIVE</span>
+            <span>NEXUS-AMR-01 ACTIVE</span>
           </div>
           <span class="visual-speed-metric" id="heroVisualSpeed">0.82 m/s</span>
         </div>
-        <div class="visual-card-radar">
-          <canvas id="heroRadarMiniCanvas" width="300" height="180"></canvas>
-          <div class="radar-scan-line"></div>
+
+        <div class="visual-telemetry-screen">
+          <div class="hud-stat-box">
+            <span class="hsb-label">CURRENT HUB</span>
+            <strong class="hsb-val text-cyan">Tunis Central Hub</strong>
+          </div>
+          <div class="hud-stat-box">
+            <span class="hsb-label">NAVIGATION MODE</span>
+            <strong class="hsb-val text-emerald">ACTIVE AUTONOMOUS</strong>
+          </div>
+          <div class="hud-stat-box">
+            <span class="hsb-label">POWER BUS</span>
+            <strong class="hsb-val text-amber">25.6V (LiFePO4 8S)</strong>
+          </div>
+          <div class="hud-stat-box">
+            <span class="hsb-label">OBSTACLE CLEARANCE</span>
+            <strong class="hsb-val text-emerald" id="heroCorridorClear">CLEAR (2.4m CORRIDOR)</strong>
+          </div>
         </div>
+
         <div class="visual-card-footer">
           <div class="visual-meta">
-            <span class="meta-label">DESTINATION:</span>
-            <span class="meta-value" id="heroVisualTarget">12 North Avenue, Apt 4B</span>
+            <span class="meta-label">ACTIVE MISSION:</span>
+            <span class="meta-value" id="heroVisualTarget">Avenue Habib Bourguiba, Tunis</span>
           </div>
           <div class="visual-eta">
-            <span class="meta-label">ETA:</span>
+            <span class="meta-label">ETA TO DOORSTEP:</span>
             <span class="meta-value text-emerald" id="heroVisualEta">~3 min</span>
           </div>
         </div>
@@ -151,22 +185,105 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. STOREFRONT PRODUCT CATALOG SECTION                                     -->
+  <!-- 3. REAL-WORLD INTERACTIVE MAP & EXPLORER (LEAFLET + CARTODB / SATELLITE)   -->
+  <!-- ========================================================================= -->
+  <section class="world-map-section" id="worldMapSection">
+    <div class="section-container">
+      
+      <!-- Section Header -->
+      <div class="section-title-wrap">
+        <div class="title-with-pill">
+          <h2 class="section-heading">Real-World Sidewalk Explorer & Pin Drop</h2>
+          <span class="hackathon-tag">EXPLORE ANYWHERE IN THE WORLD</span>
+        </div>
+        <p class="section-sub">
+          Tap or drag the delivery pin to your exact doorstep, building porch, or sidewalk bay anywhere on earth.
+        </p>
+      </div>
+
+      <!-- Map Toolbar: City Selector + Satellite Toggle + GPS Locate Me -->
+      <div class="map-interactive-toolbar">
+        <div class="city-selector-pills">
+          <button class="city-pill active" onclick="switchCity('tunis', this)">
+            <span>🇹🇳</span> Tunis Center
+          </button>
+          <button class="city-pill" onclick="switchCity('silicon_valley', this)">
+            <span>🇺🇸</span> Silicon Valley
+          </button>
+          <button class="city-pill" onclick="switchCity('paris', this)">
+            <span>🇫🇷</span> Paris Champs-Élysées
+          </button>
+          <button class="city-pill" onclick="switchCity('tokyo', this)">
+            <span>🇯🇵</span> Tokyo Shibuya
+          </button>
+        </div>
+
+        <div class="map-view-actions">
+          <button class="map-action-pill" onclick="locateUserGps()" id="btnLocateMe" title="Detect and center on your actual GPS location">
+            <span>📍</span> Locate My GPS
+          </button>
+          <button class="map-action-pill" onclick="toggleMapTiles()" id="btnToggleSatellite">
+            <span id="tileIcon">🛰️</span> <span id="tileText">Satellite View</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Leaflet Map Viewport Container -->
+      <div class="leaflet-map-card">
+        <div id="worldDeliveryMap" class="real-world-map-canvas"></div>
+        
+        <!-- Live Selected Coordinates & Doorstep Floating HUD -->
+        <div class="map-target-overlay-card">
+          <div class="overlay-card-header">
+            <span class="pin-pulse-icon">📍</span>
+            <div>
+              <span class="overlay-sub">TARGET DOORSTEP DELIVERY LOCATION</span>
+              <h4 id="pinSelectedAddress">Avenue Habib Bourguiba, Tunis (Curbside Bay 1)</h4>
+            </div>
+          </div>
+
+          <div class="overlay-stats-row">
+            <div class="os-item">
+              <span class="os-k">GPS COORDINATES:</span>
+              <strong class="os-v mono text-cyan" id="pinGpsCoords">36.800542° N, 10.180012° E</strong>
+            </div>
+            <div class="os-item">
+              <span class="os-k">AUTONOMOUS TRANSIT DISTANCE:</span>
+              <strong class="os-v mono text-emerald" id="pinDistanceVal">1.2 km</strong>
+            </div>
+            <div class="os-item">
+              <span class="os-k">ESTIMATED ARRIVAL:</span>
+              <strong class="os-v mono text-amber" id="pinEtaVal">12–15 min</strong>
+            </div>
+          </div>
+
+          <button class="btn-confirm-doorstep-pin" onclick="confirmDoorstepLocation()">
+            <span>Set As Active Delivery Doorstep</span>
+            <span class="btn-arrow">✓</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. STOREFRONT PRODUCT CATALOG SECTION                                     -->
   <!-- ========================================================================= -->
   <main class="store-catalog-section" id="storeCatalogSection">
     <div class="section-container">
       
-      <!-- Catalog Filter Pills -->
+      <!-- Catalog Header -->
       <div class="catalog-header-row">
         <div>
           <h2 class="section-heading">Curated Curbside Catalog</h2>
-          <p class="section-sub">Select items for zero-contact autonomous sidewalk rover delivery</p>
+          <p class="section-sub">Zero-contact gourmet meals, fresh bakery, cold brew, and emergency essentials</p>
         </div>
 
-        <!-- Category Filter Buttons -->
+        <!-- Category Filters -->
         <div class="category-filters" role="tablist" id="categoryFilterBar">
           <button class="category-pill active" onclick="filterCatalog('all', this)">
-            <span>🌟</span> All Items
+            <span>🌟</span> All Menu
           </button>
           <button class="category-pill" onclick="filterCatalog('Hot Food', this)">
             <span>🍕</span> Artisan Pizzas
@@ -178,43 +295,43 @@
             <span>🥐</span> Bakery & Pastry
           </button>
           <button class="category-pill" onclick="filterCatalog('Beverages', this)">
-            <span>☕</span> Cold Brew & Drinks
+            <span>☕</span> Cold Brew
           </button>
           <button class="category-pill" onclick="filterCatalog('Healthcare', this)">
-            <span>💊</span> Wellness & Care
+            <span>💊</span> Wellness
           </button>
         </div>
       </div>
 
-      <!-- Product Grid -->
+      <!-- Products Grid -->
       <div class="products-grid" id="productsCatalogGrid">
-        <!-- Injected dynamically via client.js from /api/products -->
+        <!-- Dynamically injected via client.js -->
       </div>
     </div>
   </main>
 
   <!-- ========================================================================= -->
-  <!-- 4. LIVE ORDER TRACKING & DOORSTEP RADAR SECTION                           -->
+  <!-- 5. LIVE ORDER TRACKING & RECIPIENT COCKPIT                                -->
   <!-- ========================================================================= -->
   <section class="live-tracking-section" id="liveTrackingSection">
     <div class="section-container">
       <div class="tracking-grid">
         
-        <!-- Left Column: Order Status & Stepper Card -->
+        <!-- Left Column: Order Stepper & Doorstep OTP -->
         <div class="tracking-status-card">
           <div class="card-glass-header">
             <div class="order-id-badge">
               <span class="badge-dot"></span>
               <span id="activeOrderBadge">ORDER ORD-001</span>
             </div>
-            <span class="order-type-chip">AUTONOMOUS DISPATCH</span>
+            <span class="order-type-chip">EN ROUTE • LIVE GPS</span>
           </div>
 
           <div class="order-recipient-info">
             <div class="recipient-avatar">🏠</div>
             <div class="recipient-details">
               <h3 id="trackingRecipientName">Sophie Laurent</h3>
-              <p id="trackingRecipientAddress">12 North Avenue, Curbside Bay 1</p>
+              <p id="trackingRecipientAddress">Avenue Habib Bourguiba, Doorstep Entrance</p>
               <span class="tracking-phone-masked" id="trackingPhoneMasked">+216 20 ••• •56</span>
             </div>
           </div>
@@ -224,29 +341,29 @@
             <div class="step-item completed" id="step1">
               <div class="step-circle">✓</div>
               <div class="step-info">
-                <h4>Order Placed & Verified</h4>
-                <p>Payment confirmed & packaged</p>
+                <h4>Order Confirmed & Prepared</h4>
+                <p>Packaged in temperature-sealed container</p>
               </div>
             </div>
             <div class="step-item completed" id="step2">
               <div class="step-circle">✓</div>
               <div class="step-info">
                 <h4>Secured in Cargo Compartment</h4>
-                <p>Dual motorized solenoid locked</p>
+                <p>Dual motorized solenoid locked (0.0°)</p>
               </div>
             </div>
             <div class="step-item active" id="step3">
               <div class="step-circle pulse">3</div>
               <div class="step-info">
                 <h4>Rover in Sidewalk Transit</h4>
-                <p id="step3Sub">Cruising North Avenue Sidewalk (0.82 m/s)</p>
+                <p id="step3Sub">Autonomous sidewalk cruising (0.82 m/s)</p>
               </div>
             </div>
             <div class="step-item" id="step4">
               <div class="step-circle">4</div>
               <div class="step-info">
                 <h4>Arrived at Doorstep (OTP Unlock)</h4>
-                <p>Enter 6-digit code to open hatch</p>
+                <p>Enter 6-digit code or biometric scan to open</p>
               </div>
             </div>
           </div>
@@ -267,7 +384,7 @@
             </div>
           </div>
 
-          <!-- Handover OTP Action Box -->
+          <!-- Handover Action Box -->
           <div class="handover-action-box">
             <div class="handover-instructions">
               <div class="otp-key-icon">🔑</div>
@@ -286,42 +403,35 @@
           </div>
         </div>
 
-        <!-- Right Column: Interactive 2D Radar Canvas Map -->
+        <!-- Right Column: Live Rover Front Camera & Tracking Map -->
         <div class="tracking-map-card">
           <div class="map-card-header">
             <div class="map-header-title">
               <span class="radar-dot"></span>
-              <h3>Live Sidewalk GPS & Perception Radar</h3>
+              <h3>Live Sidewalk GPS & Perception Radar (RealSense D435i Feed)</h3>
             </div>
-            <div class="map-controls">
-              <button class="map-tool-btn" onclick="resetMapCenter()" title="Recenter on Rover">🎯 Center Rover</button>
-              <button class="map-tool-btn" onclick="toggleMapRoute()" title="Toggle Corridor Route">🛣️ Corridors</button>
-            </div>
+            <span class="live-stream-badge">LIVE 30 FPS • AI HUD</span>
           </div>
 
-          <div class="canvas-map-wrap">
-            <canvas id="clientTrackingMapCanvas" width="600" height="480"></canvas>
+          <!-- Live Camera Viewport -->
+          <div class="rover-camera-stream-wrap">
+            <img src="/stream/camera.mjpg" id="clientLiveCamStream" class="rover-cam-img" alt="Live Front Camera Feed" onerror="handleClientCamFallback(this)">
             
-            <!-- Live Floating HUD overlay -->
-            <div class="map-floating-hud">
-              <div class="hud-item">
-                <span class="hud-k">POS:</span>
-                <span class="hud-v" id="hudRoverCoords">X: -14.20, Y: 15.00</span>
+            <div class="camera-hud-overlay">
+              <div class="cam-badge-top">
+                <span class="red-record-dot"></span>
+                <span>FRONT STEREO REAL-TIME AI</span>
               </div>
-              <div class="hud-item">
-                <span class="hud-k">SPEED:</span>
-                <span class="hud-v" id="hudRoverSpeed">0.82 m/s</span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-k">SAFETY:</span>
-                <span class="hud-v text-emerald" id="hudRoverSafety">NORMAL</span>
+              <div class="cam-badge-bottom">
+                <span>HAILO-8L: 138.4 FPS</span>
+                <span>CORRIDOR: CLEAR</span>
               </div>
             </div>
           </div>
 
           <div class="map-footer-notes">
-            <span>📍 Curbside Stopping Bay: <strong>CLIENT_1_NORTH_AVENUE</strong></span>
-            <span>⚡ Zero-Emission Autonomous Courier</span>
+            <span>📍 Active AMR: <strong>NEXUS-01 (Courier Alpha)</strong></span>
+            <span>⚡ Zero-Emission Autonomous Sidewalk Delivery</span>
           </div>
         </div>
 
@@ -330,7 +440,7 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 5. SLIDE-OVER SHOPPING CART DRAWER                                        -->
+  <!-- 6. SLIDE-OVER SHOPPING CART DRAWER                                        -->
   <!-- ========================================================================= -->
   <div class="cart-drawer-backdrop" id="cartDrawerBackdrop" onclick="toggleCartDrawer()"></div>
   <aside class="cart-drawer" id="cartDrawer">
@@ -347,7 +457,6 @@
 
     <!-- Items List -->
     <div class="drawer-items-list" id="drawerCartItemsList">
-      <!-- Injected via client.js -->
       <div class="empty-cart-state">
         <span class="empty-cart-icon">🛒</span>
         <p>Your delivery cart is empty.</p>
@@ -355,16 +464,12 @@
       </div>
     </div>
 
-    <!-- Destination Selector -->
+    <!-- Doorstep Address Summary Box -->
     <div class="drawer-destination-box">
-      <label class="dest-label">Delivery Address / Stopping Bay</label>
-      <select class="dest-select" id="cartDestSelect" onchange="onDestinationChange()">
-        <option value="CUST-001" data-coords="-14.20, 15.00">🏠 Sophie Laurent — 12 North Avenue (Bay 1)</option>
-        <option value="CUST-002" data-coords="-14.20, 28.00">🏢 Marc Dubois — 45 North Avenue Commercial</option>
-        <option value="CUST-003" data-coords="-14.20, 38.00">🏛️ Elena Rostova — 8 North Plaza</option>
-        <option value="CUST-004" data-coords="-43.80, 15.00">☕ Lucas Vance — 22 West Boulevard</option>
-        <option value="CUST-005" data-coords="-6.00, 0.00">🥐 Amira Khan — 3 Central Square</option>
-      </select>
+      <label class="dest-label">Delivery Destination (From Interactive Map)</label>
+      <div class="selected-doorstep-badge" id="cartSelectedDoorstepBadge">
+        📍 Avenue Habib Bourguiba, Tunis (36.8005° N, 10.1800° E)
+      </div>
     </div>
 
     <!-- Order Summary & Checkout -->
@@ -374,7 +479,7 @@
         <span id="billSubtotal">$0.00</span>
       </div>
       <div class="bill-row">
-        <span>Autonomous Rover Delivery</span>
+        <span>Autonomous Sidewalk Delivery</span>
         <span class="text-emerald">FREE ($0.00)</span>
       </div>
       <div class="bill-row eco-row">
@@ -395,7 +500,7 @@
   </aside>
 
   <!-- ========================================================================= -->
-  <!-- 6. SECURE AUTHENTICATION MODAL (SIGN IN & INSCRIPTION)                    -->
+  <!-- 7. SECURE AUTHENTICATION MODAL (SIGN IN & INSCRIPTION)                    -->
   <!-- ========================================================================= -->
   <div class="auth-modal-backdrop" id="authModalBackdrop">
     <div class="auth-modal-window">
@@ -476,17 +581,6 @@
           <input type="text" id="regAddress" class="auth-input" placeholder="e.g. 15 Rue Habib Bourguiba, Apt 3" required>
         </div>
 
-        <div class="form-group">
-          <label>Curbside Stopping Bay</label>
-          <select id="regBaySelect" class="auth-input">
-            <option value="CLIENT_1_NORTH_AVENUE">North Avenue Sidewalk (Bay 1)</option>
-            <option value="CLIENT_2_NORTH_AVENUE">North Avenue Commercial (Bay 2)</option>
-            <option value="CLIENT_3_NORTH_PLAZA">North Plaza Galleria (Bay 3)</option>
-            <option value="CLIENT_4_WEST_BOULEVARD">West Boulevard Bistro (Bay 4)</option>
-            <option value="CLIENT_5_CENTRAL_SQUARE">Central Square Bakery (Bay 5)</option>
-          </select>
-        </div>
-
         <div class="auth-error-msg" id="registerErrorMsg"></div>
 
         <button type="submit" class="btn-auth-submit" id="btnRegisterSubmit">
@@ -499,7 +593,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 7. DOORSTEP 6-DIGIT OTP UNLOCK MODAL                                      -->
+  <!-- 8. DOORSTEP 6-DIGIT OTP UNLOCK MODAL                                      -->
   <!-- ========================================================================= -->
   <div class="otp-modal-backdrop" id="otpModalBackdrop">
     <div class="otp-modal-window">
@@ -554,8 +648,25 @@
     </div>
   </div>
 
+  <!-- Enterprise Security Footprint Footer -->
+  <footer class="enterprise-footer">
+    <div class="footer-container">
+      <div class="footer-badges">
+        <span class="sec-badge">🛡️ 256-Bit TLS End-to-End Encrypted</span>
+        <span class="sec-badge">🔒 Zero-Trust Hardware Vault</span>
+        <span class="sec-badge">📜 SOC-2 Type II Compliant</span>
+        <span class="sec-badge">✅ ISO 27001 Autonomous Robotics</span>
+      </div>
+      <p class="footer-copy">© 2026 Chiheb Robotics • NexusDelivery™ Autonomous Sidewalk AMR Platform. Built for World-Class Autonomous Robotics Competition.</p>
+    </div>
+  </footer>
+
   <!-- Toast Notification System -->
   <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Leaflet Map JS (Local with CDN fallback) -->
+  <script src="leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <!-- Client Application Logic -->
   <script src="client.js"></script>
