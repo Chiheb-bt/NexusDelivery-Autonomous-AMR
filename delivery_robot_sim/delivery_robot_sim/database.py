@@ -127,6 +127,19 @@ class DatabaseManager:
                 cur = conn.execute("SELECT COUNT(*) FROM users;")
                 if cur.fetchone()[0] == 0:
                     self._seed_default_data(conn)
+                else:
+                    # Ensure supervisor account exists in pre-existing DB
+                    cur_sup = conn.execute("SELECT COUNT(*) FROM users WHERE email = 'supervisor@nexus.tn';")
+                    if cur_sup.fetchone()[0] == 0:
+                        cur_ids = conn.execute("SELECT id FROM users;")
+                        existing = {r[0] for r in cur_ids.fetchall()}
+                        sup_id = "USR-SUP"
+                        while sup_id in existing:
+                            sup_id = f"USR-SUP-{secrets.token_hex(2)}"
+                        conn.execute(
+                            "INSERT INTO users (id, email, password_hash, name, role, phone) VALUES (?, ?, ?, ?, ?, ?);",
+                            (sup_id, 'supervisor@nexus.tn', hash_password('nexus2026'), 'Fleet Supervisor', 'OPERATOR', '+216 71 100 400')
+                        )
 
     def _seed_default_data(self, conn: sqlite3.Connection):
         now = time.time()
@@ -136,6 +149,7 @@ class DatabaseManager:
             ('USR-002', 'marc@nexus.tn', hash_password('password123'), 'Marc Dubois', 'CUSTOMER', '+216 22 987 654'),
             ('USR-003', 'operator@nexus.tn', hash_password('nexus2026'), 'Fleet Operator Alpha', 'OPERATOR', '+216 71 100 200'),
             ('USR-004', 'admin@nexus.tn', hash_password('Admin2026!'), 'Lead Robotics Admin', 'SUPER_ADMIN', '+216 71 100 300'),
+            ('USR-005', 'supervisor@nexus.tn', hash_password('nexus2026'), 'Fleet Supervisor', 'OPERATOR', '+216 71 100 400'),
         ]
         conn.executemany(
             "INSERT INTO users (id, email, password_hash, name, role, phone) VALUES (?, ?, ?, ?, ?, ?);",
@@ -188,9 +202,13 @@ class DatabaseManager:
                 if cur.fetchone():
                     return False, "An account with this email address already exists.", None
 
-                cur = conn.execute("SELECT COUNT(*) FROM users;")
-                count = cur.fetchone()[0]
-                user_id = f"USR-{count + 1:03d}"
+                cur = conn.execute("SELECT id FROM users;")
+                existing_ids = {r[0] for r in cur.fetchall()}
+                idx = len(existing_ids) + 1
+                user_id = f"USR-{idx:03d}"
+                while user_id in existing_ids:
+                    idx += 1
+                    user_id = f"USR-{idx:03d}"
                 pw_hash = hash_password(password)
 
                 conn.execute(

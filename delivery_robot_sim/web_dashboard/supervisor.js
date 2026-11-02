@@ -6,10 +6,37 @@
  */
 
 // Operator Security State
-let operatorToken = sessionStorage.getItem('nexus_operator_token') || '';
+let operatorToken = sessionStorage.getItem('nexus_operator_token') || localStorage.getItem('nexus_client_token') || '';
 let isEstopEngaged = false;
 let currentCameraMode = 'ai_hud';
 let selectedRoverId = 'NEXUS-01';
+
+/* ==========================================================================
+   THEME SWITCHER (Light Default + Dark Mode)
+   ========================================================================== */
+function initTheme() {
+  const theme = localStorage.getItem('nexus_theme') || 'light';
+  applyTheme(theme);
+}
+
+function toggleTheme() {
+  const current = localStorage.getItem('nexus_theme') || 'light';
+  const next = (current === 'light') ? 'dark' : 'light';
+  localStorage.setItem('nexus_theme', next);
+  applyTheme(next);
+}
+
+function applyTheme(theme) {
+  const body = document.body;
+  const icon = document.getElementById('themeToggleIcon');
+  if (theme === 'dark') {
+    body.classList.remove('light-theme');
+    if (icon) icon.textContent = '☀️';
+  } else {
+    body.classList.add('light-theme');
+    if (icon) icon.textContent = '🌙';
+  }
+}
 
 // Gazebo World Map State
 let gazeboSupervisorMap = null;
@@ -709,6 +736,7 @@ function clearTerminalLogs() {
    INITIALIZATION
    ========================================================================== */
 window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initCameraOverlay();
   initCockpitNavMap();
 

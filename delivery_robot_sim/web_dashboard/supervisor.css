@@ -53,6 +53,33 @@ body.cockpit-theme {
   background-attachment: fixed;
 }
 
+body.light-theme {
+  --cockpit-bg: #f8fafc;
+  --cockpit-card: rgba(255, 255, 255, 0.94);
+  --cockpit-card-border: rgba(0, 0, 0, 0.12);
+  --cockpit-header: rgba(255, 255, 255, 0.96);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+  background-image: 
+    radial-gradient(circle at 10% 5%, rgba(0, 240, 255, 0.05), transparent 35%),
+    radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.05), transparent 40%),
+    radial-gradient(circle at 50% 95%, rgba(16, 185, 129, 0.03), transparent 45%);
+}
+body.light-theme h1, body.light-theme h2, body.light-theme h3, body.light-theme h4, body.light-theme h5 {
+  color: #0f172a;
+}
+body.light-theme .cockpit-card,
+body.light-theme .cockpit-header,
+body.light-theme .stat-card,
+body.light-theme .telemetry-card,
+body.light-theme .modal-content,
+body.light-theme .terminal-container {
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
 h1, h2, h3, h4, h5 {
   font-family: var(--font-heading);
   letter-spacing: -0.02em;

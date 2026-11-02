@@ -267,11 +267,40 @@ function confirmDoorstepLocation() {
 
 /* ==========================================================================
    3. CUSTOMER AUTHENTICATION & SESSION MANAGEMENT
+/* ==========================================================================
+   2. THEME SWITCHER (Light Default + Dark Mode)
+   ========================================================================== */
+function initTheme() {
+  const theme = localStorage.getItem('nexus_theme') || 'light';
+  applyTheme(theme);
+}
+
+function toggleTheme() {
+  const current = localStorage.getItem('nexus_theme') || 'light';
+  const next = (current === 'light') ? 'dark' : 'light';
+  localStorage.setItem('nexus_theme', next);
+  applyTheme(next);
+}
+
+function applyTheme(theme) {
+  const body = document.body;
+  const icon = document.getElementById('themeToggleIcon');
+  if (theme === 'dark') {
+    body.classList.remove('light-theme');
+    if (icon) icon.textContent = '☀️';
+  } else {
+    body.classList.add('light-theme');
+    if (icon) icon.textContent = '🌙';
+  }
+}
+
+/* ==========================================================================
+   3. AUTHENTICATION & PROFILE MANAGEMENT
    ========================================================================== */
 async function initAuth() {
   const token = localStorage.getItem('nexus_client_token');
   if (!token) {
-    renderUserAuthSlot(null);
+    window.location.href = '/?auth=login';
     return;
   }
 
@@ -289,14 +318,8 @@ async function initAuth() {
     }
   } catch (err) {}
 
-  currentUser = {
-    id: 'USR-001',
-    name: 'Sophie Laurent',
-    email: 'client@nexus.tn',
-    phone: '+216 20 123 456',
-    address: 'Avenue Habib Bourguiba, Tunis'
-  };
-  renderUserAuthSlot(currentUser);
+  localStorage.removeItem('nexus_client_token');
+  window.location.href = '/?auth=login';
 }
 
 function renderUserAuthSlot(user) {
@@ -435,9 +458,9 @@ async function handleRegisterSubmit(e) {
 function logoutClient() {
   playChime('click');
   localStorage.removeItem('nexus_client_token');
+  localStorage.removeItem('nexus_user_role');
   currentUser = null;
-  renderUserAuthSlot(null);
-  showToast('You have been signed out.');
+  window.location.href = '/';
 }
 
 /* ==========================================================================
@@ -878,6 +901,7 @@ function showToast(message) {
    INITIALIZATION
    ========================================================================== */
 window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initAuth();
   loadCatalog();
   initGazeboMap();

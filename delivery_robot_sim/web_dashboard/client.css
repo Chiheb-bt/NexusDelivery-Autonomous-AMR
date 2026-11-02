@@ -68,6 +68,36 @@ body.client-theme {
   background-attachment: fixed;
 }
 
+body.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-card-hover: rgba(241, 245, 249, 0.96);
+  --bg-card-border: rgba(0, 0, 0, 0.10);
+  --bg-glass-heavy: rgba(255, 255, 255, 0.94);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  background-image: 
+    radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.06), transparent 45%),
+    radial-gradient(circle at 85% 25%, rgba(0, 240, 255, 0.05), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.04), transparent 50%);
+}
+body.light-theme h1, body.light-theme h2, body.light-theme h3, body.light-theme h4 {
+  color: #0f172a;
+}
+body.light-theme .hero-card,
+body.light-theme .curbside-card,
+body.light-theme .radar-card,
+body.light-theme .spec-card,
+body.light-theme .tracking-card,
+body.light-theme .auth-modal-content {
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
 /* Typography Utilities */
 h1, h2, h3, h4 {
   font-family: var(--font-heading);

@@ -49,7 +49,15 @@ except ImportError:
             return _Pub()
     class CvBridge:
         def imgmsg_to_cv2(self, *args, **kwargs): return np.zeros((480, 640, 3), dtype=np.uint8)
-    class Twist: pass
+    class _Vector3:
+        def __init__(self):
+            self.x = 0.0
+            self.y = 0.0
+            self.z = 0.0
+    class Twist:
+        def __init__(self):
+            self.linear = _Vector3()
+            self.angular = _Vector3()
     class Odometry: pass
     class Image: pass
     class String:
@@ -650,12 +658,46 @@ class WebBridgeNode(Node):
                     return params['token'][0]
                 return None
 
+            def _get_operator_auth(self, data=None):
+                """
+                Check if the request comes from an authenticated supervisor/operator or valid operator PIN.
+                Returns (is_authorized, status_code, error_message)
+                """
+                tok = self._get_auth_token()
+                if not tok and isinstance(data, dict):
+                    tok = data.get('token')
+
+                # Direct operator PIN match
+                if tok and tok == bridge.auth_token:
+                    return True, HTTPStatus.OK, "Authorized via Operator PIN"
+
+                if tok == 'OP-TOKEN-SUPERVISOR':
+                    return True, HTTPStatus.OK, "Authorized via Supervisor Session"
+
+                if tok:
+                    session = bridge.db.validate_session(tok)
+                    if session:
+                        role = session.get('role', '')
+                        if role in ('OPERATOR', 'SUPER_ADMIN', 'FLEET_MANAGER', 'MAINTENANCE_ENGINEER'):
+                            return True, HTTPStatus.OK, "Authorized via Operator Role"
+                        else:
+                            return False, HTTPStatus.FORBIDDEN, "Access forbidden: Supervisor privileges required."
+
+                return False, HTTPStatus.UNAUTHORIZED, "Authentication required: Supervisor credentials or PIN missing."
+
             def do_GET(self):
                 parsed = urlparse(self.path)
                 path = parsed.path
 
-                # 1. Customer & Supervisor Root Portal Routing
-                if path in ('/', '/index.html', '/client', '/client.html'):
+                # 1. Tri-Portal Separation (Corporate Website vs Customer vs Supervisor)
+                if path in ('/', '/index.html'):
+                    corp_path = os.path.join(bridge.static_dir, 'index.html')
+                    if os.path.exists(corp_path):
+                        self._serve_file(corp_path, 'text/html; charset=utf-8')
+                    else:
+                        self._serve_file(os.path.join(bridge.static_dir, 'client.html'), 'text/html; charset=utf-8')
+                    return
+                elif path in ('/client', '/client.html'):
                     client_path = os.path.join(bridge.static_dir, 'client.html')
                     if os.path.exists(client_path):
                         self._serve_file(client_path, 'text/html; charset=utf-8')
@@ -693,13 +735,16 @@ class WebBridgeNode(Node):
                 elif path == '/api/orders':
                     tok = self._get_auth_token()
                     session = bridge.db.validate_session(tok) if tok else None
-                    if session and session['role'] in ('OPERATOR', 'SUPER_ADMIN', 'FLEET_MANAGER', 'MAINTENANCE_ENGINEER'):
+                    if not session and tok != bridge.auth_token and tok not in ('CUST-TOKEN-SOPHIE', 'OP-TOKEN-SUPERVISOR'):
+                        self._serve_json({'error': 'UNAUTHORIZED', 'message': 'Authentication required to view orders.'}, status=HTTPStatus.UNAUTHORIZED)
+                        return
+                    if (session and session['role'] in ('OPERATOR', 'SUPER_ADMIN', 'FLEET_MANAGER', 'MAINTENANCE_ENGINEER')) or tok in (bridge.auth_token, 'OP-TOKEN-SUPERVISOR'):
                         orders_data = bridge.db.get_all_orders()
-                    elif session:
-                        orders_data = bridge.db.get_orders_for_customer(session['user_id'])
+                    elif session or tok == 'CUST-TOKEN-SOPHIE':
+                        uid = session['user_id'] if session else 'USR-001'
+                        orders_data = bridge.db.get_orders_for_customer(uid)
                     else:
-                        with bridge.lock:
-                            orders_data = bridge.db.get_all_orders()
+                        orders_data = []
                     self._serve_json(orders_data)
                     return
                 elif path == '/api/addresses':
@@ -712,18 +757,21 @@ class WebBridgeNode(Node):
                         self._serve_json([])
                     return
                 elif path == '/api/audit_logs':
-                    tok = self._get_auth_token()
-                    session = bridge.db.validate_session(tok) if tok else None
-                    if (session and is_authorized(session['role'], 'READ_AUDIT_LOGS')) or tok == bridge.auth_token:
-                        logs = bridge.db.get_audit_logs(limit=50)
-                        self._serve_json(logs)
-                    else:
-                        self._serve_json({'error': 'FORBIDDEN', 'message': 'Supervisor permissions required.'}, status=HTTPStatus.FORBIDDEN)
+                    is_auth, status_code, err_msg = self._get_operator_auth()
+                    if not is_auth:
+                        self._serve_json({'error': 'FORBIDDEN' if status_code == HTTPStatus.FORBIDDEN else 'UNAUTHORIZED', 'message': err_msg}, status=status_code)
+                        return
+                    logs = bridge.db.get_audit_logs(limit=50)
+                    self._serve_json(logs)
                     return
                 elif path == '/api/hardware':
                     self._serve_json(bridge.get_hardware())
                     return
                 elif path == '/api/fleet':
+                    is_auth, status_code, err_msg = self._get_operator_auth()
+                    if not is_auth:
+                        self._serve_json({'error': 'FORBIDDEN' if status_code == HTTPStatus.FORBIDDEN else 'UNAUTHORIZED', 'message': err_msg}, status=status_code)
+                        return
                     self._serve_json(bridge.get_fleet())
                     return
                 elif path == '/api/auth/me':
@@ -907,17 +955,15 @@ class WebBridgeNode(Node):
                     self._serve_json(res)
                     return
 
-                # Protect only operator level override commands
-                if path in ('/api/dispatch_target', '/api/target', '/api/estop'):
-                    if not self._check_auth() and data.get('token') != bridge.auth_token:
-                        self.send_response(HTTPStatus.UNAUTHORIZED)
-                        self.send_header('Content-Type', 'application/json')
-                        self.end_headers()
-                        self.wfile.write(json.dumps({
+                # Enforce Supervisor/Operator authorization for privileged control APIs
+                if path in ('/api/dispatch_target', '/api/target', '/api/estop', '/api/teleop', '/api/hardware_test'):
+                    is_auth, status_code, err_msg = self._get_operator_auth(data)
+                    if not is_auth:
+                        self._serve_json({
                             'success': False,
-                            'error': 'UNAUTHORIZED',
-                            'message': 'NexusFleet Operator PIN required to execute remote vehicle dispatch.'
-                        }).encode('utf-8'))
+                            'error': 'FORBIDDEN' if status_code == HTTPStatus.FORBIDDEN else 'UNAUTHORIZED',
+                            'message': err_msg
+                        }, status=status_code)
                         return
 
                 if path in ('/api/customers', '/api/customer'):
@@ -926,7 +972,10 @@ class WebBridgeNode(Node):
                 elif path in ('/api/orders', '/api/dispatch_order', '/api/customer_order'):
                     tok = self._get_auth_token()
                     session = bridge.db.validate_session(tok) if tok else None
-                    uid = session['user_id'] if session else 'USR-001'
+                    if not session and tok != bridge.auth_token and tok not in ('CUST-TOKEN-SOPHIE', 'OP-TOKEN-SUPERVISOR'):
+                        self._serve_json({'error': 'UNAUTHORIZED', 'message': 'Authentication required to place orders.'}, status=HTTPStatus.UNAUTHORIZED)
+                        return
+                    uid = session['user_id'] if session else ('USR-003' if tok in (bridge.auth_token, 'OP-TOKEN-SUPERVISOR') else 'USR-001')
                     uname = session['name'] if session else data.get('customer_name', 'Sophie Laurent')
                     res = bridge.create_and_dispatch_order(data, customer_id=uid, customer_name=uname)
                     self._serve_json(res)
@@ -1038,11 +1087,17 @@ class WebBridgeNode(Node):
                 elif path == '/api/teleop':
                     v = float(data.get('v', 0.0))
                     w = float(data.get('w', 0.0))
-                    t_msg = Twist()
-                    t_msg.linear.x = float(max(-1.0, min(1.5, v)))
-                    t_msg.angular.z = float(max(-1.5, min(1.5, w)))
-                    bridge.pub_teleop.publish(t_msg)
-                    self._serve_json({'success': True, 'cmd_v': t_msg.linear.x, 'cmd_w': t_msg.angular.z})
+                    cmd_v = float(max(-1.0, min(1.5, v)))
+                    cmd_w = float(max(-1.5, min(1.5, w)))
+                    if ROS_AVAILABLE and getattr(bridge, 'pub_teleop', None) is not None:
+                        try:
+                            t_msg = Twist()
+                            t_msg.linear.x = cmd_v
+                            t_msg.angular.z = cmd_w
+                            bridge.pub_teleop.publish(t_msg)
+                        except Exception:
+                            pass
+                    self._serve_json({'success': True, 'cmd_v': cmd_v, 'cmd_w': cmd_w})
                 else:
                     self.send_error(HTTPStatus.NOT_FOUND, 'API endpoint not found')
 
@@ -1497,11 +1552,15 @@ class WebBridgeNode(Node):
         password = str(data.get('password', '')).strip()
         ok, msg, udata, token, _ = self.db.authenticate_user(email, password)
         if not ok:
-            # Fallback for seeded Sophie demo account
+            # Fallback for seeded demo accounts
             if email == 'client@nexus.tn' and password in ('password123', 'client123'):
                 token = 'CUST-TOKEN-SOPHIE'
                 user_data = {'id': 'USR-001', 'email': email, 'name': 'Sophie Laurent', 'role': 'CUSTOMER'}
-                return {'success': True, 'token': token, 'user': user_data, 'message': 'Demo Authentication Successful'}
+                return {'success': True, 'token': token, 'user': user_data, 'message': 'Demo Customer Authentication Successful'}
+            if email in ('supervisor@nexus.tn', 'operator@nexus.tn') and password == 'nexus2026':
+                token = 'OP-TOKEN-SUPERVISOR'
+                user_data = {'id': 'USR-005', 'email': email, 'name': 'Fleet Supervisor', 'role': 'OPERATOR'}
+                return {'success': True, 'token': token, 'user': user_data, 'message': 'Demo Supervisor Authentication Successful'}
             return {'success': False, 'error': msg}
         return {'success': True, 'token': token, 'user': udata, 'message': msg}
 
@@ -1524,6 +1583,14 @@ class WebBridgeNode(Node):
                 'name': 'Sophie Laurent',
                 'role': 'CUSTOMER',
                 'phone': '+216 20 123 456'
+            }
+        if token == 'OP-TOKEN-SUPERVISOR':
+            return {
+                'id': 'USR-005',
+                'email': 'supervisor@nexus.tn',
+                'name': 'Fleet Supervisor',
+                'role': 'OPERATOR',
+                'phone': '+216 71 100 400'
             }
         return None
 

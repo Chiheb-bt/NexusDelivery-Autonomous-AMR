@@ -61,11 +61,22 @@
 
       <!-- Cockpit Actions & Navigation -->
       <div class="cockpit-actions">
+        <!-- Corporate Website -->
+        <a href="/" class="client-portal-link" title="Open Corporate Website">
+          <span class="cp-icon">🌐</span>
+          <span>Corporate</span>
+        </a>
+
         <!-- Switch to Customer Portal -->
         <a href="/client" class="client-portal-link" title="Open Customer Delivery Storefront & Live Tracker">
           <span class="cp-icon">🛍️</span>
           <span>Customer App</span>
         </a>
+
+        <!-- Theme Toggle -->
+        <button class="icon-toggle-btn" id="btnThemeToggle" onclick="toggleTheme()" title="Toggle Light/Dark Theme" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: inherit; cursor: pointer; padding: 6px 10px; font-size: 1rem;">
+          <span id="themeToggleIcon">🌙</span>
+        </button>
 
         <!-- Operator PIN Badge -->
         <div class="operator-auth-badge" id="operatorBadge" onclick="promptOperatorPin()">

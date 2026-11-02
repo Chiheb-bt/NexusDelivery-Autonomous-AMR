@@ -80,3 +80,4 @@ tools/cloudflared
 *.sqlite3
 *.db-journal
 *.db-wal
+*.db-shm

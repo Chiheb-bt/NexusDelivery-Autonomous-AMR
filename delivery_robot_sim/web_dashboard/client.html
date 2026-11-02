@@ -51,11 +51,22 @@
 
       <!-- Right Header Actions -->
       <div class="nav-actions">
+        <!-- Corporate Home Link -->
+        <a href="/" class="cockpit-toggle-btn" title="Corporate Website">
+          <span class="toggle-icon">🌐</span>
+          <span class="toggle-text">Corporate</span>
+        </a>
+
         <!-- Switch to Engineer Cockpit -->
         <a href="/supervisor" class="cockpit-toggle-btn" id="linkSupervisorCockpit" title="Switch to Fleet Supervisor Cockpit">
           <span class="toggle-icon">⚡</span>
-          <span class="toggle-text">Supervisor Cockpit</span>
+          <span class="toggle-text">Supervisor</span>
         </a>
+
+        <!-- Theme Toggle -->
+        <button class="icon-toggle-btn" id="btnThemeToggle" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+          <span id="themeToggleIcon">🌙</span>
+        </button>
 
         <!-- Sound Toggle -->
         <button class="icon-toggle-btn" id="btnSoundToggle" onclick="toggleClientAudio()" title="Sound Chimes Toggle">
