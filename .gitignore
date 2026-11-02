@@ -74,3 +74,9 @@ tools/cloudflared
 *.h5
 *.tflite
 !delivery_robot_sim/yolov8n.pt
+
+# SQLite databases & runtime storage
+*.db
+*.sqlite3
+*.db-journal
+*.db-wal

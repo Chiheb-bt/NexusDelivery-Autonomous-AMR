@@ -1035,3 +1035,132 @@ h1, h2, h3, h4, h5 {
   .hide-mobile { display: none; }
   .telemetry-ribbon { display: none; }
 }
+
+/* ==========================================================================
+   OPERATIONS DECK: ORDERS QUEUE & AUDIT LOGS
+   ========================================================================== */
+.cockpit-operations-deck {
+  max-width: 1560px;
+  margin: 1.5rem auto 3rem auto;
+  padding: 0 1.5rem;
+}
+
+.operations-deck-inner {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1100px) {
+  .operations-deck-inner { grid-template-columns: 1fr; }
+}
+
+.ops-card {
+  background: var(--cockpit-card);
+  border: 1px solid var(--cockpit-card-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.ops-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--cockpit-card-border);
+}
+
+.ops-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ops-title h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.ops-badge {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  background: rgba(0, 240, 255, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+}
+
+.btn-refresh-audit {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--cockpit-card-border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-refresh-audit:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.cockpit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  text-align: left;
+}
+
+.cockpit-table th {
+  position: sticky;
+  top: 0;
+  background: #0d121c;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--cockpit-card-border);
+}
+
+.cockpit-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.cockpit-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.text-center { text-align: center; }
+
+.status-tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.status-tag.en_route { background: rgba(0, 240, 255, 0.15); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.3); }
+.status-tag.completed { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+.status-tag.queued { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-tag.failed { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-tag.idle { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.3); }
+

@@ -11,12 +11,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Leaflet Map CSS (Local Bundle with CDN Fallback) -->
-  <link rel="stylesheet" href="leaflet.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  
-  <!-- Custom Cyberpunk / Luxury Dark Theme CSS -->
+  <!-- Gazebo World Vector Map Engine & Luxury Dark Theme CSS -->
+  <!-- Zero External Map Tile Dependencies: Authentic Gazebo Classic small_city Simulation Engine -->
   <link rel="stylesheet" href="client.css">
+
 </head>
 <body class="client-theme">
 
@@ -185,7 +183,7 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. REAL-WORLD INTERACTIVE MAP & EXPLORER (LEAFLET + CARTODB / SATELLITE)   -->
+  <!-- 3. AUTHENTIC GAZEBO SIMULATION WORLD VECTOR MAP & PIN DROP LOCATOR        -->
   <!-- ========================================================================= -->
   <section class="world-map-section" id="worldMapSection">
     <div class="section-container">
@@ -193,44 +191,56 @@
       <!-- Section Header -->
       <div class="section-title-wrap">
         <div class="title-with-pill">
-          <h2 class="section-heading">Real-World Sidewalk Explorer & Pin Drop</h2>
-          <span class="hackathon-tag">EXPLORE ANYWHERE IN THE WORLD</span>
+          <h2 class="section-heading">Gazebo Simulation Map & Doorstep Locator</h2>
+          <span class="hackathon-tag">AUTHENTIC GAZEBO SIMULATION ENVIRONMENT</span>
         </div>
         <p class="section-sub">
-          Tap or drag the delivery pin to your exact doorstep, building porch, or sidewalk bay anywhere on earth.
+          Interactive vector map of the actual physical Gazebo Classic world (<span class="mono text-cyan">small_city_dynamic.world</span>). Tap or drag the delivery pin to any doorstep, sidewalk bay, or storefront.
         </p>
       </div>
 
-      <!-- Map Toolbar: City Selector + Satellite Toggle + GPS Locate Me -->
+      <!-- Gazebo Landmark & Sector Quick-Focus Bar -->
       <div class="map-interactive-toolbar">
         <div class="city-selector-pills">
-          <button class="city-pill active" onclick="switchCity('tunis', this)">
-            <span>🇹🇳</span> Tunis Center
+          <button class="city-pill active" onclick="focusGazeboSector('DEPOT', this)">
+            <span>🏢</span> Central Depot Dock
           </button>
-          <button class="city-pill" onclick="switchCity('silicon_valley', this)">
-            <span>🇺🇸</span> Silicon Valley
+          <button class="city-pill" onclick="focusGazeboSector('CLIENT_1_NORTH_AVENUE', this)">
+            <span>🥐</span> North Ave (Sophie)
           </button>
-          <button class="city-pill" onclick="switchCity('paris', this)">
-            <span>🇫🇷</span> Paris Champs-Élysées
+          <button class="city-pill" onclick="focusGazeboSector('CLIENT_2_NORTH_AVENUE', this)">
+            <span>🍱</span> North Ave (Marc)
           </button>
-          <button class="city-pill" onclick="switchCity('tokyo', this)">
-            <span>🇯🇵</span> Tokyo Shibuya
+          <button class="city-pill" onclick="focusGazeboSector('CLIENT_3_NORTH_PLAZA', this)">
+            <span>🏛️</span> North Plaza Galleria
+          </button>
+          <button class="city-pill" onclick="focusGazeboSector('CLIENT_4_WEST_BOULEVARD', this)">
+            <span>☕</span> West Blvd Bistro
+          </button>
+          <button class="city-pill" onclick="focusGazeboSector('CLIENT_5_CENTRAL_SQUARE', this)">
+            <span>🥖</span> Central Square Bakery
+          </button>
+          <button class="city-pill" onclick="focusGazeboSector('CLIENT_6_EAST_AVENUE', this)">
+            <span>🔬</span> East Ave Tech Labs
+          </button>
+          <button class="city-pill" onclick="focusGazeboSector('CLIENT_7_SOUTH_MARKET', this)">
+            <span>🍎</span> South Market
           </button>
         </div>
 
         <div class="map-view-actions">
-          <button class="map-action-pill" onclick="locateUserGps()" id="btnLocateMe" title="Detect and center on your actual GPS location">
-            <span>📍</span> Locate My GPS
+          <button class="map-action-pill" onclick="centerMapOnRover()" id="btnFocusRover" title="Center map viewport on active autonomous rover">
+            <span>🎯</span> Center on Rover
           </button>
-          <button class="map-action-pill" onclick="toggleMapTiles()" id="btnToggleSatellite">
-            <span id="tileIcon">🛰️</span> <span id="tileText">Satellite View</span>
+          <button class="map-action-pill" onclick="resetGazeboMapView()" id="btnResetView" title="Fit complete Gazebo city extent">
+            <span>⟲</span> Fit City Extent
           </button>
         </div>
       </div>
 
-      <!-- Main Leaflet Map Viewport Container -->
-      <div class="leaflet-map-card">
-        <div id="worldDeliveryMap" class="real-world-map-canvas"></div>
+      <!-- Main Gazebo Vector Map Viewport Container -->
+      <div class="gazebo-map-card">
+        <div id="gazeboCustomerMap" class="real-world-map-canvas" style="width: 100%; height: 560px; border-radius: 14px; position: relative; background: #0a0f1d;"></div>
         
         <!-- Live Selected Coordinates & Doorstep Floating HUD -->
         <div class="map-target-overlay-card">
@@ -238,22 +248,22 @@
             <span class="pin-pulse-icon">📍</span>
             <div>
               <span class="overlay-sub">TARGET DOORSTEP DELIVERY LOCATION</span>
-              <h4 id="pinSelectedAddress">Avenue Habib Bourguiba, Tunis (Curbside Bay 1)</h4>
+              <h4 id="pinSelectedAddress">Sophie Laurent Doorstep (North Avenue Curbside Bay 1)</h4>
             </div>
           </div>
 
           <div class="overlay-stats-row">
             <div class="os-item">
-              <span class="os-k">GPS COORDINATES:</span>
-              <strong class="os-v mono text-cyan" id="pinGpsCoords">36.800542° N, 10.180012° E</strong>
+              <span class="os-k">GAZEBO COORDINATES:</span>
+              <strong class="os-v mono text-cyan" id="pinGpsCoords">X: -9.80m, Y: 15.00m</strong>
             </div>
             <div class="os-item">
-              <span class="os-k">AUTONOMOUS TRANSIT DISTANCE:</span>
-              <strong class="os-v mono text-emerald" id="pinDistanceVal">1.2 km</strong>
+              <span class="os-k">A* TRANSIT DISTANCE:</span>
+              <strong class="os-v mono text-emerald" id="pinDistanceVal">31.5 m</strong>
             </div>
             <div class="os-item">
               <span class="os-k">ESTIMATED ARRIVAL:</span>
-              <strong class="os-v mono text-amber" id="pinEtaVal">12–15 min</strong>
+              <strong class="os-v mono text-amber" id="pinEtaVal">~45 sec</strong>
             </div>
           </div>
 
@@ -266,6 +276,7 @@
 
     </div>
   </section>
+
 
   <!-- ========================================================================= -->
   <!-- 4. STOREFRONT PRODUCT CATALOG SECTION                                     -->
@@ -664,9 +675,9 @@
   <!-- Toast Notification System -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Leaflet Map JS (Local with CDN fallback) -->
-  <script src="leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Gazebo World Vector Map Engine Component -->
+  <script src="gazebo_map.js"></script>
+
 
   <!-- Client Application Logic -->
   <script src="client.js"></script>

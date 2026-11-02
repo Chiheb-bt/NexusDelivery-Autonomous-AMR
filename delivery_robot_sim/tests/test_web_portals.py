@@ -39,9 +39,10 @@ class WebPortalsValidationTests(unittest.TestCase):
             self.assertIn("Powertrain & Hardware Diagnostics", html)
 
     def test_03_customer_registration_and_login_flow(self):
+        unique_email = f"sami_{int(time.time() * 1000)}@nexus.tn"
         reg_payload = {
             'name': 'Sami Trabelsi',
-            'email': 'sami@nexus.tn',
+            'email': unique_email,
             'password': 'safePassword123',
             'phone': '+216 22 333 444',
             'address': '7 Avenue de la Liberte, Tunis',
@@ -61,7 +62,7 @@ class WebPortalsValidationTests(unittest.TestCase):
 
         # Test login with newly registered credentials
         login_payload = {
-            'email': 'sami@nexus.tn',
+            'email': unique_email,
             'password': 'safePassword123'
         }
         req_login = urllib.request.Request(

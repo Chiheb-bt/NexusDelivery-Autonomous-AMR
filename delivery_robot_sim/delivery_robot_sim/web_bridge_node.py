@@ -64,6 +64,24 @@ from delivery_robot_sim.route_planner import (
     snap_to_corridor,
     validate_and_snap_destination,
 )
+from delivery_robot_sim.database import get_database, DatabaseManager
+from delivery_robot_sim.security import (
+    hash_password,
+    verify_password,
+    generate_session_token,
+    generate_otp,
+    is_authorized,
+    get_user_permissions,
+    rate_limiter,
+)
+from delivery_robot_sim.gazebo_world_map import (
+    get_gazebo_world_manifest,
+    gazebo_to_screen,
+    screen_to_gazebo,
+    compute_route_distance,
+    estimate_eta_seconds,
+)
+
 
 # Default fictional customer catalog mapped to valid curbside stopping bays
 DEFAULT_CUSTOMERS = [
@@ -274,12 +292,13 @@ class WebBridgeNode(Node):
         self.package_loaded = True
         self.camera_view_mode = 'ai_hud'
 
-        # Customer and Order storage
+        # Database & Security Subsystem
+        self.db = get_database()
         self.customers = list(DEFAULT_CUSTOMERS)
         self.user_accounts = [
             {
                 'id': 'USR-001',
-                'customer_id': 'CUST-001',
+                'customer_id': 'USR-001',
                 'name': 'Sophie Laurent',
                 'email': 'client@nexus.tn',
                 'password': 'password123',
@@ -292,38 +311,8 @@ class WebBridgeNode(Node):
         self.client_sessions = {
             'CUST-TOKEN-SOPHIE': 'USR-001'
         }
-        self.orders = [
-            {
-                'order_id': 'ORD-001',
-                'customer_id': 'CUST-001',
-                'customer_name': 'Sophie Laurent',
-                'delivery_name': 'CLIENT_1_NORTH_AVENUE',
-                'delivery_xy': [-15.0, 15.0],
-                'package_id': 'PKG-101',
-                'items': [{'id': 'PRD-01', 'name': 'Artisan Margherita Pizza', 'qty': 1}],
-                'priority': 1,
-                'status': 'IN_TRANSIT',
-                'otp': '482910',
-                'created_time': 0.0,
-                'assigned_time': 0.5,
-                'completed_time': None
-            },
-            {
-                'order_id': 'ORD-002',
-                'customer_id': 'CUST-002',
-                'customer_name': 'Marc Dubois',
-                'delivery_name': 'CLIENT_2_NORTH_AVENUE',
-                'delivery_xy': [-15.0, 28.0],
-                'package_id': 'PKG-102',
-                'items': [{'id': 'PRD-02', 'name': 'Fresh Sushi Bento Deluxe', 'qty': 2}],
-                'priority': 2,
-                'status': 'ASSIGNED',
-                'otp': '739104',
-                'created_time': 0.0,
-                'assigned_time': 0.5,
-                'completed_time': None
-            }
-        ]
+        self.orders = self.db.get_all_orders()
+
 
         # ROS 2 Subscriptions
         self.sub_cam = self.create_subscription(Image, '/camera/image_raw', self._on_camera, 5)
@@ -645,6 +634,22 @@ class WebBridgeNode(Node):
                 self.send_header('Content-Type', 'text/html')
                 self.end_headers()
 
+            def do_OPTIONS(self):
+                self.send_response(HTTPStatus.OK)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+                self.end_headers()
+
+            def _get_auth_token(self):
+                auth_h = self.headers.get('Authorization', '')
+                if auth_h.startswith('Bearer '):
+                    return auth_h[7:].strip()
+                params = parse_qs(urlparse(self.path).query)
+                if 'token' in params:
+                    return params['token'][0]
+                return None
+
             def do_GET(self):
                 parsed = urlparse(self.path)
                 path = parsed.path
@@ -670,9 +675,12 @@ class WebBridgeNode(Node):
                     self._serve_mjpeg()
                     return
 
-                # 3. Telemetry & Core REST APIs
+                # 3. Telemetry, Map & Core REST APIs
                 if path == '/api/telemetry':
                     self._serve_json(bridge.get_telemetry())
+                    return
+                elif path == '/api/map/gazebo_world':
+                    self._serve_json(get_gazebo_world_manifest())
                     return
                 elif path == '/api/customers':
                     with bridge.lock:
@@ -683,9 +691,34 @@ class WebBridgeNode(Node):
                     self._serve_json(PRODUCT_CATALOG)
                     return
                 elif path == '/api/orders':
-                    with bridge.lock:
-                        data = list(bridge.orders)
-                    self._serve_json(data)
+                    tok = self._get_auth_token()
+                    session = bridge.db.validate_session(tok) if tok else None
+                    if session and session['role'] in ('OPERATOR', 'SUPER_ADMIN', 'FLEET_MANAGER', 'MAINTENANCE_ENGINEER'):
+                        orders_data = bridge.db.get_all_orders()
+                    elif session:
+                        orders_data = bridge.db.get_orders_for_customer(session['user_id'])
+                    else:
+                        with bridge.lock:
+                            orders_data = bridge.db.get_all_orders()
+                    self._serve_json(orders_data)
+                    return
+                elif path == '/api/addresses':
+                    tok = self._get_auth_token()
+                    session = bridge.db.validate_session(tok) if tok else None
+                    if session:
+                        addrs = bridge.db.get_user_addresses(session['user_id'])
+                        self._serve_json(addrs)
+                    else:
+                        self._serve_json([])
+                    return
+                elif path == '/api/audit_logs':
+                    tok = self._get_auth_token()
+                    session = bridge.db.validate_session(tok) if tok else None
+                    if (session and is_authorized(session['role'], 'READ_AUDIT_LOGS')) or tok == bridge.auth_token:
+                        logs = bridge.db.get_audit_logs(limit=50)
+                        self._serve_json(logs)
+                    else:
+                        self._serve_json({'error': 'FORBIDDEN', 'message': 'Supervisor permissions required.'}, status=HTTPStatus.FORBIDDEN)
                     return
                 elif path == '/api/hardware':
                     self._serve_json(bridge.get_hardware())
@@ -694,13 +727,11 @@ class WebBridgeNode(Node):
                     self._serve_json(bridge.get_fleet())
                     return
                 elif path == '/api/auth/me':
-                    auth_h = self.headers.get('Authorization', '')
-                    tok = auth_h[7:].strip() if auth_h.startswith('Bearer ') else ''
-                    if not tok:
-                        params = parse_qs(parsed.query)
-                        tok = params.get('token', [''])[0]
+                    tok = self._get_auth_token()
                     usr = bridge.get_user_by_token(tok)
                     if usr:
+                        perms = get_user_permissions(usr.get('role', 'CUSTOMER'))
+                        usr['permissions'] = perms
                         self._serve_json({'authenticated': True, 'user': usr})
                     else:
                         self._serve_json({'authenticated': False})
@@ -784,14 +815,58 @@ class WebBridgeNode(Node):
                 except Exception:
                     data = {}
 
+                # Map validation endpoint (Gazebo world reachability & snapping)
+                if path == '/api/map/validate_destination':
+                    if 'u' in data and 'v' in data:
+                        cw = float(data.get('canvas_w', 800))
+                        ch = float(data.get('canvas_h', 480))
+                        gx, gy = screen_to_gazebo(float(data['u']), float(data['v']), cw, ch)
+                    else:
+                        gx = float(data.get('x', 0.0))
+                        gy = float(data.get('y', 0.0))
+
+                    is_valid, stopping_xy, heading, explanation = validate_and_snap_destination(gx, gy)
+                    if is_valid:
+                        route = plan_city_route((bridge.robot_x, bridge.robot_y), stopping_xy)
+                        dist = compute_route_distance(route, (bridge.robot_x, bridge.robot_y))
+                        curr_v = abs(bridge.actual_v)
+                        eta = estimate_eta_seconds(dist, curr_v if curr_v > 0.1 else 0.8)
+                        self._serve_json({
+                            'valid': True,
+                            'raw_xy': [round(gx, 2), round(gy, 2)],
+                            'stopping_xy': [stopping_xy[0], stopping_xy[1]],
+                            'approach_heading': heading,
+                            'approach_heading_deg': round(math.degrees(heading), 1),
+                            'explanation': explanation,
+                            'route': route,
+                            'distance_m': dist,
+                            'eta_seconds': eta,
+                            'eta_minutes': max(1, int(round(eta / 60.0)))
+                        })
+                    else:
+                        self._serve_json({
+                            'valid': False,
+                            'raw_xy': [round(gx, 2), round(gy, 2)],
+                            'explanation': explanation
+                        })
+                    return
+
                 # Customer Authentication Endpoints
                 if path == '/api/auth/register':
                     res = bridge.register_user(data)
-                    self._serve_json(res)
+                    status_code = HTTPStatus.OK if res.get('success') else HTTPStatus.BAD_REQUEST
+                    self._serve_json(res, status=status_code)
                     return
                 elif path == '/api/auth/login':
                     res = bridge.login_user(data)
-                    self._serve_json(res)
+                    status_code = HTTPStatus.OK if res.get('success') else HTTPStatus.UNAUTHORIZED
+                    self._serve_json(res, status=status_code)
+                    return
+                elif path == '/api/auth/logout':
+                    tok = self._get_auth_token()
+                    if tok:
+                        bridge.db.revoke_session(tok)
+                    self._serve_json({'success': True, 'message': 'Logged out successfully.'})
                     return
 
                 # Operator PIN Verification Endpoint
@@ -800,10 +875,28 @@ class WebBridgeNode(Node):
                     if token == bridge.auth_token:
                         self._serve_json({'valid': True, 'token': bridge.auth_token, 'role': 'AUTHORIZED_OPERATOR'})
                     else:
-                        self.send_response(HTTPStatus.UNAUTHORIZED)
-                        self.send_header('Content-Type', 'application/json')
-                        self.end_headers()
-                        self.wfile.write(json.dumps({'valid': False, 'error': 'INVALID_TOKEN', 'message': 'Invalid Security PIN'}).encode('utf-8'))
+                        self._serve_json({'valid': False, 'error': 'INVALID_TOKEN', 'message': 'Invalid Security PIN'}, status=HTTPStatus.UNAUTHORIZED)
+                    return
+
+                # Saved Addresses Endpoint
+                if path == '/api/addresses':
+                    tok = self._get_auth_token()
+                    session = bridge.db.validate_session(tok) if tok else None
+                    if not session:
+                        self._serve_json({'success': False, 'error': 'Authentication required.'}, status=HTTPStatus.UNAUTHORIZED)
+                    else:
+                        addr = bridge.db.save_address(
+                            user_id=session['user_id'],
+                            label=str(data.get('label', 'Home Doorstep')),
+                            gazebo_x=float(data.get('gazebo_x', data.get('x', 0.0))),
+                            gazebo_y=float(data.get('gazebo_y', data.get('y', 0.0))),
+                            stopping_bay_id=data.get('stopping_bay_id'),
+                            stopping_x=float(data.get('stopping_x', 0.0)),
+                            stopping_y=float(data.get('stopping_y', 0.0)),
+                            approach_heading=float(data.get('approach_heading', 0.0)),
+                            reachability_status=str(data.get('reachability_status', 'VALIDATED'))
+                        )
+                        self._serve_json({'success': True, 'address': addr})
                     return
 
                 # OTP Verification Endpoint for Customer Parcel Handover
@@ -831,8 +924,13 @@ class WebBridgeNode(Node):
                     res = bridge.add_or_update_customer(data)
                     self._serve_json(res)
                 elif path in ('/api/orders', '/api/dispatch_order', '/api/customer_order'):
-                    res = bridge.create_and_dispatch_order(data)
+                    tok = self._get_auth_token()
+                    session = bridge.db.validate_session(tok) if tok else None
+                    uid = session['user_id'] if session else 'USR-001'
+                    uname = session['name'] if session else data.get('customer_name', 'Sophie Laurent')
+                    res = bridge.create_and_dispatch_order(data, customer_id=uid, customer_name=uname)
                     self._serve_json(res)
+
                 elif path == '/api/customer_unlock':
                     with bridge.lock:
                         bridge.hatch_unlocked_manual = True
@@ -971,7 +1069,7 @@ class WebBridgeNode(Node):
                 self.end_headers()
                 self.wfile.write(content)
 
-            def _serve_json(self, data):
+            def _serve_json(self, data, status=HTTPStatus.OK):
                 def _default_serializer(obj):
                     if isinstance(obj, (np.bool_, bool)):
                         return bool(obj)
@@ -987,12 +1085,15 @@ class WebBridgeNode(Node):
                     resp = json.dumps(data, default=_default_serializer).encode('utf-8')
                 except Exception as e:
                     resp = json.dumps({'error': str(e)}).encode('utf-8')
-                self.send_response(HTTPStatus.OK)
+                self.send_response(status)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Content-Length', str(len(resp)))
                 self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
                 self.end_headers()
                 self.wfile.write(resp)
+
 
             def _serve_mjpeg(self):
                 self.send_response(HTTPStatus.OK)
@@ -1037,6 +1138,9 @@ class WebBridgeNode(Node):
             cam_age = now - self.last_camera_stamp if self.last_camera_stamp > 0 else 999.0
             odom_age = now - self.last_odom_stamp if self.last_odom_stamp > 0 else 999.0
             planned_route = plan_city_route((self.robot_x, self.robot_y), self.target_xy)
+            planned_dist = compute_route_distance(planned_route, (self.robot_x, self.robot_y))
+            curr_v = abs(self.actual_v)
+            planned_eta = estimate_eta_seconds(planned_dist, curr_v if curr_v > 0.1 else 0.8)
 
             lat_0 = 36.800500
             lng_0 = 10.180000
@@ -1045,14 +1149,26 @@ class WebBridgeNode(Node):
             target_gps_lat = round(lat_0 + (self.target_xy[1] / 111139.0), 6)
             target_gps_lng = round(lng_0 + (self.target_xy[0] / (111139.0 * math.cos(math.radians(lat_0)))), 6)
 
+            is_stale = odom_age > 2.0
+            if odom_age < 0.2:
+                freshness_status = "LIVE TELEMETRY (50Hz)"
+            elif odom_age < 2.0:
+                freshness_status = "LIVE TELEMETRY"
+            elif odom_age < 10.0:
+                freshness_status = f"STALE DATA ({round(odom_age, 1)}s)"
+            else:
+                freshness_status = "SIMULATION DISCONNECTED"
+
             return {
                 'x': round(self.robot_x, 2),
                 'y': round(self.robot_y, 2),
+                'gazebo_x': round(self.robot_x, 2),
+                'gazebo_y': round(self.robot_y, 2),
                 'gps_lat': gps_lat,
                 'gps_lng': gps_lng,
                 'target_gps_lat': target_gps_lat,
                 'target_gps_lng': target_gps_lng,
-                'city_hub': 'Tunis City Center (Avenue Habib Bourguiba)',
+                'city_hub': 'Gazebo Simulation World (small_city_dynamic.world)',
                 'yaw': round(self.robot_yaw, 3),
                 'yaw_deg': round(math.degrees(self.robot_yaw), 1),
                 'actual_v': round(self.actual_v, 2),
@@ -1067,9 +1183,12 @@ class WebBridgeNode(Node):
                 'target_y': self.target_xy[1],
                 'target_action': self.target_action,
                 'dist_to_target': round(self.dist_to_target, 2),
+                'planned_distance_m': planned_dist,
+                'estimated_eta_sec': planned_eta,
                 'obstacle_detected': self.obstacle_detected,
                 'obstacle_dist': round(self.obstacle_dist, 2),
                 'is_pedestrian': self.is_pedestrian,
+                'pedestrian_count': self.pedestrian_count,
                 'traffic_light_active': self.traffic_light_active,
                 'red_light': self.red_light,
                 'orders_completed': self.orders_completed,
@@ -1077,6 +1196,10 @@ class WebBridgeNode(Node):
                 'collisions': self.collisions,
                 'camera_active': cam_age < 2.0,
                 'odom_active': odom_age < 2.0,
+                'odom_age_s': round(odom_age, 2),
+                'is_stale': is_stale,
+                'freshness_status': freshness_status,
+                'telemetry_tier': 'ESTIMATED_ODOMETRY' if odom_age < 2.0 else 'STANDBY_SIMULATION',
                 'trail': list(self.trajectory_trail),
                 'planned_route': planned_route,
                 'latest_handover': self.latest_handover,
@@ -1093,47 +1216,75 @@ class WebBridgeNode(Node):
             lng_0 = 10.180000
             r1_lat = round(lat_0 + (self.robot_y / 111139.0), 6)
             r1_lng = round(lng_0 + (self.robot_x / (111139.0 * math.cos(math.radians(lat_0)))), 6)
+            odom_age = time.time() - self.last_odom_stamp if self.last_odom_stamp > 0 else 999.0
+            r1_freshness = "LIVE (50Hz)" if odom_age < 0.2 else ("LIVE" if odom_age < 2.0 else "STALE")
+
             return [
                 {
                     'id': 'NEXUS-01',
                     'name': 'Nexus Courier Alpha',
                     'status': self.mission_state,
+                    'mode': 'SIMULATION',
+                    'operational_status': 'ACTIVE_DISPATCHED',
                     'battery_pct': max(80, int(98 - (self.total_distance * 0.4))),
+                    'battery_voltage_v': 25.1,
+                    'battery_data_tier': 'SIMULATED_POWER_MODEL',
                     'speed': round(self.actual_v, 2),
                     'heading_deg': round(math.degrees(self.robot_yaw), 1),
+                    'gazebo_x': round(self.robot_x, 2),
+                    'gazebo_y': round(self.robot_y, 2),
                     'lat': r1_lat,
                     'lng': r1_lng,
                     'mission': self.target_name,
                     'health': 'NOMINAL_OPTIMAL',
-                    'npu_fps': 138.4
+                    'telemetry_freshness': r1_freshness,
+                    'npu_fps': 138.4,
+                    'npu_spec_tier': 'BENCHMARKED_HARDWARE_DATASHEET'
                 },
                 {
                     'id': 'NEXUS-02',
                     'name': 'Nexus Courier Bravo',
                     'status': 'DEPOT_STANDBY_CHARGING',
+                    'mode': 'FLEET_EXPANSION_TARGET',
+                    'operational_status': 'STANDBY_UNASSIGNED',
                     'battery_pct': 99,
+                    'battery_voltage_v': 25.6,
+                    'battery_data_tier': 'MODEL_ESTIMATE',
                     'speed': 0.0,
                     'heading_deg': 0.0,
+                    'gazebo_x': -31.5,
+                    'gazebo_y': 2.50,
                     'lat': round(lat_0 + (2.5 / 111139.0), 6),
                     'lng': round(lng_0 + (-31.5 / (111139.0 * math.cos(math.radians(lat_0)))), 6),
                     'mission': 'CHARGING_25.6V',
                     'health': 'STANDBY_READY',
-                    'npu_fps': 138.4
+                    'telemetry_freshness': 'STANDBY',
+                    'npu_fps': 138.4,
+                    'npu_spec_tier': 'BENCHMARKED_HARDWARE_DATASHEET'
                 },
                 {
                     'id': 'NEXUS-03',
                     'name': 'Nexus Courier Charlie',
-                    'status': 'RETURNING_TO_DEPOT',
-                    'battery_pct': 88,
-                    'speed': 0.75,
-                    'heading_deg': 270.0,
-                    'lat': round(lat_0 + (28.0 / 111139.0), 6),
-                    'lng': round(lng_0 + (-14.2 / (111139.0 * math.cos(math.radians(lat_0)))), 6),
-                    'mission': 'TRANSIT_DEPOT',
-                    'health': 'NOMINAL_OPTIMAL',
-                    'npu_fps': 138.4
+                    'status': 'OFFLINE_MAINTENANCE',
+                    'mode': 'FLEET_EXPANSION_TARGET',
+                    'operational_status': 'OFFLINE_DEPOT',
+                    'battery_pct': 0,
+                    'battery_voltage_v': 0.0,
+                    'battery_data_tier': 'OFFLINE',
+                    'speed': 0.0,
+                    'heading_deg': 0.0,
+                    'gazebo_x': -35.0,
+                    'gazebo_y': 0.0,
+                    'lat': round(lat_0 + (0.0 / 111139.0), 6),
+                    'lng': round(lng_0 + (-35.0 / (111139.0 * math.cos(math.radians(lat_0)))), 6),
+                    'mission': 'SCHEDULED_INSPECTION',
+                    'health': 'OFFLINE_STBY',
+                    'telemetry_freshness': 'OFFLINE',
+                    'npu_fps': 0.0,
+                    'npu_spec_tier': 'OFFLINE'
                 }
             ]
+
 
     def get_hardware(self) -> dict:
         with self.lock:
@@ -1231,178 +1382,182 @@ class WebBridgeNode(Node):
             self.customers = [c for c in self.customers if c['id'] != cust_id]
             return {'success': True, 'deleted_id': cust_id}
 
-    def create_and_dispatch_order(self, order_data: dict) -> dict:
+    def create_and_dispatch_order(self, order_data: dict, customer_id: str = 'USR-001', customer_name: str = 'Sophie Laurent') -> dict:
         with self.lock:
-            order_id = f"ORD-{len(self.orders)+1:03d}"
-            cust_id = order_data.get('customer_id')
+            # 1. Resolve destination coordinates: either from explicit x/y or customer preset
+            cust_id = order_data.get('customer_id') or customer_id
             cust = next((c for c in self.customers if c['id'] == cust_id), None)
-            if not cust:
-                return {'success': False, 'error': 'Selected customer does not exist!'}
 
-            target_x = float(cust['x'])
-            target_y = float(cust['y'])
+            if 'x' in order_data and 'y' in order_data:
+                target_x = float(order_data['x'])
+                target_y = float(order_data['y'])
+                delivery_name = order_data.get('delivery_name') or order_data.get('address') or f"DOORSTEP_({round(target_x, 1)}, {round(target_y, 1)})"
+                client_name = customer_name or (cust['name'] if cust else 'Customer')
+            elif cust:
+                target_x = float(cust['x'])
+                target_y = float(cust['y'])
+                delivery_name = cust['location_name']
+                client_name = cust['name']
+            else:
+                target_x = -9.8
+                target_y = 15.0
+                delivery_name = 'CLIENT_1_NORTH_AVENUE'
+                client_name = customer_name
+
+            # 2. Validate reachability against Gazebo world
             is_valid, stopping_xy, heading, explanation = validate_and_snap_destination(target_x, target_y)
             if not is_valid:
                 self.get_logger().warn(f'Order rejection: destination ({target_x}, {target_y}) is unreachable: {explanation}')
                 return {'success': False, 'error': f'Unreachable destination: {explanation}'}
 
-            import random
-            otp = f"{random.randint(100000, 999999)}"
-            pkg_id = f"PKG-{len(self.orders)+101}"
-            new_ord = {
-                'order_id': order_id,
-                'customer_id': cust_id,
-                'customer_name': cust['name'],
-                'delivery_name': cust['location_name'],
-                'delivery_xy': [stopping_xy[0], stopping_xy[1]],
-                'approach_heading': heading,
-                'package_id': pkg_id,
-                'items': order_data.get('items', [{'id': 'PRD-01', 'name': 'Artisan Margherita Pizza', 'qty': 1}]),
-                'priority': int(order_data.get('priority', 2)),
-                'status': 'PENDING',
-                'otp': otp,
-                'created_time': time.time(),
-                'assigned_time': None,
-                'completed_time': None,
-                'snapped_explanation': explanation
-            }
-            self.orders.append(new_ord)
+            # 3. Calculate A* route and realistic ETA
+            route = plan_city_route((self.robot_x, self.robot_y), stopping_xy)
+            dist = compute_route_distance(route, (self.robot_x, self.robot_y))
+            eta = estimate_eta_seconds(dist)
 
-            # Publish to ROS 2 /delivery/new_order
-            ros_msg = {
-                'order_id': order_id,
-                'pickup_name': 'DEPOT_POST_OFFICE',
-                'pickup_xy': [-31.5, 2.50],
-                'delivery_name': cust['location_name'],
-                'delivery_xy': [stopping_xy[0], stopping_xy[1]],
-                'target_heading': heading,
-                'package_id': pkg_id,
-                'priority': new_ord['priority']
-            }
-            s = String()
-            s.data = json.dumps(ros_msg)
-            self.pub_new_order.publish(s)
-            self.get_logger().info(f'Dispatched new order {order_id} to destination {cust["location_name"]} ({cust["x"]}, {cust["y"]})')
+            pkg_id = f"PKG-{len(self.orders) + 101}"
+            items = order_data.get('items', [{'id': 'PRD-01', 'name': 'Artisan Margherita Pizza', 'qty': 1}])
+            priority = int(order_data.get('priority', 2))
 
-            return {'success': True, 'order': new_ord}
+            # 4. Save in persistent database
+            db_order = self.db.create_order(
+                customer_id=cust_id,
+                customer_name=client_name,
+                delivery_name=delivery_name,
+                target_x=target_x,
+                target_y=target_y,
+                stopping_x=stopping_xy[0],
+                stopping_y=stopping_xy[1],
+                approach_heading=heading,
+                package_id=pkg_id,
+                items=items,
+                priority=priority,
+                route_dist=dist,
+                est_duration=eta
+            )
+            order_id = db_order['order_id']
+            self.orders.append(db_order)
+
+            # 5. Set active robot mission target
+            self.target_name = delivery_name
+            self.target_xy = tuple(stopping_xy)
+            self.target_action = 'DELIVER'
+            self.active_order_id = order_id
+            self.mission_state = 'NAVIGATING_TO_CLIENT'
+            self.dist_to_target = dist
+
+            # 6. Publish to ROS 2 /delivery/new_order
+            if ROS_AVAILABLE and getattr(self, 'pub_new_order', None) is not None:
+                ros_msg = {
+                    'order_id': order_id,
+                    'pickup_name': 'DEPOT_POST_OFFICE',
+                    'pickup_xy': [-31.5, 2.50],
+                    'delivery_name': delivery_name,
+                    'delivery_xy': [stopping_xy[0], stopping_xy[1]],
+                    'target_heading': heading,
+                    'package_id': pkg_id,
+                    'priority': priority
+                }
+                s = String()
+                s.data = json.dumps(ros_msg)
+                self.pub_new_order.publish(s)
+
+            self.get_logger().info(f'Dispatched new order {order_id} to destination {delivery_name} ({stopping_xy[0]}, {stopping_xy[1]}), dist: {dist}m, ETA: {eta}s')
+            return {'success': True, 'order': db_order}
 
     def confirm_delivery(self, order_id: str) -> dict:
         with self.lock:
-            order = next((o for o in self.orders if o['order_id'] == order_id), None)
+            order = next((o for o in self.orders if o.get('order_id') == order_id or o.get('id') == order_id), None)
             if not order:
                 return {'success': False, 'error': 'Order not found'}
             order['status'] = 'COMPLETED'
             order['completed_time'] = time.time()
+            self.db.update_order_status(order_id, 'COMPLETED')
             return {'success': True, 'order_id': order_id, 'status': 'COMPLETED'}
 
     def register_user(self, data: dict) -> dict:
-        with self.lock:
-            name = str(data.get('name', '')).strip()
-            email = str(data.get('email', '')).strip().lower()
-            password = str(data.get('password', '')).strip()
-            phone = str(data.get('phone', '+216 20 000 000')).strip()
-            address = str(data.get('address', '12 North Avenue, Tunis')).strip()
-            location_bay = str(data.get('location_bay', 'CLIENT_1_NORTH_AVENUE')).strip()
+        name = str(data.get('name', '')).strip()
+        email = str(data.get('email', '')).strip().lower()
+        password = str(data.get('password', '')).strip()
+        phone = str(data.get('phone', '+216 20 000 000')).strip()
 
-            if not name or not email or not password:
-                return {'success': False, 'error': 'Name, email, and password are required.'}
-            if any(u['email'] == email for u in self.user_accounts):
-                return {'success': False, 'error': 'An account with this email address already exists.'}
+        if not name or not email or not password:
+            return {'success': False, 'error': 'Name, email, and password are required.'}
 
-            import secrets
-            uid = f"USR-{len(self.user_accounts)+1:03d}"
-            cid = f"CUST-{len(self.customers)+1:03d}"
+        ok, msg, udata = self.db.register_user(email, password, name, role='CUSTOMER', phone=phone)
+        if not ok:
+            return {'success': False, 'error': msg}
 
-            cust_record = {
-                'id': cid,
-                'name': name,
-                'address': address,
-                'phone': phone,
-                'x': -14.2,
-                'y': 15.0,
-                'door_x': -13.4,
-                'door_y': 15.0,
-                'location_name': location_bay or f"CLIENT_{cid}",
-                'notes': 'Registered via NexusDelivery Customer App'
-            }
-            self.customers.append(cust_record)
-
-            token = f"CUST-SES-{secrets.token_hex(16)}"
-            user_record = {
-                'id': uid,
-                'customer_id': cid,
-                'name': name,
-                'email': email,
-                'password': password,
-                'phone': phone,
-                'address': address,
-                'location_bay': cust_record['location_name'],
-                'created_at': time.time()
-            }
-            self.user_accounts.append(user_record)
-            self.client_sessions[token] = uid
-
-            safe_user = dict(user_record)
-            safe_user.pop('password', None)
-            return {'success': True, 'token': token, 'user': safe_user, 'message': 'Account registered successfully!'}
+        # Auto login
+        _, _, _, token, _ = self.db.authenticate_user(email, password)
+        return {'success': True, 'token': token, 'user': udata, 'message': msg}
 
     def login_user(self, data: dict) -> dict:
-        with self.lock:
-            email = str(data.get('email', '')).strip().lower()
-            password = str(data.get('password', '')).strip()
-            user = next((u for u in self.user_accounts if u['email'] == email and u['password'] == password), None)
-            if not user:
-                if email == 'client@nexus.tn' and (password == 'password123' or password == 'client123'):
-                    user = self.user_accounts[0]
-                else:
-                    return {'success': False, 'error': 'Invalid email or password.'}
-
-            import secrets
-            token = f"CUST-SES-{secrets.token_hex(16)}"
-            self.client_sessions[token] = user['id']
-            safe_user = dict(user)
-            safe_user.pop('password', None)
-            return {'success': True, 'token': token, 'user': safe_user, 'message': 'Authentication successful!'}
+        email = str(data.get('email', '')).strip().lower()
+        password = str(data.get('password', '')).strip()
+        ok, msg, udata, token, _ = self.db.authenticate_user(email, password)
+        if not ok:
+            # Fallback for seeded Sophie demo account
+            if email == 'client@nexus.tn' and password in ('password123', 'client123'):
+                token = 'CUST-TOKEN-SOPHIE'
+                user_data = {'id': 'USR-001', 'email': email, 'name': 'Sophie Laurent', 'role': 'CUSTOMER'}
+                return {'success': True, 'token': token, 'user': user_data, 'message': 'Demo Authentication Successful'}
+            return {'success': False, 'error': msg}
+        return {'success': True, 'token': token, 'user': udata, 'message': msg}
 
     def get_user_by_token(self, token: str) -> Optional[dict]:
-        with self.lock:
-            if not token:
-                return None
-            uid = self.client_sessions.get(token)
-            if not uid:
-                return None
-            user = next((u for u in self.user_accounts if u['id'] == uid), None)
-            if not user:
-                return None
-            safe = dict(user)
-            safe.pop('password', None)
-            return safe
+        if not token:
+            return None
+        session = self.db.validate_session(token)
+        if session:
+            return {
+                'id': session['user_id'],
+                'email': session['email'],
+                'name': session['name'],
+                'role': session['role'],
+                'phone': session.get('phone', '')
+            }
+        if token == 'CUST-TOKEN-SOPHIE':
+            return {
+                'id': 'USR-001',
+                'email': 'client@nexus.tn',
+                'name': 'Sophie Laurent',
+                'role': 'CUSTOMER',
+                'phone': '+216 20 123 456'
+            }
+        return None
 
     def verify_delivery_otp(self, otp_code: str, order_id: str = '') -> dict:
         with self.lock:
             matched_order = None
             if order_id:
-                matched_order = next((o for o in self.orders if o['order_id'] == order_id), None)
+                matched_order = self.db.get_order(order_id)
             if not matched_order:
                 for o in self.orders:
-                    if o.get('otp') == otp_code or o.get('status') in ('IN_TRANSIT', 'ASSIGNED', 'PENDING'):
+                    if str(o.get('otp')) == otp_code or o.get('status') in ('IN_TRANSIT', 'ASSIGNED', 'PENDING', 'QUEUED'):
                         matched_order = o
                         break
-
             if not matched_order and self.orders:
                 matched_order = self.orders[0]
 
             if not matched_order:
                 return {'success': False, 'error': 'NO_ORDER', 'message': 'No delivery order found.'}
 
-            valid_codes = {str(matched_order.get('otp')), '482910', '123456', '739104'}
-            if otp_code in valid_codes:
+            oid = matched_order.get('order_id') or matched_order.get('id')
+            is_valid = self.db.verify_order_otp(oid, otp_code)
+            if not is_valid and (otp_code == str(matched_order.get('otp')) or otp_code in ('482910', '739104')):
+                is_valid = True
+                self.db.update_order_status(oid, 'COMPLETED')
+
+            if is_valid:
                 matched_order['status'] = 'COMPLETED'
                 matched_order['completed_time'] = time.time()
                 self.orders_completed += 1
                 self.hatch_status = 'OPEN'
                 self.hatch_angle = 1.05
                 self.hatch_unlocked_manual = True
+                self.package_loaded = False
+                self.mission_state = 'HANDOVER_COMPLETED'
 
                 if ROS_AVAILABLE and getattr(self, 'pub_hatch_cmd', None) is not None:
                     cmd_msg = String()
@@ -1411,7 +1566,7 @@ class WebBridgeNode(Node):
 
                 return {
                     'success': True,
-                    'order_id': matched_order['order_id'],
+                    'order_id': oid,
                     'customer_name': matched_order.get('customer_name', 'Client'),
                     'hatch_status': 'UNLOCKED_60DEG',
                     'hatch_angle': 1.05,
@@ -1423,6 +1578,7 @@ class WebBridgeNode(Node):
                     'error': 'INVALID_OTP',
                     'message': f'Incorrect 6-digit OTP code "{otp_code}". Please verify the code displayed in your customer order.'
                 }
+
 
 
 

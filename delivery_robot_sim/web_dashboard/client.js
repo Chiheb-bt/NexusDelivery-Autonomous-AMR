@@ -14,36 +14,22 @@ let currentOtpBuffer = '';
 let audioEnabled = true;
 let audioCtx = null;
 
-// Leaflet Map State
-let worldMap = null;
-let darkTileLayer = null;
-let satelliteTileLayer = null;
-let isSatelliteMode = false;
-let userDoorstepMarker = null;
-let roverMapMarker = null;
-let routePolyline = null;
+// Gazebo World Map State
+let gazeboMap = null;
 
-// Current Selected Doorstep GPS Coordinates (Default: Avenue Habib Bourguiba, Tunis)
+// Current Selected Doorstep Coordinates in Gazebo Metric Space
 let selectedDoorstep = {
-  lat: 36.800542,
-  lng: 10.180012,
-  address: 'Avenue Habib Bourguiba, Tunis (Curbside Bay 1)'
+  x: -9.80,
+  y: 15.00,
+  stopping_x: -14.60,
+  stopping_y: 15.00,
+  heading: 0.0,
+  address: 'Sophie Laurent Doorstep (North Avenue Curbside Bay 1)',
+  distance_m: 31.5,
+  eta_seconds: 45,
+  eta_minutes: 1
 };
 
-// Depot Hub Coordinates (Tunis Central Hub)
-const DEPOT_COORDS = {
-  lat: 36.801200,
-  lng: 10.178500,
-  name: 'Tunis Central Hub (Depot)'
-};
-
-// Global City Presets for Hackathon Demo
-const CITY_PRESETS = {
-  tunis: { lat: 36.800542, lng: 10.180012, zoom: 16, name: 'Tunis City Center' },
-  silicon_valley: { lat: 37.4275, lng: -122.1697, zoom: 16, name: 'Stanford / Silicon Valley' },
-  paris: { lat: 48.8698, lng: 2.3075, zoom: 16, name: 'Paris Champs-Élysées' },
-  tokyo: { lat: 35.6595, lng: 139.7004, zoom: 16, name: 'Tokyo Shibuya' }
-};
 
 // Telemetry Cache
 let latestTelemetry = {
@@ -160,198 +146,115 @@ function toggleClientAudio() {
 }
 
 /* ==========================================================================
-   2. REAL-WORLD LEAFLET INTERACTIVE MAP IMPLEMENTATION
+   2. AUTHENTIC GAZEBO SIMULATION WORLD VECTOR MAP INTEGRATION
    ========================================================================== */
-function initRealWorldMap() {
-  const mapContainer = document.getElementById('worldDeliveryMap');
-  if (!mapContainer || typeof L === 'undefined') return;
+function initGazeboMap() {
+  const mapContainer = document.getElementById('gazeboCustomerMap');
+  if (!mapContainer || typeof GazeboWorldMap === 'undefined') return;
 
-  // Initialize Leaflet Map centered on Tunis
-  worldMap = L.map('worldDeliveryMap', {
-    zoomControl: false,
-    attributionControl: false
-  }).setView([selectedDoorstep.lat, selectedDoorstep.lng], 16);
-
-  // Custom Zoom Control at Top Right
-  L.control.zoom({ position: 'topright' }).addTo(worldMap);
-
-  // CartoDB Dark Matter Base Tiles (Futuristic Cyberpunk Dark Streets)
-  darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    subdomains: 'abcd'
-  }).addTo(worldMap);
-
-  // Esri World Imagery (High-Resolution Satellite)
-  satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19
+  gazeboMap = new GazeboWorldMap({
+    containerId: 'gazeboCustomerMap',
+    mode: 'customer',
+    onDestinationSelected: (pin) => {
+      onDoorstepSelected(pin);
+    }
   });
 
-  // Add Depot Marker
-  const depotIcon = L.divIcon({
-    className: 'custom-depot-marker',
-    html: '<div class="rover-pulse-icon" style="background: rgba(99, 102, 241, 0.4); border-color: #6366f1;">📮</div>',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16]
-  });
-  L.marker([DEPOT_COORDS.lat, DEPOT_COORDS.lng], { icon: depotIcon })
-    .addTo(worldMap)
-    .bindPopup('<b>Nexus Depot Central Hub</b><br>Autonomous dispatch depot & parcel loading station');
+  // Default selection: Sophie Laurent doorstep
+  if (selectedDoorstep) {
+    const addrEl = document.getElementById('pinSelectedAddress');
+    const coordsEl = document.getElementById('pinGpsCoords');
+    const distEl = document.getElementById('pinDistanceVal');
+    const etaEl = document.getElementById('pinEtaVal');
+    if (addrEl) addrEl.textContent = selectedDoorstep.address;
+    if (coordsEl) coordsEl.textContent = `X: ${selectedDoorstep.x.toFixed(2)}m, Y: ${selectedDoorstep.y.toFixed(2)}m`;
+    if (distEl) distEl.textContent = `${selectedDoorstep.distance_m} m`;
+    if (etaEl) etaEl.textContent = `~${selectedDoorstep.eta_seconds} sec`;
+  }
+}
 
-  // Add Initial Doorstep Pin
-  updateDoorstepPin(selectedDoorstep.lat, selectedDoorstep.lng, selectedDoorstep.address);
+function onDoorstepSelected(pin) {
+  if (pin.valid) {
+    selectedDoorstep = {
+      x: pin.raw_xy[0],
+      y: pin.raw_xy[1],
+      stopping_x: pin.stopping_xy ? pin.stopping_xy[0] : pin.raw_xy[0],
+      stopping_y: pin.stopping_xy ? pin.stopping_xy[1] : pin.raw_xy[1],
+      heading: pin.heading || 0.0,
+      address: pin.customer_name ? `${pin.customer_name} Doorstep` : `Doorstep (${pin.raw_xy[0].toFixed(1)}m, ${pin.raw_xy[1].toFixed(1)}m)`,
+      distance_m: pin.distance_m || 0.0,
+      eta_seconds: pin.eta_seconds || 0,
+      eta_minutes: pin.eta_minutes || 1
+    };
 
-  // Add Rover Marker
-  const roverIcon = L.divIcon({
-    className: 'custom-rover-marker',
-    html: '<div class="rover-pulse-icon">⚡</div>',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16]
-  });
-  roverMapMarker = L.marker([latestTelemetry.gps_lat, latestTelemetry.gps_lng], { icon: roverIcon })
-    .addTo(worldMap)
-    .bindPopup('<b>NEXUS-AMR-01</b><br>Cruising on Sidewalk (0.82 m/s)');
+    const addrEl = document.getElementById('pinSelectedAddress');
+    if (addrEl) addrEl.textContent = selectedDoorstep.address;
 
-  // Map Click Listener: User taps ANYWHERE in the world to set delivery doorstep!
-  worldMap.on('click', (e) => {
+    const coordsEl = document.getElementById('pinGpsCoords');
+    if (coordsEl) coordsEl.textContent = `X: ${pin.raw_xy[0].toFixed(2)}m, Y: ${pin.raw_xy[1].toFixed(2)}m`;
+
+    const distEl = document.getElementById('pinDistanceVal');
+    if (distEl) distEl.textContent = `${pin.distance_m || 0} m`;
+
+    const etaEl = document.getElementById('pinEtaVal');
+    if (etaEl) etaEl.textContent = pin.eta_seconds < 60 ? `~${pin.eta_seconds} sec` : `~${pin.eta_minutes} min`;
+
+    const cartBadge = document.getElementById('cartSelectedDoorstepBadge');
+    if (cartBadge) cartBadge.textContent = `📍 ${selectedDoorstep.address} (X:${pin.raw_xy[0].toFixed(1)}, Y:${pin.raw_xy[1].toFixed(1)})`;
+
     playChime('click');
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
-    const approxAddr = formatAddressFromCoords(lat, lng);
-    updateDoorstepPin(lat, lng, approxAddr);
-    showToast(`📍 Doorstep set to: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`);
-  });
-}
-
-function updateDoorstepPin(lat, lng, addressName) {
-  selectedDoorstep.lat = lat;
-  selectedDoorstep.lng = lng;
-  selectedDoorstep.address = addressName;
-
-  if (!userDoorstepMarker && worldMap) {
-    const doorstepIcon = L.divIcon({
-      className: 'custom-doorstep-marker',
-      html: '<div class="doorstep-pulse-icon">🏠</div>',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
-    });
-    userDoorstepMarker = L.marker([lat, lng], {
-      icon: doorstepIcon,
-      draggable: true
-    }).addTo(worldMap);
-
-    userDoorstepMarker.on('dragend', (ev) => {
-      const pos = ev.target.getLatLng();
-      updateDoorstepPin(pos.lat, pos.lng, formatAddressFromCoords(pos.lat, pos.lng));
-      playChime('click');
-    });
-  } else if (userDoorstepMarker) {
-    userDoorstepMarker.setLatLng([lat, lng]);
-  }
-
-  // Draw Glowing Trajectory from Depot to Doorstep
-  drawRouteToDoorstep(lat, lng);
-
-  // Update UI Stats in Floating Card
-  const addrEl = document.getElementById('pinSelectedAddress');
-  const coordsEl = document.getElementById('pinGpsCoords');
-  const distEl = document.getElementById('pinDistanceVal');
-  const etaEl = document.getElementById('pinEtaVal');
-  const cartBadge = document.getElementById('cartSelectedDoorstepBadge');
-
-  if (addrEl) addrEl.textContent = addressName;
-  if (coordsEl) coordsEl.textContent = `${lat.toFixed(6)}° N, ${lng.toFixed(6)}° E`;
-
-  // Geodesic distance calculation
-  const distKm = computeDistanceKm(DEPOT_COORDS.lat, DEPOT_COORDS.lng, lat, lng);
-  const etaMin = Math.max(3, Math.round((distKm / 3.0) * 60)); // 3 km/h sidewalk cruising
-  if (distEl) distEl.textContent = `${distKm.toFixed(2)} km`;
-  if (etaEl) etaEl.textContent = `${etaMin}–${etaMin + 3} min`;
-  if (cartBadge) cartBadge.textContent = `📍 ${addressName} (${lat.toFixed(4)}°, ${lng.toFixed(4)}°)`;
-}
-
-function drawRouteToDoorstep(destLat, destLng) {
-  if (!worldMap) return;
-
-  // Generate realistic sidewalk polyline path with 2 intermediate corner points
-  const p0 = [DEPOT_COORDS.lat, DEPOT_COORDS.lng];
-  const p1 = [DEPOT_COORDS.lat, destLng];
-  const p2 = [destLat, destLng];
-  const pathPoints = [p0, p1, p2];
-
-  if (routePolyline) {
-    routePolyline.setLatLngs(pathPoints);
+    showToast(`📍 Destination set: ${selectedDoorstep.address} (${pin.distance_m}m)`);
   } else {
-    routePolyline = L.polyline(pathPoints, {
-      color: '#00f0ff',
-      weight: 4,
-      opacity: 0.85,
-      dashArray: '8, 8'
-    }).addTo(worldMap);
+    showToast(`⚠️ Inaccessible Destination: ${pin.explanation || 'Inside building block or outside map boundaries.'}`);
+    playChime('error');
   }
 }
 
-function toggleMapTiles() {
+function focusGazeboSector(sectorId, buttonEl) {
   playChime('click');
-  if (!worldMap) return;
+  if (buttonEl) {
+    document.querySelectorAll('.city-pill').forEach(b => b.classList.remove('active'));
+    buttonEl.classList.add('active');
+  }
 
-  isSatelliteMode = !isSatelliteMode;
-  const tileIcon = document.getElementById('tileIcon');
-  const tileText = document.getElementById('tileText');
+  if (!gazeboMap) return;
 
-  if (isSatelliteMode) {
-    worldMap.removeLayer(darkTileLayer);
-    satelliteTileLayer.addTo(worldMap);
-    if (tileIcon) tileIcon.textContent = '🌃';
-    if (tileText) tileText.textContent = 'Cyber Dark View';
-    showToast('Switched to High-Resolution Satellite View 🛰️');
-  } else {
-    worldMap.removeLayer(satelliteTileLayer);
-    darkTileLayer.addTo(worldMap);
-    if (tileIcon) tileIcon.textContent = '🛰️';
-    if (tileText) tileText.textContent = 'Satellite View';
-    showToast('Switched to Cyberpunk Dark Streets 🌃');
+  if (sectorId === 'DEPOT') {
+    gazeboMap.selectBay({
+      id: 'DEPOT_POST_OFFICE',
+      customer_name: 'Central Logistics Depot Hub',
+      door_xy: [-27.5, -0.75],
+      stopping_xy: [-31.5, -0.75],
+      approach_heading: 0.0
+    });
+    gazeboMap.zoom(1.8, gazeboMap.width / 2, gazeboMap.height / 2);
+    showToast('Centered on Central Logistics Depot 🏢');
+  } else if (gazeboMap.manifest && gazeboMap.manifest.bays) {
+    const bay = gazeboMap.manifest.bays.find(b => b.id === sectorId);
+    if (bay) {
+      gazeboMap.selectBay(bay);
+      const pt = gazeboMap.worldToScreen(bay.door_xy[0], bay.door_xy[1]);
+      gazeboMap.panX += (gazeboMap.width / 2 - pt.u);
+      gazeboMap.panY += (gazeboMap.height / 2 - pt.v);
+      showToast(`Focused on ${bay.customer_name} Doorstep 🏠`);
+    }
   }
 }
 
-function switchCity(cityKey, btnEl) {
+function centerMapOnRover() {
   playChime('click');
-  const preset = CITY_PRESETS[cityKey];
-  if (!preset || !worldMap) return;
-
-  const buttons = document.querySelectorAll('.city-pill');
-  buttons.forEach(b => b.classList.remove('active'));
-  if (btnEl) btnEl.classList.add('active');
-
-  worldMap.flyTo([preset.lat, preset.lng], preset.zoom, { duration: 1.5 });
-  updateDoorstepPin(preset.lat, preset.lng, `${preset.name} (Doorstep Drop)`);
-  showToast(`Centered on ${preset.name} 🌍`);
+  if (gazeboMap) {
+    gazeboMap.centerOnRobot();
+    showToast('Centered on Nexus Courier Alpha 🎯');
+  }
 }
 
-function locateUserGps() {
+function resetGazeboMapView() {
   playChime('click');
-  if (!navigator.geolocation) {
-    showToast('Geolocation not supported by this browser.');
-    return;
+  if (gazeboMap) {
+    gazeboMap.fitWorldBounds();
+    showToast('View reset to full Gazebo city grid ⟲');
   }
-
-  showToast('Locating your GPS position...');
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      if (worldMap) {
-        worldMap.flyTo([lat, lng], 17, { duration: 1.5 });
-        updateDoorstepPin(lat, lng, 'My Live GPS Doorstep Location');
-        playChime('success');
-        showToast('📍 Pin dropped at your live GPS location!');
-      }
-    },
-    (err) => {
-      showToast('Could not access live GPS. Using Tunis City Center.');
-      switchCity('tunis', document.querySelector('.city-pill'));
-    },
-    { timeout: 8000 }
-  );
 }
 
 function confirmDoorstepLocation() {
@@ -361,31 +264,6 @@ function confirmDoorstepLocation() {
   if (catSection) catSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-function formatAddressFromCoords(lat, lng) {
-  if (Math.abs(lat - 36.8005) < 0.05 && Math.abs(lng - 10.1800) < 0.05) {
-    return `Avenue Habib Bourguiba, Tunis (Curbside Bay)`;
-  } else if (Math.abs(lat - 37.4275) < 0.1) {
-    return `Stanford University Ave, Palo Alto, CA`;
-  } else if (Math.abs(lat - 48.8698) < 0.1) {
-    return `Avenue des Champs-Élysées, Paris`;
-  } else if (Math.abs(lat - 35.6595) < 0.1) {
-    return `Shibuya Crossing, Tokyo`;
-  } else {
-    return `GPS Doorstep (${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E)`;
-  }
-}
-
-function computeDistanceKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
 
 /* ==========================================================================
    3. CUSTOMER AUTHENTICATION & SESSION MANAGEMENT
@@ -709,11 +587,19 @@ async function checkoutOrder() {
   if (btn) btn.disabled = true;
 
   try {
+    const token = localStorage.getItem('nexus_client_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const payload = {
-      customer_id: currentUser ? currentUser.customer_id : 'CUST-001',
+      customer_id: currentUser ? (currentUser.id || currentUser.customer_id || 'USR-001') : 'USR-001',
       customer_name: currentUser ? currentUser.name : 'Sophie Laurent',
-      target_lat: selectedDoorstep.lat,
-      target_lng: selectedDoorstep.lng,
+      x: selectedDoorstep.stopping_x !== undefined ? selectedDoorstep.stopping_x : selectedDoorstep.x,
+      y: selectedDoorstep.stopping_y !== undefined ? selectedDoorstep.stopping_y : selectedDoorstep.y,
+      raw_x: selectedDoorstep.x,
+      raw_y: selectedDoorstep.y,
+      heading: selectedDoorstep.heading || 0.0,
+      delivery_name: selectedDoorstep.address,
       delivery_address: selectedDoorstep.address,
       items: clientCart.map(c => ({ id: c.id, name: c.name, qty: c.qty })),
       priority: 1
@@ -721,40 +607,37 @@ async function checkoutOrder() {
 
     const res = await fetch('/api/orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(payload)
     });
 
     const data = await res.json();
-    if (data.success && data.order) {
-      activeOrder = data.order;
+    if (data.success && (data.order || data.order_id)) {
+      activeOrder = data.order || data;
       playChime('success');
-      showToast(`Order ${data.order.order_id} Dispatched to Doorstep! Rover En Route 🚀`);
+      showToast(`Order ${activeOrder.order_id} Dispatched in Gazebo City! Rover En Route 🚀`);
       clientCart = [];
       updateCartUI();
       toggleCartDrawer();
-      updateOrderTrackingUI(data.order);
+      updateOrderTrackingUI(activeOrder);
       scrollToTracking();
+
+      // Trigger map focus on the customer doorstep
+      if (gazeboMap) {
+        gazeboMap.selectBay({
+          id: activeOrder.order_id,
+          customer_name: activeOrder.delivery_name || selectedDoorstep.address,
+          door_xy: [selectedDoorstep.x, selectedDoorstep.y],
+          stopping_xy: [selectedDoorstep.stopping_x, selectedDoorstep.stopping_y],
+          approach_heading: selectedDoorstep.heading || 0.0
+        });
+      }
     } else {
-      throw new Error(data.error || 'Dispatch error');
+      throw new Error(data.error || data.message || 'Dispatch rejected by Gazebo safety validator');
     }
   } catch (err) {
-    const simOrder = {
-      order_id: `ORD-00${Math.floor(Math.random() * 90 + 10)}`,
-      customer_name: currentUser ? currentUser.name : 'Sophie Laurent',
-      delivery_name: selectedDoorstep.address,
-      status: 'IN_TRANSIT',
-      otp: `${Math.floor(100000 + Math.random() * 900000)}`,
-      items: [...clientCart]
-    };
-    activeOrder = simOrder;
-    playChime('success');
-    showToast(`Order ${simOrder.order_id} Dispatched to Doorstep! 🚀`);
-    clientCart = [];
-    updateCartUI();
-    toggleCartDrawer();
-    updateOrderTrackingUI(simOrder);
-    scrollToTracking();
+    playChime('error');
+    showToast(`Order Dispatch Failed: ${err.message || 'Server error'}`);
   } finally {
     if (btnText) btnText.textContent = 'Confirm & Dispatch Autonomous Rover';
     if (spinner) spinner.style.display = 'none';
@@ -792,36 +675,34 @@ async function pollTelemetry() {
     if (res.ok) {
       latestTelemetry = await res.json();
       updateTelemetryDisplays(latestTelemetry);
+      if (gazeboMap) {
+        gazeboMap.updateTelemetry(latestTelemetry);
+      }
     }
   } catch (err) {}
 }
 
 function updateTelemetryDisplays(tel) {
   const heroSpeed = document.getElementById('heroVisualSpeed');
-  if (heroSpeed) heroSpeed.textContent = `${Number(tel.actual_v || 0.82).toFixed(2)} m/s`;
+  if (heroSpeed) heroSpeed.textContent = `${Number(tel.actual_v || 0.0).toFixed(2)} m/s`;
 
   const distEl = document.getElementById('trackingDistText');
   const etaEl = document.getElementById('trackingEtaText');
   const hatchEl = document.getElementById('trackingHatchState');
 
-  const dist = tel.dist_to_target || 24.5;
+  const dist = tel.dist_to_target !== undefined ? tel.dist_to_target : 0.0;
   if (distEl) distEl.textContent = `${Number(dist).toFixed(1)} m`;
 
-  const speed = Math.max(0.2, Math.abs(tel.actual_v || 0.8));
-  const etaSec = Math.round(dist / speed);
+  const speed = Math.max(0.1, Math.abs(tel.actual_v || 0.8));
+  const etaSec = dist > 0.3 ? Math.round(dist / speed) : 0;
   const etaMin = Math.floor(etaSec / 60);
   const etaRemSec = etaSec % 60;
-  if (etaEl) etaEl.textContent = `${String(etaMin).padStart(2, '0')} min ${String(etaRemSec).padStart(2, '0')} s`;
+  if (etaEl) etaEl.textContent = dist <= 0.5 ? 'ARRIVED AT DOORSTEP' : `${String(etaMin).padStart(2, '0')} min ${String(etaRemSec).padStart(2, '0')} s`;
 
   if (hatchEl) {
-    const isUnlocked = tel.hatch_status === 'OPEN' || tel.hatch_angle > 0.1;
+    const isUnlocked = tel.hatch_status === 'OPEN' || (tel.hatch_angle && tel.hatch_angle > 0.1);
     hatchEl.textContent = isUnlocked ? 'UNLOCKED (60°) 🔓' : 'LOCKED 🔒';
     hatchEl.className = isUnlocked ? 'metric-value text-emerald' : 'metric-value text-amber';
-  }
-
-  // Update Rover Leaflet Marker Position on Real Map
-  if (roverMapMarker && tel.gps_lat && tel.gps_lng) {
-    roverMapMarker.setLatLng([tel.gps_lat, tel.gps_lng]);
   }
 }
 
@@ -879,7 +760,11 @@ function clearKeypad() {
 
 function autofillOtp() {
   playChime('click');
-  const code = (activeOrder && activeOrder.otp) ? activeOrder.otp : '482910';
+  const code = (activeOrder && activeOrder.otp) ? activeOrder.otp : '';
+  if (!code) {
+    showToast('No active order OTP found to autofill.');
+    return;
+  }
   currentOtpBuffer = code;
   updateOtpDisplay();
   verifyOtpCode(currentOtpBuffer);
@@ -909,9 +794,13 @@ async function verifyOtpCode(code) {
   }
 
   try {
+    const token = localStorage.getItem('nexus_client_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const res = await fetch('/api/verify_otp', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify({
         otp: code,
         order_id: activeOrder ? activeOrder.order_id : ''
@@ -930,11 +819,14 @@ async function verifyOtpCode(code) {
       latestTelemetry.hatch_status = 'OPEN';
       latestTelemetry.hatch_angle = 1.05;
       updateTelemetryDisplays(latestTelemetry);
-      showToast('🎉 Compartment unlatched to 60°! Enjoy your meal!');
+      if (gazeboMap) {
+        gazeboMap.updateTelemetry(latestTelemetry);
+      }
+      showToast('🎉 Compartment unlatched to 60°! Enjoy your delivery!');
     } else {
       playChime('error');
       if (feedback) {
-        feedback.textContent = data.message || 'Incorrect code. Please verify.';
+        feedback.textContent = data.error || data.message || 'Incorrect verification code. Please check your order OTP.';
         feedback.className = 'otp-feedback-msg error';
       }
       setTimeout(() => {
@@ -943,17 +835,15 @@ async function verifyOtpCode(code) {
       }, 900);
     }
   } catch (err) {
-    if (code === '482910' || code === '123456' || (activeOrder && code === activeOrder.otp)) {
-      playChime('success');
-      if (feedback) {
-        feedback.textContent = '✓ CODE CONFIRMED — HATCH UNLOCKED!';
-        feedback.className = 'otp-feedback-msg success';
-      }
-      if (successBox) successBox.style.display = 'block';
-      latestTelemetry.hatch_status = 'OPEN';
-      updateTelemetryDisplays(latestTelemetry);
-      showToast('🎉 Compartment unlatched to 60°!');
+    playChime('error');
+    if (feedback) {
+      feedback.textContent = `Verification error: ${err.message || 'Network error'}`;
+      feedback.className = 'otp-feedback-msg error';
     }
+    setTimeout(() => {
+      currentOtpBuffer = '';
+      updateOtpDisplay();
+    }, 1200);
   }
 }
 
@@ -990,7 +880,7 @@ function showToast(message) {
 window.addEventListener('DOMContentLoaded', () => {
   initAuth();
   loadCatalog();
-  initRealWorldMap();
+  initGazeboMap();
 
   setInterval(pollTelemetry, 1000);
   pollTelemetry();
