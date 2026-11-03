@@ -43,23 +43,23 @@ let gazeboSupervisorMap = null;
 
 // Telemetry Cache
 let telemetryData = {
-  x: -14.2,
-  y: 15.0,
-  yaw: 1.571,
-  yaw_deg: 90.0,
-  actual_v: 0.82,
-  actual_w: 0.05,
-  cmd_v: 0.85,
+  x: -32.0,
+  y: -0.75,
+  yaw: 0.0,
+  yaw_deg: 0.0,
+  actual_v: 0.0,
+  actual_w: 0.0,
+  cmd_v: 0.0,
   cmd_w: 0.0,
-  mission_state: 'NAVIGATING_TO_CLIENT',
+  mission_state: 'IDLE_AT_DEPOT',
   safety_state: 'NORMAL_OPERATION',
-  target_name: 'CLIENT_1_NORTH_AVENUE',
-  target_x: -14.2,
-  target_y: 15.0,
-  dist_to_target: 24.5,
-  obstacle_detected: true,
-  obstacle_dist: 1.05,
-  is_pedestrian: true,
+  target_name: 'DEPOT_CENTRAL_HUB',
+  target_x: -32.0,
+  target_y: -0.75,
+  dist_to_target: 0.0,
+  obstacle_detected: false,
+  obstacle_dist: 999.0,
+  is_pedestrian: false,
   hatch_status: 'LOCKED',
   hatch_angle: 0.0,
   trail: []
@@ -371,7 +371,7 @@ function setCameraMode(mode, btn) {
 
 function handleStreamFallback(img) {
   img.onerror = null;
-  img.src = 'street_camera_frame.jpg';
+  img.src = 'gazebo_sidewalk_tracking.jpg';
 }
 
 /* ==========================================================================
@@ -486,7 +486,7 @@ function renderOrdersTable(orders) {
   if (!tbody) return;
 
   if (!orders || orders.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-dim">No active delivery missions queued in Gazebo world.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-dim">No active delivery missions queued in Gazebo world.</td></tr>`;
     if (countBadge) countBadge.textContent = '0 Active Missions';
     return;
   }
@@ -498,12 +498,21 @@ function renderOrdersTable(orders) {
     const st = (ord.status || 'QUEUED').toUpperCase();
     if (st.includes('ROUTE') || st.includes('TRANSIT')) statusClass = 'en_route';
     else if (st.includes('DELIVERED') || st.includes('COMPLETED')) statusClass = 'completed';
-    else if (st.includes('FAIL') || st.includes('REJECT')) statusClass = 'failed';
+    else if (st.includes('FAIL') || st.includes('REJECT') || st.includes('UNREACHABLE')) statusClass = 'failed';
+    else if (st.includes('CANCEL')) statusClass = 'failed';
 
     const tx = ord.target_x !== undefined ? Number(ord.target_x).toFixed(1) : '-';
     const ty = ord.target_y !== undefined ? Number(ord.target_y).toFixed(1) : '-';
     const dist = ord.route_dist_m ? `${ord.route_dist_m}m` : (ord.est_route_distance ? `${ord.est_route_distance}m` : '~32m');
     const eta = ord.est_duration_s ? `${Math.round(ord.est_duration_s)}s` : '~45s';
+
+    const canCancel = !['DELIVERED', 'COMPLETED', 'CANCELLED'].includes(st);
+    const actionsHtml = `
+      <div style="display:flex;gap:4px;">
+        ${canCancel ? `<button class="btn-action-mini cancel" style="background:#ef4444;color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:0.72rem;cursor:pointer;" onclick="supervisorOrderAction('${ord.order_id || ord.id}', 'CANCEL')">Cancel</button>` : ''}
+        <button class="btn-action-mini complete" style="background:#10b981;color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:0.72rem;cursor:pointer;" onclick="supervisorOrderAction('${ord.order_id || ord.id}', 'FORCE_COMPLETE')">Done</button>
+      </div>
+    `;
 
     return `
       <tr>
@@ -515,9 +524,119 @@ function renderOrdersTable(orders) {
         <td>${ord.priority || 1}</td>
         <td>${dist} / ${eta}</td>
         <td class="text-emerald"><strong>${ord.otp || '******'}</strong></td>
+        <td>${actionsHtml}</td>
       </tr>
     `;
   }).join('');
+}
+
+async function supervisorOrderAction(orderId, action) {
+  appendTerminalLog('info', `[SUPERVISOR] Dispatching operator override: ${action} for ${orderId}`);
+  try {
+    const res = await fetch('/api/supervisor/order_action', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${operatorToken}`
+      },
+      body: JSON.stringify({
+        token: operatorToken,
+        order_id: orderId,
+        action: action
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      appendTerminalLog('success', `[SUPERVISOR] Action ${action} executed for order ${orderId}.`);
+      fetchOrdersQueue();
+    } else {
+      appendTerminalLog('error', `[SUPERVISOR] Action rejected: ${data.error || 'Authorization failed'}`);
+      if (data.error === 'UNAUTHORIZED') promptOperatorPin();
+    }
+  } catch (e) {
+    appendTerminalLog('error', `[SUPERVISOR] Network error dispatching action.`);
+  }
+}
+
+// Fetch Registered Customers
+async function fetchCustomers() {
+  const tbody = document.getElementById('customersTableBody');
+  if (!tbody) return;
+
+  try {
+    const res = await fetch('/api/supervisor/customers', {
+      headers: { 'Authorization': `Bearer ${operatorToken}` }
+    });
+    if (!res.ok) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-dim">Authorize Operator PIN to view customer directory.</td></tr>`;
+      return;
+    }
+    const data = await res.json();
+    const customers = data.customers || [];
+    if (customers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-dim">No registered customers found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = customers.map(c => {
+      const isVer = (c.email_verified === 1 || c.email_verified === true);
+      const verBadge = isVer 
+        ? `<span class="status-tag completed" style="font-size:0.72rem;">✓ Verified</span>` 
+        : `<span class="status-tag failed" style="font-size:0.72rem;">⚠️ Unverified</span>`;
+      return `
+        <tr>
+          <td class="text-cyan"><strong>${c.customer_id || c.id}</strong></td>
+          <td>${c.name}</td>
+          <td style="color:#38bdf8;">${c.email}</td>
+          <td>${c.phone || '-'}</td>
+          <td>${verBadge}</td>
+          <td><span class="text-emerald font-bold">${c.order_count || 0}</span></td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red">Error loading customer records.</td></tr>`;
+  }
+}
+
+// Destination Reachability & ODD Inspector
+async function testDestinationValidation() {
+  const xInput = document.getElementById('inspCoordX');
+  const yInput = document.getElementById('inspCoordY');
+  const resultBox = document.getElementById('inspectorResultBox');
+  if (!resultBox) return;
+
+  const x = parseFloat(xInput ? xInput.value : -9.8);
+  const y = parseFloat(yInput ? yInput.value : 15.0);
+
+  resultBox.innerHTML = '<span style="color:#38bdf8;">Analyzing destination against ODD polygon and building footprint collisions...</span>';
+
+  try {
+    const res = await fetch('/api/destination/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ x, y })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      const snap = data.snapped_bay ? `Snapped to Sidewalk Bay: (${data.snapped_bay[0].toFixed(2)}, ${data.snapped_bay[1].toFixed(2)})` : 'Legal Curbside Point';
+      resultBox.innerHTML = `
+        <div style="color:#10b981;font-weight:700;">✓ VALID DESTINATION WITHIN ODD</div>
+        <div style="color:#f8fafc;margin-top:2px;">${snap}</div>
+        <div style="color:#94a3b8;font-size:0.75rem;margin-top:2px;">Route Dist: ${data.route_dist_m ? data.route_dist_m.toFixed(1) + 'm' : '~32m'} • Est. Transit: ${data.est_duration_s ? Math.round(data.est_duration_s) + 's' : '~45s'} • Clearance: SAFE</div>
+      `;
+      appendTerminalLog('success', `[INSPECTOR] Destination (${x}, ${y}) validated. Legal sidewalk route available.`);
+    } else {
+      resultBox.innerHTML = `
+        <div style="color:#ef4444;font-weight:700;">✖ DESTINATION REJECTED / UNREACHABLE</div>
+        <div style="color:#f87171;margin-top:2px;">Reason: ${data.reason || 'Inside building block or outside ODD'}</div>
+        <div style="color:#94a3b8;font-size:0.75rem;margin-top:2px;">Operational Bounds: X ∈ [-35, 10], Y ∈ [-25, 25]. Building interiors prohibited.</div>
+      `;
+      appendTerminalLog('warn', `[INSPECTOR] Destination (${x}, ${y}) rejected: ${data.reason}`);
+    }
+  } catch (e) {
+    resultBox.innerHTML = `<span style="color:#ef4444;">Network error during destination validation.</span>`;
+  }
 }
 
 // Fetch Security Audit Logs from Database
@@ -742,9 +861,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   setInterval(fetchTelemetry, 250);
   setInterval(fetchHardware, 1000);
+  setInterval(fetchOrdersQueue, 2000);
+  setInterval(fetchAuditLogs, 4000);
 
   fetchTelemetry();
   fetchHardware();
+  fetchOrdersQueue();
+  fetchCustomers();
+  fetchAuditLogs();
 
   updateOperatorUI(Boolean(operatorToken));
 });

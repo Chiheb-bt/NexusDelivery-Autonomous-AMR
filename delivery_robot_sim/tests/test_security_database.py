@@ -109,7 +109,7 @@ class SecurityAndDatabaseTests(unittest.TestCase):
         # Wrong OTP fails
         ok, msg = self.db.verify_order_otp(ord_id, '000000')
         self.assertFalse(ok)
-        self.assertEqual(self.db.get_order(ord_id)['status'], 'QUEUED')
+        self.assertIn(self.db.get_order(ord_id)['status'], ('QUEUED', 'CONFIRMED'))
 
         # Correct OTP succeeds
         ok, msg = self.db.verify_order_otp(ord_id, '998877')

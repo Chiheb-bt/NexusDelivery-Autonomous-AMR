@@ -67,7 +67,7 @@ class CityDriverNode(Node):
         self.declare_parameter('docking_speed_mps', 0.20)
         self.declare_parameter('steering_kp', 1.25)
         self.declare_parameter('steering_kd', 0.22)
-        self.declare_parameter('arrival_tolerance_m', 1.20)
+        self.declare_parameter('arrival_tolerance_m', 0.50)
         self.declare_parameter('turn_in_place_thresh_rad', 0.85)
         self.declare_parameter('simulate_depth_drop_t', 0.0)
         self.sim_depth_drop_t = float(self.get_parameter('simulate_depth_drop_t').value)
@@ -476,14 +476,8 @@ class CityDriverNode(Node):
         gx, gy = self.target_xy
         dist_to_goal = math.hypot(gx - self.current_x, gy - self.current_y)
 
-        # Recipient standing at doorstep: if within 2.2m or within 2.8m with customer detected in front
-        is_at_delivery_customer = (
-            self.target_action == 'DELIVERY' and (
-                dist_to_goal <= 2.20 or
-                (dist_to_goal <= 2.80 and is_obs and obs_dist <= 1.50)
-            )
-        )
-        is_arrived_condition = (dist_to_goal <= self.arrival_tol) or is_at_delivery_customer
+        # Check goal arrival at designated delivery bay or depot dock
+        is_arrived_condition = (dist_to_goal <= self.arrival_tol)
 
         if is_arrived_condition and not self.arrived_at_goal:
             # Check orientation alignment facing customer entrance / bay
@@ -491,7 +485,7 @@ class CityDriverNode(Node):
                 math.sin(self.target_heading - self.current_yaw),
                 math.cos(self.target_heading - self.current_yaw)
             )
-            if abs(heading_err) > 0.20 and self.target_action in ('DELIVERY', 'PARK'):
+            if abs(heading_err) > 0.20 and self.target_action in ('DELIVERY', 'PARK', 'RETURN_TO_DEPOT'):
                 self.cmd_v = 0.0
                 turn_rate = self.motion_ctrl.compute_in_place_turn(heading_err, self.latest_imu_yaw_rate)
                 self.cmd_w = turn_rate
@@ -507,8 +501,8 @@ class CityDriverNode(Node):
             self.cmd_w = 0.0
             self._send_cmd(0.0, 0.0)
             if self.target_action == 'DELIVERY':
-                self.state = 'DELIVERING'
-            elif self.target_action == 'PARK':
+                self.state = 'WAITING_FOR_CUSTOMER'
+            elif self.target_action in ('PARK', 'RETURN_TO_DEPOT'):
                 self.state = 'DOCKING'
             else:
                 self.state = 'WAITING_FOR_ORDER'
@@ -519,13 +513,13 @@ class CityDriverNode(Node):
             return
 
         if self.arrived_at_goal:
-            # Remain stopped while order manager processes dwell
+            # Remain completely stopped while waiting for customer OTP and retrieval
             self.cmd_v = 0.0
             self.cmd_w = 0.0
             self._send_cmd(0.0, 0.0)
             if self.target_action == 'DELIVERY':
-                self.state = 'DELIVERING'
-            elif self.target_action == 'PARK':
+                self.state = 'WAITING_FOR_CUSTOMER'
+            elif self.target_action in ('PARK', 'RETURN_TO_DEPOT'):
                 self.state = 'DOCKING'
             self._publish_state()
             self._log_row(now)
@@ -822,10 +816,7 @@ class CityDriverNode(Node):
         is_alongside = (self.locked_bypass_dir is not None and self.total_distance < getattr(self, 'bypass_end_distance', 0.0))
 
         if not is_turning_in_place:
-            # When delivering to customer and within 2.8m of destination, do not trigger emergency freeze
-            if self.target_action == 'DELIVERY' and dist_to_goal <= 2.80:
-                pass
-            elif (obs.get('obstacle_detected', False) or obs.get('detected', False)) or self.locked_bypass_dir is not None:
+            if (obs.get('obstacle_detected', False) or obs.get('detected', False)) or self.locked_bypass_dir is not None:
                 # Unpassable or path blocked -> emergency stop, do not proceed forward
                 if not obs.get('safe_passable', True) and not is_on_road_x_2:
                     if self.locked_bypass_dir is None:
@@ -939,7 +930,7 @@ class CityDriverNode(Node):
                 self.state = 'APPROACHING_DELIVERY_POINT'
             else:
                 self.state = 'NAVIGATING_TO_CLIENT'
-        elif self.target_action == 'PARK':
+        elif self.target_action in ('PARK', 'RETURN_TO_DEPOT'):
             if dist_to_goal <= 4.0:
                 self.state = 'DOCKING'
             else:

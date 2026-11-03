@@ -245,6 +245,29 @@ function handleContactSubmit(e) {
 }
 
 /* ==========================================================================
+   4B. ENTERPRISE HARDWARE VISUALIZER TAB SWITCHER
+   ========================================================================== */
+function switchVisualTab(tabName, btnElement) {
+  const buttons = document.querySelectorAll('.vis-tab-btn');
+  buttons.forEach(b => b.classList.remove('active'));
+  if (btnElement) btnElement.classList.add('active');
+
+  const panels = document.querySelectorAll('.vis-panel-content');
+  panels.forEach(p => p.classList.remove('active'));
+
+  if (tabName === 'photo') {
+    const p = document.getElementById('visPanelPhoto');
+    if (p) p.classList.add('active');
+  } else if (tabName === 'cad') {
+    const p = document.getElementById('visPanelCad');
+    if (p) p.classList.add('active');
+  } else if (tabName === 'sim') {
+    const p = document.getElementById('visPanelSim');
+    if (p) p.classList.add('active');
+  }
+}
+
+/* ==========================================================================
    5. INITIALIZATION
    ========================================================================== */
 window.addEventListener('DOMContentLoaded', () => {

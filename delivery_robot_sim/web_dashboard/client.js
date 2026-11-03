@@ -33,14 +33,14 @@ let selectedDoorstep = {
 
 // Telemetry Cache
 let latestTelemetry = {
-  x: -14.2,
-  y: 15.0,
-  gps_lat: 36.800542,
-  gps_lng: 10.180012,
-  yaw: 1.571,
-  actual_v: 0.82,
-  mission_state: 'NAVIGATING_TO_CLIENT',
-  dist_to_target: 24.5,
+  x: -32.0,
+  y: -0.75,
+  gps_lat: 36.800493,
+  gps_lng: 10.179641,
+  yaw: 0.0,
+  actual_v: 0.0,
+  mission_state: 'IDLE_AT_DEPOT',
+  dist_to_target: 0.0,
   hatch_status: 'LOCKED',
   trail: []
 };
@@ -297,10 +297,42 @@ function applyTheme(theme) {
 /* ==========================================================================
    3. AUTHENTICATION & PROFILE MANAGEMENT
    ========================================================================== */
+async function checkEmailVerificationParam() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('verify_token') || params.get('token');
+  const isVerifiedRedirect = params.get('verified') === 'true';
+
+  if (token) {
+    try {
+      const res = await fetch(`/api/auth/verify_email?token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (data.success) {
+        showToast('🎉 Email verified successfully! You can now dispatch autonomous rovers.');
+        playChime('success');
+        if (currentUser) {
+          currentUser.email_verified = 1;
+          renderUserAuthSlot(currentUser);
+        }
+      } else {
+        showToast(`Verification failed: ${data.error || 'Token expired or invalid'}`);
+        playChime('error');
+      }
+    } catch (e) {
+      showToast('Network error verifying email.');
+    }
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (isVerifiedRedirect) {
+    showToast('🎉 Email verified successfully! Your account is fully active.');
+    playChime('success');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
 async function initAuth() {
+  await checkEmailVerificationParam();
   const token = localStorage.getItem('nexus_client_token');
   if (!token) {
-    window.location.href = '/?auth=login';
+    renderUserAuthSlot(null);
     return;
   }
 
@@ -319,31 +351,217 @@ async function initAuth() {
   } catch (err) {}
 
   localStorage.removeItem('nexus_client_token');
-  window.location.href = '/?auth=login';
+  renderUserAuthSlot(null);
 }
 
 function renderUserAuthSlot(user) {
   const slot = document.getElementById('userAuthSlot');
-  if (!slot) return;
+  const banner = document.getElementById('verificationAlertBanner');
+  const unverifiedEmailSpan = document.getElementById('unverifiedEmailSpan');
 
   if (user) {
     const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'CU';
-    slot.innerHTML = `
-      <div class="user-profile-pill" title="Signed in as ${user.email}">
-        <div class="user-avatar-circle">${initials}</div>
-        <span class="user-name-text">${user.name}</span>
-        <button class="btn-signout-mini" onclick="logoutClient()" title="Sign Out">✕</button>
-      </div>
-    `;
+    const isVerified = (user.email_verified === 1 || user.email_verified === true);
+
+    if (slot) {
+      slot.innerHTML = `
+        <div class="user-profile-pill" onclick="openAccountModal()" title="Account & Profile (${user.email})">
+          <div class="user-avatar-circle">${initials}</div>
+          <span class="user-name-text">${user.name}</span>
+          ${isVerified ? '<span style="color:#10b981;font-size:0.75rem;margin-left:4px;" title="Email Verified">✓</span>' : '<span style="color:#f59e0b;font-size:0.75rem;margin-left:4px;" title="Email Unverified">⚠️</span>'}
+          <button class="btn-signout-mini" onclick="event.stopPropagation(); logoutClient();" title="Sign Out">✕</button>
+        </div>
+      `;
+    }
+
+    if (banner) {
+      if (!isVerified) {
+        banner.style.display = 'block';
+        if (unverifiedEmailSpan) unverifiedEmailSpan.textContent = user.email || '';
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
     const nameEl = document.getElementById('trackingRecipientName');
     if (nameEl) nameEl.textContent = user.name;
   } else {
-    slot.innerHTML = `
-      <button class="btn-primary-auth" id="btnOpenAuthModal" onclick="openAuthModal('login')">
-        <span class="btn-auth-icon">🔑</span>
-        <span>Sign In / Inscription</span>
-      </button>
-    `;
+    if (slot) {
+      slot.innerHTML = `
+        <button class="btn-primary-auth" id="btnOpenAuthModal" onclick="openAuthModal('login')">
+          <span class="btn-auth-icon">🔑</span>
+          <span>Sign In / Inscription</span>
+        </button>
+      `;
+    }
+    if (banner) banner.style.display = 'none';
+  }
+}
+
+function openAccountModal() {
+  playChime('click');
+  const backdrop = document.getElementById('accountModalBackdrop');
+  if (backdrop) backdrop.style.display = 'flex';
+  loadAccountProfile();
+  loadAccountOrders();
+}
+
+function closeAccountModal() {
+  playChime('click');
+  const backdrop = document.getElementById('accountModalBackdrop');
+  if (backdrop) backdrop.style.display = 'none';
+}
+
+async function loadAccountProfile() {
+  const token = localStorage.getItem('nexus_client_token');
+  if (!token) return;
+  try {
+    const res = await fetch('/api/customer/profile', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.user) {
+        currentUser = data.user;
+        const nameEl = document.getElementById('accProfileName');
+        const emailEl = document.getElementById('accProfileEmail');
+        const phoneEl = document.getElementById('accProfilePhone');
+        const verEl = document.getElementById('accProfileVerified');
+        if (nameEl) nameEl.textContent = currentUser.name || '-';
+        if (emailEl) emailEl.textContent = currentUser.email || '-';
+        if (phoneEl) phoneEl.textContent = currentUser.phone || 'Not provided';
+        if (verEl) {
+          if (currentUser.email_verified === 1 || currentUser.email_verified === true) {
+            verEl.innerHTML = '<span class="badge-verified-yes">✓ Email Verified</span>';
+          } else {
+            verEl.innerHTML = '<span class="badge-verified-no">⚠️ Unverified</span> <button class="btn-resend-verification" style="padding: 2px 8px; font-size: 0.75rem; margin-left: 6px;" onclick="resendVerificationEmail()">Verify Now</button>';
+          }
+        }
+        renderUserAuthSlot(currentUser);
+      }
+    }
+  } catch (e) {}
+}
+
+async function loadAccountOrders() {
+  const token = localStorage.getItem('nexus_client_token');
+  const listEl = document.getElementById('accountOrdersList');
+  if (!listEl) return;
+  if (!token) {
+    listEl.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;">Sign in to view your orders.</p>';
+    return;
+  }
+  try {
+    const res = await fetch('/api/customer/orders', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const orders = await res.json();
+      if (!orders || orders.length === 0) {
+        listEl.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;">No orders placed yet. Select items from the catalog to dispatch your first rover!</p>';
+        return;
+      }
+      listEl.innerHTML = orders.map(ord => {
+        const canCancel = ['PENDING', 'CONFIRMED', 'PREPARING'].includes((ord.status || '').toUpperCase());
+        const otpStr = ord.otp ? `<span style="color:#38bdf8;font-weight:700;">OTP: ${ord.otp}</span>` : '';
+        const cancelBtn = canCancel ? `<button class="btn-cancel-order-mini" style="background:#ef4444;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:0.75rem;cursor:pointer;" onclick="cancelCustomerOrder('${ord.order_id}')">Cancel</button>` : '';
+        const createdStr = ord.created_at ? new Date(ord.created_at * 1000).toLocaleTimeString() : '';
+        return `
+          <div class="order-history-item" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <strong style="color:#f8fafc;font-size:0.85rem;">${ord.order_id}</strong>
+              <span class="status-badge-inline status-${(ord.status||'').toLowerCase()}" style="font-size:0.75rem;padding:2px 6px;border-radius:4px;background:rgba(56,189,248,0.15);color:#38bdf8;">${ord.status}</span>
+            </div>
+            <div style="color:#94a3b8;font-size:0.75rem;margin-bottom:4px;">📍 ${ord.delivery_address || ord.delivery_name || 'Curbside Doorstep'}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;">
+              <span>${otpStr}</span>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <span style="color:#94a3b8;">${createdStr}</span>
+                ${cancelBtn}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  } catch (e) {
+    listEl.innerHTML = '<p style="color:#f87171;font-size:0.85rem;">Failed to load order history.</p>';
+  }
+}
+
+async function cancelCustomerOrder(orderId) {
+  playChime('click');
+  const token = localStorage.getItem('nexus_client_token');
+  try {
+    const res = await fetch('/api/order/cancel', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ order_id: orderId, reason: 'Customer requested cancellation' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Order ${orderId} cancelled successfully.`);
+      playChime('success');
+      loadAccountOrders();
+    } else {
+      showToast(`Cannot cancel order: ${data.error || 'Mission already active'}`);
+      playChime('error');
+    }
+  } catch (e) {
+    showToast('Network error cancelling order.');
+  }
+}
+
+async function resendVerificationEmail() {
+  playChime('click');
+  const email = (currentUser && currentUser.email) ? currentUser.email : document.getElementById('loginEmail')?.value;
+  const btn = document.getElementById('btnResendVerification');
+  const feedback = document.getElementById('resendFeedbackSpan');
+
+  if (!email) {
+    showToast('Please sign in first to resend verification.');
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  if (feedback) feedback.textContent = 'Sending...';
+
+  try {
+    const res = await fetch('/api/auth/resend_verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Verification email dispatched to ${email}! ✉️`);
+      playChime('success');
+      if (feedback) feedback.textContent = 'Dispatched! Check inbox / outbox.';
+      let cooldown = 60;
+      const interval = setInterval(() => {
+        cooldown -= 1;
+        if (cooldown <= 0) {
+          clearInterval(interval);
+          if (btn) btn.disabled = false;
+          if (feedback) feedback.textContent = '';
+        } else {
+          if (btn) btn.disabled = true;
+          if (feedback) feedback.textContent = `Wait ${cooldown}s`;
+        }
+      }, 1000);
+    } else {
+      playChime('error');
+      const err = data.error || 'Unable to send verification email.';
+      showToast(`Resend failed: ${err}`);
+      if (feedback) feedback.textContent = err;
+      if (btn) btn.disabled = false;
+    }
+  } catch (err) {
+    if (feedback) feedback.textContent = 'Network error.';
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -412,7 +630,8 @@ async function handleLoginSubmit(e) {
         name: 'Sophie Laurent',
         email: 'client@nexus.tn',
         phone: '+216 20 123 456',
-        address: 'Avenue Habib Bourguiba, Tunis'
+        address: 'Avenue Habib Bourguiba, Tunis',
+        email_verified: 1
       };
       localStorage.setItem('nexus_client_token', 'CUST-DEMO-TOKEN');
       renderUserAuthSlot(currentUser);
@@ -445,7 +664,7 @@ async function handleRegisterSubmit(e) {
       renderUserAuthSlot(currentUser);
       closeAuthModal();
       playChime('success');
-      showToast(`Account created! Welcome, ${currentUser.name}! 🎉`);
+      showToast(`Account created! A verification link was sent to ${email}. 🎉`);
     } else {
       playChime('error');
       if (errorEl) errorEl.textContent = data.error || 'Registration failed.';
@@ -460,7 +679,8 @@ function logoutClient() {
   localStorage.removeItem('nexus_client_token');
   localStorage.removeItem('nexus_user_role');
   currentUser = null;
-  window.location.href = '/';
+  renderUserAuthSlot(null);
+  showToast('Signed out successfully.');
 }
 
 /* ==========================================================================
@@ -601,6 +821,31 @@ async function checkoutOrder() {
     return;
   }
 
+  if (!currentUser) {
+    showToast('Please sign in or register to dispatch an autonomous delivery.');
+    openAuthModal('login');
+    return;
+  }
+
+  if (currentUser.email_verified === 0 || currentUser.email_verified === false) {
+    playChime('error');
+    showToast('⚠️ Email verification required! Please verify your email before placing orders.');
+    const banner = document.getElementById('verificationAlertBanner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.scrollIntoView({ behavior: 'smooth' });
+    }
+    return;
+  }
+
+  // Validate payload weight (15.0 kg limit) and volume (22.5 L limit)
+  const totalWeight = clientCart.reduce((sum, item) => sum + (item.weight_kg || 0.5) * item.qty, 0);
+  if (totalWeight > 15.0) {
+    playChime('error');
+    showToast(`⚠️ Cargo weight exceeds robot payload capacity: ${totalWeight.toFixed(1)}kg > 15.0kg max.`);
+    return;
+  }
+
   const btn = document.getElementById('btnCheckoutDispatch');
   const btnText = document.getElementById('checkoutBtnText');
   const spinner = document.getElementById('checkoutSpinner');
@@ -614,9 +859,15 @@ async function checkoutOrder() {
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
+    const idempotencyKey = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
+
     const payload = {
-      customer_id: currentUser ? (currentUser.id || currentUser.customer_id || 'USR-001') : 'USR-001',
-      customer_name: currentUser ? currentUser.name : 'Sophie Laurent',
+      customer_id: currentUser.id || currentUser.customer_id || 'USR-001',
+      customer_name: currentUser.name,
+      customer_email: currentUser.email,
+      customer_phone: currentUser.phone,
+      idempotency_key: idempotencyKey,
+      payload_weight_kg: totalWeight,
       x: selectedDoorstep.stopping_x !== undefined ? selectedDoorstep.stopping_x : selectedDoorstep.x,
       y: selectedDoorstep.stopping_y !== undefined ? selectedDoorstep.stopping_y : selectedDoorstep.y,
       raw_x: selectedDoorstep.x,
@@ -624,7 +875,7 @@ async function checkoutOrder() {
       heading: selectedDoorstep.heading || 0.0,
       delivery_name: selectedDoorstep.address,
       delivery_address: selectedDoorstep.address,
-      items: clientCart.map(c => ({ id: c.id, name: c.name, qty: c.qty })),
+      items: clientCart.map(c => ({ id: c.id, name: c.name, qty: c.qty, price: c.price, weight_kg: c.weight_kg })),
       priority: 1
     };
 
@@ -712,15 +963,40 @@ function updateTelemetryDisplays(tel) {
   const distEl = document.getElementById('trackingDistText');
   const etaEl = document.getElementById('trackingEtaText');
   const hatchEl = document.getElementById('trackingHatchState');
+  const srcEl = document.getElementById('trackingTelemetrySource');
+
+  if (srcEl) {
+    const src = tel.telemetry_source || (tel.actual_location_source === 'GAZEBO_WORLD_GROUND_TRUTH' ? 'LIVE_GAZEBO_TELEMETRY' : 'UNAVAILABLE_SIMULATION_OFFLINE');
+    if (src === 'LIVE_GAZEBO_TELEMETRY') {
+      srcEl.textContent = '● LIVE GAZEBO TELEMETRY';
+      srcEl.className = 'telemetry-provenance-badge badge-live-gazebo';
+    } else if (src === 'LAST_KNOWN_POSITION') {
+      srcEl.textContent = '▲ LAST KNOWN POSITION';
+      srcEl.className = 'telemetry-provenance-badge badge-last-known';
+    } else {
+      srcEl.textContent = '✖ SIMULATION OFFLINE';
+      srcEl.className = 'telemetry-provenance-badge badge-offline';
+    }
+  }
 
   const dist = tel.dist_to_target !== undefined ? tel.dist_to_target : 0.0;
   if (distEl) distEl.textContent = `${Number(dist).toFixed(1)} m`;
 
-  const speed = Math.max(0.1, Math.abs(tel.actual_v || 0.8));
-  const etaSec = dist > 0.3 ? Math.round(dist / speed) : 0;
-  const etaMin = Math.floor(etaSec / 60);
-  const etaRemSec = etaSec % 60;
-  if (etaEl) etaEl.textContent = dist <= 0.5 ? 'ARRIVED AT DOORSTEP' : `${String(etaMin).padStart(2, '0')} min ${String(etaRemSec).padStart(2, '0')} s`;
+  if (etaEl) {
+    if (tel.estimated_eta_sec !== undefined && tel.estimated_eta_sec !== null) {
+      const etaMin = Math.floor(tel.estimated_eta_sec / 60);
+      const etaRem = Math.round(tel.estimated_eta_sec % 60);
+      etaEl.textContent = dist <= 0.2 ? 'ARRIVED AT DOORSTEP' : `${etaMin}m ${etaRem}s`;
+    } else if (dist <= 0.2 && dist > 0.0) {
+      etaEl.textContent = 'ARRIVED AT DOORSTEP';
+    } else if (Math.abs(tel.actual_v || 0) < 0.05) {
+      etaEl.textContent = dist > 0.2 ? 'STOPPED / STANDBY' : 'DEPOT STANDBY';
+    } else {
+      const speed = Math.max(0.1, Math.abs(tel.actual_v || 0.8));
+      const etaSec = dist > 0.2 ? Math.round(dist / speed) : 0;
+      etaEl.textContent = dist <= 0.2 ? 'ARRIVED AT DOORSTEP' : `${Math.floor(etaSec / 60)}m ${etaSec % 60}s`;
+    }
+  }
 
   if (hatchEl) {
     const isUnlocked = tel.hatch_status === 'OPEN' || (tel.hatch_angle && tel.hatch_angle > 0.1);
@@ -731,7 +1007,7 @@ function updateTelemetryDisplays(tel) {
 
 function handleClientCamFallback(img) {
   img.onerror = null;
-  img.src = 'street_camera_frame.jpg';
+  img.src = 'gazebo_sidewalk_tracking.jpg';
 }
 
 /* ==========================================================================
@@ -870,11 +1146,33 @@ async function verifyOtpCode(code) {
   }
 }
 
-function confirmPackageRetrieved() {
+async function confirmPackageRetrieved() {
   playChime('click');
   closeOtpModal();
-  showToast('Package retrieved. Motorized hatch closing. Thank you! 👋');
-  if (activeOrder) activeOrder.status = 'COMPLETED';
+  showToast('Package retrieved. Closing hatch and initiating return to depot... 👋');
+
+  try {
+    const token = localStorage.getItem('nexus_client_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/api/confirm_delivery', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        order_id: activeOrder ? activeOrder.order_id : ''
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (activeOrder) activeOrder.status = 'RETURNING_TO_DEPOT';
+      showToast('✓ Handover complete! Rover returning to Central Logistics Hub.');
+      playChime('success');
+      loadAccountOrders();
+    }
+  } catch (err) {
+    if (activeOrder) activeOrder.status = 'COMPLETED';
+  }
 }
 
 /* ==========================================================================

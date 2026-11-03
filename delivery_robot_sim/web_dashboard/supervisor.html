@@ -23,15 +23,27 @@
       
       <!-- Brand & Rover Identifier -->
       <div class="brand-cockpit-group">
-        <div class="rover-badge-pulse">
-          <span class="rover-dot"></span>
-        </div>
+        <a href="/" class="brand-cockpit-logo" title="NexusDelivery Homepage" style="display:flex;align-items:center;">
+          <svg viewBox="0 0 36 36" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="nexusGradSup" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff"/>
+                <stop offset="50%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+            </defs>
+            <polygon points="18,2 32,9 32,27 18,34 4,27 4,9" fill="#0b1120" stroke="url(#nexusGradSup)" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M11 25V11L20 23V11" stroke="url(#nexusGradSup)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 11L25 15L20 19" stroke="#00f0ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="18" cy="18" r="2.2" fill="#00f0ff"/>
+          </svg>
+        </a>
         <div class="rover-meta">
           <div class="rover-title">
             <span class="rover-id">NEXUS-AMR-01 (ACTIVE ROVER)</span>
             <span class="platform-badge">FLEET TACTICAL OPS</span>
           </div>
-          <div class="rover-sub">Chiheb Robotics Autonomous Fleet • Real-World Multi-Rover Control</div>
+          <div class="rover-sub">Chiheb Robotics Autonomous Fleet • Commercial AMR Operations</div>
         </div>
       </div>
 
@@ -347,7 +359,7 @@
     <div class="operations-deck-inner">
       
       <!-- Live Orders & Dispatch Decision Queue -->
-      <div class="ops-card ops-orders-queue">
+      <div class="ops-card ops-orders-queue" style="grid-column: 1 / -1;">
         <div class="ops-card-header">
           <div class="ops-title">
             <span class="ops-icon">📦</span>
@@ -367,19 +379,68 @@
                 <th>Priority</th>
                 <th>Route / ETA</th>
                 <th>Handover OTP</th>
+                <th>Supervisor Actions</th>
               </tr>
             </thead>
             <tbody id="ordersTableBody">
               <tr>
-                <td colspan="8" class="text-center text-dim">No active delivery missions queued in Gazebo world.</td>
+                <td colspan="9" class="text-center text-dim">No active delivery missions queued in Gazebo world.</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
+      <!-- Registered Customers Directory (Phase 1 & Phase 7) -->
+      <div class="ops-card ops-customers">
+        <div class="ops-card-header">
+          <div class="ops-title">
+            <span class="ops-icon">👥</span>
+            <h3>Registered Customers & Verification Directory</h3>
+          </div>
+          <button class="btn-refresh-audit" onclick="fetchCustomers()">⟲ Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="cockpit-table" id="customersTable">
+            <thead>
+              <tr>
+                <th>Customer ID</th>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Orders</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody">
+              <tr>
+                <td colspan="6" class="text-center text-dim">Loading customer directory...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Destination Reachability & ODD Inspector (Phase 2 & Phase 7) -->
+      <div class="ops-card ops-destination-inspector">
+        <div class="ops-card-header">
+          <div class="ops-title">
+            <span class="ops-icon">🧭</span>
+            <h3>Destination Reachability & ODD Inspector</h3>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+          <input type="number" id="inspCoordX" class="pin-input mono" placeholder="Gazebo X (m)" step="0.1" style="width: 110px; padding: 6px 10px; font-size: 0.85rem;" value="-9.8">
+          <input type="number" id="inspCoordY" class="pin-input mono" placeholder="Gazebo Y (m)" step="0.1" style="width: 110px; padding: 6px 10px; font-size: 0.85rem;" value="15.0">
+          <button class="btn-pin-submit" style="padding: 6px 14px; font-size: 0.85rem;" onclick="testDestinationValidation()">Validate Pin</button>
+        </div>
+        <div id="inspectorResultBox" style="font-size: 0.82rem; padding: 10px 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #94a3b8; min-height: 52px;">
+          Enter coordinate pin to verify sidewalk connectivity and collision avoidance.
+        </div>
+      </div>
+
       <!-- Security Audit Event Logs -->
-      <div class="ops-card ops-audit-logs">
+      <div class="ops-card ops-audit-logs" style="grid-column: 1 / -1;">
         <div class="ops-card-header">
           <div class="ops-title">
             <span class="ops-icon">🛡️</span>

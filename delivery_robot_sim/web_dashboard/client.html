@@ -27,17 +27,23 @@
       <!-- Brand Logo -->
       <a href="/client" class="brand-link" id="brandHomeLink">
         <div class="brand-icon-pulse">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="7" width="20" height="14" rx="3" stroke="#00f0ff" stroke-width="2"/>
-            <circle cx="6" cy="18" r="2" fill="#00f0ff"/>
-            <circle cx="18" cy="18" r="2" fill="#00f0ff"/>
-            <path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" stroke="#6366f1" stroke-width="2"/>
-            <circle cx="12" cy="12" r="2" fill="#10b981"/>
+          <svg viewBox="0 0 36 36" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="nexusGradClient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff"/>
+                <stop offset="50%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+            </defs>
+            <polygon points="18,2 32,9 32,27 18,34 4,27 4,9" fill="#0b1120" stroke="url(#nexusGradClient)" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M11 25V11L20 23V11" stroke="url(#nexusGradClient)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 11L25 15L20 19" stroke="#00f0ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="18" cy="18" r="2.2" fill="#00f0ff"/>
           </svg>
         </div>
         <div class="brand-text">
           <span class="brand-title">Nexus<span class="text-cyan">Delivery</span></span>
-          <span class="brand-badge">ENTERPRISE AMR • TRL 3</span>
+          <span class="brand-badge">ENTERPRISE AMR • TRL 3–4</span>
         </div>
       </a>
 
@@ -94,6 +100,26 @@
   </header>
 
   <!-- ========================================================================= -->
+  <!-- 1B. EMAIL VERIFICATION ALERT BANNER (PHASE 1)                             -->
+  <!-- ========================================================================= -->
+  <div class="verification-alert-banner" id="verificationAlertBanner" style="display: none;">
+    <div class="banner-inner">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span class="banner-icon">⚠️</span>
+        <span class="banner-text">
+          <strong>Action Required:</strong> Your customer email (<span id="unverifiedEmailSpan" style="color: #38bdf8; font-weight: 700;"></span>) is unverified. Verified email is required to dispatch autonomous deliveries.
+        </span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="btn-resend-verification" id="btnResendVerification" onclick="resendVerificationEmail()">
+          Resend Verification Email
+        </button>
+        <span class="resend-feedback" id="resendFeedbackSpan" style="font-size: 0.8rem; color: #a5f3fc;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- 2. CINEMATIC HERO SECTION (NETFLIX / APPLE AESTHETICS)                    -->
   <!-- ========================================================================= -->
   <section class="hero-section" id="heroSection">
@@ -103,7 +129,7 @@
       <!-- Top Badge -->
       <div class="hero-chip">
         <span class="chip-dot"></span>
-        <span>GLOBAL HACKATHON SHOWCASE • ZERO-LIDAR ZERO-GPS REAL-TIME AMR</span>
+        <span>COMMERCIAL AUTONOMOUS SIDEWALK ROBOTICS • TRL 3–4 SIMULATION BASELINE</span>
       </div>
 
       <h1 class="hero-title">
@@ -112,26 +138,26 @@
       </h1>
 
       <p class="hero-subtitle">
-        Drop your delivery pin on any street in Tunis or across the globe. Our smart zero-emission sidewalk rovers calculate optimal corridor trajectories and deliver gourmet meals, espresso, and healthcare directly to your doorstep.
+        Drop your delivery pin on any verified sidewalk in the Gazebo urban grid. Our smart zero-emission sidewalk rovers calculate optimal corridor trajectories and deliver gourmet meals, espresso, and healthcare directly to your doorstep.
       </p>
 
       <!-- Key Capabilities Tags -->
       <div class="hero-feature-tags">
         <div class="feature-tag">
           <span class="tag-icon">🗺️</span>
-          <span>Real-World GPS & Satellite Tiles</span>
+          <span>Gazebo Vector Map & Sidewalk Corridors</span>
         </div>
         <div class="feature-tag">
-          <span class="tag-icon">⚡</span>
-          <span>Hailo-8L NPU (138.4 FPS)</span>
+          <span class="tag-icon">📷</span>
+          <span>Camera-Led Vision Autonomy (Zero LiDAR • Zero GPS)</span>
         </div>
         <div class="feature-tag">
           <span class="tag-icon">🔒</span>
-          <span>Biometric & 6-Digit OTP Lock</span>
+          <span>Curbside 6-Digit OTP Encrypted Handover</span>
         </div>
         <div class="feature-tag">
-          <span class="tag-icon">🌱</span>
-          <span>100% Electric LiFePO4 (25.6V)</span>
+          <span class="tag-icon">🤖</span>
+          <span>Differential-Drive Mobile Platform (ROS 2 Humble)</span>
         </div>
       </div>
 
@@ -154,28 +180,28 @@
       <div class="visual-card-inner">
         <div class="visual-card-header">
           <div class="visual-badge">
-            <span class="pulse-beacon"></span>
-            <span>NEXUS-AMR-01 ACTIVE</span>
+            <span class="pulse-beacon" id="heroPulseBeacon"></span>
+            <span id="heroTelemetryBadge">STANDBY AT DEPOT</span>
           </div>
-          <span class="visual-speed-metric" id="heroVisualSpeed">0.82 m/s</span>
+          <span class="visual-speed-metric" id="heroVisualSpeed">0.00 m/s</span>
         </div>
 
         <div class="visual-telemetry-screen">
           <div class="hud-stat-box">
-            <span class="hsb-label">CURRENT HUB</span>
-            <strong class="hsb-val text-cyan">Tunis Central Hub</strong>
+            <span class="hsb-label">LOGISTICS HUB</span>
+            <strong class="hsb-val text-cyan">Central Depot Dock (-31.5, -0.75)</strong>
           </div>
           <div class="hud-stat-box">
             <span class="hsb-label">NAVIGATION MODE</span>
-            <strong class="hsb-val text-emerald">ACTIVE AUTONOMOUS</strong>
+            <strong class="hsb-val text-emerald">VISION-ONLY CORRIDOR</strong>
           </div>
           <div class="hud-stat-box">
-            <span class="hsb-label">POWER BUS</span>
-            <strong class="hsb-val text-amber">25.6V (LiFePO4 8S)</strong>
+            <span class="hsb-label">SENSOR STACK</span>
+            <strong class="hsb-val text-amber">RGB-D + IMU + Odometry</strong>
           </div>
           <div class="hud-stat-box">
-            <span class="hsb-label">OBSTACLE CLEARANCE</span>
-            <strong class="hsb-val text-emerald" id="heroCorridorClear">CLEAR (2.4m CORRIDOR)</strong>
+            <span class="hsb-label">OBSTACLE PERCEPTION</span>
+            <strong class="hsb-val text-emerald" id="heroCorridorClear">ACTIVE SIDEWALK SCAN</strong>
           </div>
         </div>
 
@@ -378,7 +404,7 @@
               <div class="step-circle pulse">3</div>
               <div class="step-info">
                 <h4>Rover in Sidewalk Transit</h4>
-                <p id="step3Sub">Autonomous sidewalk cruising (0.82 m/s)</p>
+                <p id="step3Sub">Autonomous sidewalk navigation</p>
               </div>
             </div>
             <div class="step-item" id="step4">
@@ -393,12 +419,16 @@
           <!-- Live Metrics Meter -->
           <div class="tracking-metrics-bar">
             <div class="metric-box">
+              <span class="metric-label">TELEMETRY SOURCE</span>
+              <span class="metric-value text-emerald" id="trackingTelemetrySource">LIVE GAZEBO</span>
+            </div>
+            <div class="metric-box">
               <span class="metric-label">ESTIMATED ARRIVAL</span>
-              <span class="metric-value text-emerald" id="trackingEtaText">03 min 20 s</span>
+              <span class="metric-value text-emerald" id="trackingEtaText">Calculating...</span>
             </div>
             <div class="metric-box">
               <span class="metric-label">DISTANCE REMAINING</span>
-              <span class="metric-value text-cyan" id="trackingDistText">24.5 m</span>
+              <span class="metric-value text-cyan" id="trackingDistText">-- m</span>
             </div>
             <div class="metric-box">
               <span class="metric-label">CARGO HATCH</span>
@@ -430,9 +460,9 @@
           <div class="map-card-header">
             <div class="map-header-title">
               <span class="radar-dot"></span>
-              <h3>Live Sidewalk GPS & Perception Radar (RealSense D435i Feed)</h3>
+              <h3>Live Sidewalk GPS & Perception Radar (Simulated RGB-D Camera Feed)</h3>
             </div>
-            <span class="live-stream-badge">LIVE 30 FPS • AI HUD</span>
+            <span class="live-stream-badge">LIVE 30 FPS • GAZEBO HUD</span>
           </div>
 
           <!-- Live Camera Viewport -->
@@ -442,11 +472,11 @@
             <div class="camera-hud-overlay">
               <div class="cam-badge-top">
                 <span class="red-record-dot"></span>
-                <span>FRONT STEREO REAL-TIME AI</span>
+                <span>GAZEBO RGB-D CAMERA PIPELINE</span>
               </div>
               <div class="cam-badge-bottom">
-                <span>HAILO-8L: 138.4 FPS</span>
-                <span>CORRIDOR: CLEAR</span>
+                <span>AUTONOMY: ZERO-LIDAR • ZERO-GPS</span>
+                <span>CORRIDOR: MONITORED</span>
               </div>
             </div>
           </div>
@@ -611,6 +641,41 @@
         </button>
       </form>
 
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 7B. CUSTOMER ACCOUNT & PROFILE MODAL (PHASE 1)                           -->
+  <!-- ========================================================================= -->
+  <div class="auth-modal-backdrop" id="accountModalBackdrop" style="display: none;">
+    <div class="auth-modal-window" style="max-width: 600px;">
+      <button class="auth-modal-close" onclick="closeAccountModal()">✕</button>
+
+      <div class="auth-form-intro">
+        <h3>Customer Account & Delivery Profile</h3>
+        <p>Tenant-isolated autonomous delivery records and saved doorstep pins.</p>
+      </div>
+
+      <div class="account-profile-card">
+        <div class="profile-grid">
+          <div><label style="color:#94a3b8;font-size:0.75rem;">CUSTOMER NAME</label><br><strong id="accProfileName" style="color:#f8fafc;">-</strong></div>
+          <div><label style="color:#94a3b8;font-size:0.75rem;">EMAIL ADDRESS</label><br><span id="accProfileEmail" style="color:#38bdf8;">-</span></div>
+          <div><label style="color:#94a3b8;font-size:0.75rem;">PHONE NUMBER</label><br><span id="accProfilePhone">-</span></div>
+          <div><label style="color:#94a3b8;font-size:0.75rem;">EMAIL VERIFICATION</label><br><span id="accProfileVerified">-</span></div>
+        </div>
+      </div>
+
+      <div class="account-orders-section">
+        <h4 style="margin: 16px 0 8px 0; color: #38bdf8; font-size: 0.95rem;">📦 Your Order History</h4>
+        <div id="accountOrdersList" style="max-height: 220px; overflow-y: auto; padding-right: 4px;">
+          <p style="color:#94a3b8;font-size:0.85rem;">Loading orders...</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn-hero-secondary" onclick="logoutClient()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Sign Out</button>
+        <button class="btn-auth-submit" onclick="closeAccountModal()" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;">Done</button>
+      </div>
     </div>
   </div>
 

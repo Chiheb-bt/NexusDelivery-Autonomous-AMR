@@ -422,12 +422,12 @@ def plan_city_route(
     if start_in_depot and goal_in_depot:
         return [(goal_xy[0], goal_xy[1])]
 
-    # Determine appropriate depot portal door (sidewalk plaza y=2.50 vs legacy y=-0.75)
+    # Depot portal door is physically located at y=-0.75 (y=2.50 is solid building wall)
     def _get_depot_door(xy):
-        return DEPOT_DOOR_SIDEWALK_XY if xy[1] >= 1.0 else DEPOT_DOOR_XY
+        return DEPOT_DOOR_XY
 
     def _get_depot_dock(xy):
-        return DEPOT_DOCK_SIDEWALK_XY if xy[1] >= 1.0 else DEPOT_DOCK_XY
+        return DEPOT_DOCK_XY
 
     # 2. Outward trip from inside depot to city
     if start_in_depot:

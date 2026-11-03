@@ -24,14 +24,18 @@
       <!-- Brand Logo & Identity -->
       <a href="/" class="brand-link" title="NexusDelivery Homepage">
         <div class="brand-logo-svg">
-          <svg viewBox="0 0 32 32" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="8" width="24" height="16" rx="4" fill="currentColor" opacity="0.2"/>
-            <rect x="4" y="8" width="24" height="16" rx="4" stroke="currentColor" stroke-width="2"/>
-            <circle cx="9" cy="24" r="3" fill="currentColor"/>
-            <circle cx="23" cy="24" r="3" fill="currentColor"/>
-            <path d="M12 14H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="16" cy="6" r="2" fill="currentColor"/>
-            <path d="M16 8V10" stroke="currentColor" stroke-width="1.5"/>
+          <svg viewBox="0 0 36 36" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg" class="nexus-brand-mark">
+            <defs>
+              <linearGradient id="nexusGradHdr" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff"/>
+                <stop offset="50%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+            </defs>
+            <polygon points="18,2 32,9 32,27 18,34 4,27 4,9" fill="#0b1120" stroke="url(#nexusGradHdr)" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M11 25V11L20 23V11" stroke="url(#nexusGradHdr)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 11L25 15L20 19" stroke="#00f0ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="18" cy="18" r="2.2" fill="#00f0ff"/>
           </svg>
         </div>
         <div class="brand-text-group">
@@ -125,67 +129,63 @@
         </div>
       </div>
 
-      <!-- Professional Robot Vector Showcase Column -->
+      <!-- Enterprise Hardware & Physics Visualizer Showcase -->
       <div class="hero-visual-col">
         <div class="hero-visual-card">
-          <div class="amr-render-container">
-            <!-- Precise Vector Illustration of Nexus AMR -->
-            <svg class="amr-vector-svg" viewBox="0 0 500 360" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="chassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#1e293b"/>
-                  <stop offset="100%" stop-color="#0f172a"/>
-                </linearGradient>
-                <linearGradient id="lidGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#0284c7"/>
-                  <stop offset="100%" stop-color="#0369a1"/>
-                </linearGradient>
-                <linearGradient id="wheelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#334155"/>
-                  <stop offset="100%" stop-color="#0f172a"/>
-                </linearGradient>
-                <filter id="shadowGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0284c7" flood-opacity="0.25"/>
-                </filter>
-              </defs>
+          
+          <!-- Visualizer Mode Navigation Tabs -->
+          <div class="visualizer-tabs-bar">
+            <button class="vis-tab-btn active" id="visTabBtnPhoto" onclick="switchVisualTab('photo', this)">
+              <span>📸 Production AMR-01</span>
+            </button>
+            <button class="vis-tab-btn" id="visTabBtnCad" onclick="switchVisualTab('cad', this)">
+              <span>📐 Engineering CAD</span>
+            </button>
+            <button class="vis-tab-btn" id="visTabBtnSim" onclick="switchVisualTab('sim', this)">
+              <span>🌐 Simulation Baseline</span>
+            </button>
+          </div>
+
+          <!-- Tab Content 1: Production Robot Photo with Interactive Hotspots -->
+          <div class="vis-panel-content active" id="visPanelPhoto">
+            <div class="amr-photo-stage">
+              <img src="nexus_amr_hero.jpg" alt="NexusDelivery AMR-01 Autonomous Urban Mobile Robot" class="amr-showcase-photo" id="amrHeroImg">
               
-              <!-- Shadow Ground Plane -->
-              <ellipse cx="250" cy="310" rx="190" ry="24" fill="rgba(0,0,0,0.18)"/>
+              <!-- Interactive Hotspot Pins -->
+              <div class="hotspot-pin pin-vision" title="Vision Dome">
+                <span class="hotspot-beacon"></span>
+                <div class="hotspot-tooltip">
+                  <strong>Vision Dome & Depth Array</strong>
+                  <p>Intel RealSense Active IR Stereo + RGB-D optics, 5.0m corridor tracking range @ 30 FPS.</p>
+                </div>
+              </div>
 
-              <!-- Main Monocoque Chassis -->
-              <rect x="110" y="110" width="280" height="150" rx="28" fill="url(#chassisGrad)" stroke="#475569" stroke-width="3" filter="url(#shadowGlow)"/>
+              <div class="hotspot-pin pin-npu" title="Hailo-8L AI NPU">
+                <span class="hotspot-beacon"></span>
+                <div class="hotspot-tooltip">
+                  <strong>Hailo-8L Edge AI Coprocessor</strong>
+                  <p>13 INT8 TOPS dedicated neural processing unit running YOLOv8n at 138.4 FPS (7.18ms latency).</p>
+                </div>
+              </div>
 
-              <!-- Motorized Cargo Compartment Lid (60-deg hinge line) -->
-              <path d="M125 110C125 90 145 75 170 75H330C355 75 375 90 375 110H125Z" fill="url(#lidGrad)" stroke="#38bdf8" stroke-width="2"/>
-              <rect x="235" y="88" width="30" height="6" rx="3" fill="#ffffff" opacity="0.8"/>
+              <div class="hotspot-pin pin-cargo" title="Motorized Cargo Bay">
+                <span class="hotspot-beacon"></span>
+                <div class="hotspot-tooltip">
+                  <strong>Dynamic Cargo Bay & Lift</strong>
+                  <p>15.0 kg payload, motorized 60° locking hatch, and vertical prismatic lift platform (120mm stroke).</p>
+                </div>
+              </div>
 
-              <!-- Vision Dome & RealSense D435i Sensor Array -->
-              <path d="M220 75C220 58 232 45 250 45C268 45 280 58 280 75H220Z" fill="#0f172a" stroke="#00f0ff" stroke-width="2"/>
-              <circle cx="238" cy="62" r="5" fill="#00f0ff"/>
-              <circle cx="262" cy="62" r="5" fill="#00f0ff"/>
-              <rect x="247" y="58" width="6" height="8" rx="2" fill="#ef4444"/>
+              <div class="hotspot-pin pin-chassis" title="Direct-Drive Powertrain">
+                <span class="hotspot-beacon"></span>
+                <div class="hotspot-tooltip">
+                  <strong>Powertrain & FOC Motor Inverters</strong>
+                  <p>Dual 24V 250W brushless hub motors, 14-bit magnetic encoders, differential zero-turn radius.</p>
+                </div>
+              </div>
+            </div>
 
-              <!-- Safety Signal Halo Lightstrip -->
-              <path d="M130 160H370" stroke="#00f0ff" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
-
-              <!-- Left Traction Wheel (8-inch Hub Motor) -->
-              <rect x="85" y="195" width="32" height="95" rx="16" fill="url(#wheelGrad)" stroke="#64748b" stroke-width="3"/>
-              <circle cx="101" cy="242" r="14" fill="#1e293b" stroke="#00f0ff" stroke-width="2"/>
-
-              <!-- Right Traction Wheel (8-inch Hub Motor) -->
-              <rect x="383" y="195" width="32" height="95" rx="16" fill="url(#wheelGrad)" stroke="#64748b" stroke-width="3"/>
-              <circle cx="399" cy="242" r="14" fill="#1e293b" stroke="#00f0ff" stroke-width="2"/>
-
-              <!-- Front & Rear Dual Swivel Casters -->
-              <rect x="160" y="270" width="18" height="35" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2"/>
-              <rect x="322" y="270" width="18" height="35" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2"/>
-
-              <!-- Subtle Branding Wordmark on Chassis -->
-              <text x="250" y="210" text-anchor="middle" font-family="'Outfit', sans-serif" font-weight="800" font-size="16" fill="#f8fafc" letter-spacing="3">NEXUSDELIVERY</text>
-              <text x="250" y="228" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#94a3b8">AMR-01 • HAILO-8L AI NPU</text>
-            </svg>
-
-            <!-- Authentic Live Telemetry Floating Ribbon -->
+            <!-- Authentic Live Telemetry Ribbon -->
             <div class="amr-telemetry-overlay">
               <div class="overlay-metric">
                 <span class="k">ENVIRONMENT:</span>
@@ -197,10 +197,37 @@
               </div>
               <div class="overlay-metric">
                 <span class="k">CARGO PAYLOAD:</span>
-                <span class="v">15.0 kg Max</span>
+                <span class="v">15.0 kg Max / 22.5 L</span>
+              </div>
+              <div class="overlay-metric">
+                <span class="k">MAX SPEED:</span>
+                <span class="v">1.50 m/s (Sidewalk ODD)</span>
               </div>
             </div>
           </div>
+
+          <!-- Tab Content 2: CAD Engineering Blueprint -->
+          <div class="vis-panel-content" id="visPanelCad">
+            <div class="amr-cad-stage">
+              <img src="poc_4_cad_blueprint.png" alt="NexusDelivery AMR Mechanical Assembly Blueprint" class="amr-cad-blueprint-img">
+              <div class="cad-legend-overlay">
+                <span class="cad-badge">CAD ASSEMBLY DWG-2026-04</span>
+                <span class="cad-metric">720 × 480 × 320 mm • Aluminum 5052-H32 Chassis</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content 3: Gazebo Classic Physical Simulation -->
+          <div class="vis-panel-content" id="visPanelSim">
+            <div class="amr-sim-stage">
+              <img src="gazebo_sidewalk_tracking.jpg" alt="Gazebo Classic 11.10.2 Simulation Sidewalk Tracking" class="amr-sim-img">
+              <div class="sim-legend-overlay">
+                <span class="sim-badge">GAZEBO CLASSIC 11.10.2</span>
+                <span class="sim-metric">Physics-Validated ROS 2 Humble • 50 Hz Control Loop</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -343,6 +370,67 @@
         </article>
       </div>
 
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5B. ROBOTICS ENGINEERING & SIMULATION GALLERY                             -->
+  <!-- ========================================================================= -->
+  <section class="section-block" id="gallery">
+    <div class="container">
+      <div class="section-header-centered">
+        <span class="section-tagline">Real Simulation & Hardware Evidence</span>
+        <h2 class="section-title">Authentic Verification Across the Complete Mission Loop</h2>
+        <p class="section-subtitle">
+          Genuine engineering artifacts captured directly from Gazebo Classic 11 physics simulation and ROS 2 Humble control nodes.
+        </p>
+      </div>
+
+      <div class="gallery-showcase-grid">
+        <div class="gallery-card">
+          <div class="gallery-img-wrapper">
+            <img src="gazebo_depot_packaging.jpg" alt="Automated Depot Dispatch and Departure" class="gallery-img">
+            <span class="gallery-chip">PHASE 1 • DEPOT DISPATCH</span>
+          </div>
+          <div class="gallery-caption">
+            <h4>Autonomous Depot Departure</h4>
+            <p>Robot initial state at Central Logistics Depot (-32.0, -0.75m), payload confirmation, and autonomous sidewalk ramp ingress.</p>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <div class="gallery-img-wrapper">
+            <img src="gazebo_sidewalk_tracking.jpg" alt="Corridor Pedestrian Tracking in Gazebo" class="gallery-img">
+            <span class="gallery-chip">PHASE 2 • SIDEWALK CORRIDOR</span>
+          </div>
+          <div class="gallery-caption">
+            <h4>Pedestrian Sidewalk Navigation</h4>
+            <p>Deterministic corridor path following with vision obstacle clearance, maintaining safe pedestrian margins without GPS or LiDAR.</p>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <div class="gallery-img-wrapper">
+            <img src="poc_5_doorstep_unlocked.png" alt="Curbside Arrival and 6-Digit OTP Handover" class="gallery-img">
+            <span class="gallery-chip">PHASE 3 • DOORSTEP ARRIVAL</span>
+          </div>
+          <div class="gallery-caption">
+            <h4>Curbside Arrival & 6-Digit OTP Handover</h4>
+            <p>Zero-velocity interlock engaged, motorized hatch rotates to 60°, vertical platform lifts cargo box for customer retrieval.</p>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <div class="gallery-img-wrapper">
+            <img src="rqt_web_side_by_side.jpg" alt="RQT Node Graph & Telemetry Validation" class="gallery-img">
+            <span class="gallery-chip">PHASE 4 • TELE-VERIFICATION</span>
+          </div>
+          <div class="gallery-caption">
+            <h4>ROS 2 / Gazebo Synchronized Telemetry</h4>
+            <p>Live 50 Hz ROS 2 Humble topic validation, odometry covariance bounds, and Web Bridge WebSocket streams.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -534,10 +622,17 @@
         <div class="footer-brand-info">
           <div class="brand-link">
             <div class="brand-logo-svg" style="width: 32px; height: 32px;">
-              <svg viewBox="0 0 32 32" width="18" height="18" fill="none">
-                <rect x="4" y="8" width="24" height="16" rx="4" fill="currentColor"/>
-                <circle cx="9" cy="24" r="3" fill="#fff"/>
-                <circle cx="23" cy="24" r="3" fill="#fff"/>
+              <svg viewBox="0 0 36 36" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="nexusGradFtr" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00f0ff"/>
+                    <stop offset="100%" stop-color="#4f46e5"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="18,2 32,9 32,27 18,34 4,27 4,9" fill="#0b1120" stroke="url(#nexusGradFtr)" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M11 25V11L20 23V11" stroke="url(#nexusGradFtr)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20 11L25 15L20 19" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="18" cy="18" r="1.8" fill="#00f0ff"/>
               </svg>
             </div>
             <span class="brand-company-title">NexusDelivery</span>
