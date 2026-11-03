@@ -1,5 +1,5 @@
 {
-  "timestamp": 1793744597.8498766,
+  "timestamp": 1793746668.549507,
   "test_suite": "EndToEnd24LifecycleTests",
   "total_tests": 24,
   "passed": 24,
@@ -9,168 +9,168 @@
       "id": 1,
       "name": "Customer Registration",
       "status": "PASS",
-      "timestamp": 1793744597.6390567,
-      "details": "Created and verified account test_e2e_1793744597@nexus.tn"
+      "timestamp": 1793746668.3918054,
+      "details": "Created and verified account test_e2e_1793746668@nexus.tn"
     },
     {
       "id": 2,
       "name": "Customer Login",
       "status": "PASS",
-      "timestamp": 1793744597.696189,
+      "timestamp": 1793746668.4349174,
       "details": "Authenticated via PBKDF2 hash verification"
     },
     {
       "id": 3,
       "name": "Invalid Login",
       "status": "PASS",
-      "timestamp": 1793744597.7526155,
+      "timestamp": 1793746668.4780147,
       "details": "Rejected invalid password with clean error"
     },
     {
       "id": 4,
       "name": "Unauthorized Access Rejection",
       "status": "PASS",
-      "timestamp": 1793744597.7577705,
+      "timestamp": 1793746668.481951,
       "details": "Blocked unauthenticated (401) and customer role (403)"
     },
     {
       "id": 5,
       "name": "Product Selection",
       "status": "PASS",
-      "timestamp": 1793744597.7600336,
+      "timestamp": 1793746668.4842918,
       "details": "Retrieved 6 products with verified weights"
     },
     {
       "id": 6,
       "name": "Cart Confirmation",
       "status": "PASS",
-      "timestamp": 1793744597.7614179,
+      "timestamp": 1793746668.4855232,
       "details": "Validated cart: 1.40kg payload, total $23.50"
     },
     {
       "id": 7,
       "name": "Destination Validation",
       "status": "PASS",
-      "timestamp": 1793744597.762441,
+      "timestamp": 1793746668.4864514,
       "details": "Verified reachable sidewalk bay & rejected off-world coords"
     },
     {
       "id": 8,
       "name": "Order Creation",
       "status": "PASS",
-      "timestamp": 1793744597.7774951,
-      "details": "Created order ORD-031 with OTP 593482"
+      "timestamp": 1793746668.4961882,
+      "details": "Created order ORD-034 with OTP 811119"
     },
     {
       "id": 9,
       "name": "Robot Assignment",
       "status": "PASS",
-      "timestamp": 1793744597.7810833,
+      "timestamp": 1793746668.500097,
       "details": "Intelligent dispatcher assigned robot: ASSIGNED_IMMEDIATE"
     },
     {
       "id": 10,
       "name": "ROS 2 Mission Dispatch",
       "status": "PASS",
-      "timestamp": 1793744597.784712,
+      "timestamp": 1793746668.5029125,
       "details": "State transitioned to NAVIGATING_TO_CLIENT"
     },
     {
       "id": 11,
       "name": "Actual Gazebo Movement",
       "status": "PASS",
-      "timestamp": 1793744597.7870157,
+      "timestamp": 1793746668.5045218,
       "details": "Pure pursuit generated v=0.75 m/s, w=0.58 rad/s"
     },
     {
       "id": 12,
       "name": "Live Tracking",
       "status": "PASS",
-      "timestamp": 1793744597.793938,
+      "timestamp": 1793746668.5069237,
       "details": "Live pose (-32.0, -0.75), dist: 32.76m"
     },
     {
       "id": 13,
       "name": "Arrival",
       "status": "PASS",
-      "timestamp": 1793744597.7966306,
+      "timestamp": 1793746668.5094495,
       "details": "Zero velocity confirmed at doorstep (dist <= 0.1m)"
     },
     {
       "id": 14,
       "name": "Cargo Hatch Opening",
       "status": "PASS",
-      "timestamp": 1793744597.7995064,
+      "timestamp": 1793746668.5115056,
       "details": "Hatch actuated to 60\u00b0 (1.05 rad)"
     },
     {
       "id": 15,
       "name": "Cargo Lift Raising",
       "status": "PASS",
-      "timestamp": 1793744597.8025076,
+      "timestamp": 1793746668.5138893,
       "details": "Prismatic platform raised 120mm (drive inhibited)"
     },
     {
       "id": 16,
       "name": "Cargo Handover",
       "status": "PASS",
-      "timestamp": 1793744597.8090518,
-      "details": "OTP 593482 validated successfully"
+      "timestamp": 1793746668.5182106,
+      "details": "OTP 811119 validated successfully"
     },
     {
       "id": 17,
       "name": "Lift Lowering",
       "status": "PASS",
-      "timestamp": 1793744597.8123596,
+      "timestamp": 1793746668.5207226,
       "details": "Platform lowered to stowed position (0.0mm)"
     },
     {
       "id": 18,
       "name": "Hatch Closing",
       "status": "PASS",
-      "timestamp": 1793744597.8152578,
+      "timestamp": 1793746668.5228367,
       "details": "Hatch closed to 0.0 rad and solenoid locked"
     },
     {
       "id": 19,
       "name": "Delivery Completion",
       "status": "PASS",
-      "timestamp": 1793744597.818322,
-      "details": "Order ORD-031 recorded as DELIVERED"
+      "timestamp": 1793746668.5240834,
+      "details": "Order ORD-034 recorded as DELIVERED"
     },
     {
       "id": 20,
       "name": "Return to Depot",
       "status": "PASS",
-      "timestamp": 1793744597.8209844,
+      "timestamp": 1793746668.5259743,
       "details": "Navigation target set to depot compound (-32.0, -0.75)"
     },
     {
       "id": 21,
       "name": "Supervisor Monitoring",
       "status": "PASS",
-      "timestamp": 1793744597.8348699,
+      "timestamp": 1793746668.5373144,
       "details": "Elevated cockpit session verified, 50 audit logs"
     },
     {
       "id": 22,
       "name": "Robot Disconnection",
       "status": "PASS",
-      "timestamp": 1793744597.8391588,
+      "timestamp": 1793746668.5399487,
       "details": "Disconnection reported; velocity forced to 0.00 m/s"
     },
     {
       "id": 23,
       "name": "Emergency Stop",
       "status": "PASS",
-      "timestamp": 1793744597.843076,
+      "timestamp": 1793746668.5431924,
       "details": "E-Stop triggered via supervisor authenticated API"
     },
     {
       "id": 24,
       "name": "Mission Recovery",
       "status": "PASS",
-      "timestamp": 1793744597.8482776,
+      "timestamp": 1793746668.5489051,
       "details": "Reset E-Stop and restored operational baseline IDLE_AT_DEPOT"
     }
   ]
