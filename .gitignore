@@ -77,6 +77,9 @@ tools/cloudflared
 
 # Video files exceeding GitHub 100MB limit (re-render via python3 results/proof_of_concept/build_poc_video.py)
 results/proof_of_concept/nexus_delivery_poc.mp4
+results/proof_of_concept/authentic_film/temp_video_silent.mp4
+
+
 
 
 # SQLite databases & runtime storage
