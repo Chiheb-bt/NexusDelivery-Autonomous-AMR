@@ -33,7 +33,7 @@ except ImportError:
 
 HATCH_CLOSED_ANGLE = 0.0
 HATCH_OPEN_ANGLE = 1.05  # ~60.1 degrees
-DEFAULT_SDF_PATH = "/home/chiheb/Downloads/RDSim-devel-2wheel_diff/rdsim_gazebo/models/nexus_package/model.sdf"
+DEFAULT_SDF_PATH = "/home/chiheb/Downloads/NEXUS-URBAN-AUTONOMY/rdsim_gazebo/models/nexus_package/model.sdf"
 CONTAINER_SDF_PATH = "/rdsim/rdsim_gazebo/models/nexus_package/model.sdf"
 
 
@@ -140,22 +140,17 @@ class CargoDeliveryManager(Node if ROS_AVAILABLE else object):
         if state in ("LOADING_PACKAGE_AT_DEPOT", "LOADING", "DEPOT_LOADING"):
             threading.Thread(target=self._sequence_load_package_at_depot, daemon=True).start()
 
-        # Automated Customer Doorstep Unloading Workflow
-        elif state in ("ARRIVED_AT_DOORSTEP", "DELIVERING", "HANDOVER"):
+        # Customer Doorstep Unloading: hatch stays locked until OTP verification
+        elif state in ("CARGO_UNLOCKING", "UNLATCHING"):
             threading.Thread(target=self._sequence_open_for_delivery, daemon=True).start()
 
         # Secure transit lock
-        elif state in ("NAVIGATING_TO_CLIENT", "RETURNING_TO_DEPOT"):
+        elif state in ("NAVIGATING_TO_CLIENT", "RETURNING_TO_DEPOT", "WAITING_FOR_CUSTOMER"):
             self.set_hatch_target(HATCH_CLOSED_ANGLE)
 
     def _on_arrival(self, msg: String):
-        try:
-            data = json.loads(msg.data)
-            action = data.get("action", "")
-            if action == "DELIVERY":
-                threading.Thread(target=self._sequence_open_for_delivery, daemon=True).start()
-        except Exception:
-            pass
+        # Do not automatically unlock hatch on arrival. Hatch unlocks strictly after customer OTP verification.
+        pass
 
     def _on_hatch_cmd(self, msg: String):
         cmd = msg.data.strip().upper()

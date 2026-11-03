@@ -44,6 +44,8 @@ def detect_forward_obstacles(bgr, roi=(75, 215, 25, 295), min_area=200, max_area
         }
 
     h_img, w_img = bgr.shape[:2]
+    if w_img >= 600 and roi == (75, 215, 25, 295):
+        roi = (int(0.15 * h_img), int(0.85 * h_img), int(0.08 * w_img), int(0.92 * w_img))
     r0, r1, c0, c1 = roi
     r0, r1 = max(0, r0), min(h_img, r1)
     c0, c1 = max(0, c0), min(w_img, c1)
@@ -140,35 +142,48 @@ def detect_forward_obstacles(bgr, roi=(75, 215, 25, 295), min_area=200, max_area
     }
 
 
-# Calibrated camera geometry constants (from camera_info and URDF)
-CAMERA_FX = 265.23347
-CAMERA_FY = 265.23347
-CAMERA_CX = 160.5
-CAMERA_CY = 120.5
+# Calibrated camera geometry constants
+# Base 320x240 defaults for unit test compatibility
+CAMERA_FX_320 = 265.23347
+CAMERA_FY_320 = 265.23347
+CAMERA_CX_320 = 160.5
+CAMERA_CY_320 = 120.5
+
+# Gazebo 640x480 camera constants (hfov = 1.5184 rad)
+CAMERA_FX_640 = 336.85
+CAMERA_FY_640 = 336.85
+CAMERA_CX_640 = 320.0
+CAMERA_CY_640 = 240.0
+
+CAMERA_FX = CAMERA_FX_320
+CAMERA_FY = CAMERA_FY_320
+CAMERA_CX = CAMERA_CX_320
+CAMERA_CY = CAMERA_CY_320
 CAMERA_HEIGHT_M = 0.35
 MIN_BODY_CLEARANCE_M = 0.48
 MIN_OBSTACLE_HEIGHT_M = 0.08
 MAX_OBSTACLE_HEIGHT_M = 2.2
 
 # Cached projection arrays for fixed ROI
-_CACHED_ROI = None
+_CACHED_KEY = None
 _CACHED_U_RATIO = None
 _CACHED_V_RATIO = None
 _CACHED_Z_GROUND = None
 _CACHED_IS_ABOVE_CY = None
 
 
-def _get_roi_cached_matrices(roi):
-    global _CACHED_ROI, _CACHED_U_RATIO, _CACHED_V_RATIO, _CACHED_Z_GROUND, _CACHED_IS_ABOVE_CY
-    if _CACHED_ROI != roi:
+def _get_roi_cached_matrices(roi, cx=CAMERA_CX_320, cy=CAMERA_CY_320, fx=CAMERA_FX_320, fy=CAMERA_FY_320):
+    global _CACHED_KEY, _CACHED_U_RATIO, _CACHED_V_RATIO, _CACHED_Z_GROUND, _CACHED_IS_ABOVE_CY
+    key = (roi, cx, cy, fx, fy)
+    if _CACHED_KEY != key:
         r0, r1, c0, c1 = roi
         v_indices, u_indices = np.mgrid[r0:r1, c0:c1]
-        _CACHED_U_RATIO = ((u_indices - CAMERA_CX) / CAMERA_FX).astype(np.float32)
-        _CACHED_V_RATIO = ((v_indices - CAMERA_CY) / CAMERA_FY).astype(np.float32)
-        v_diff = np.maximum(v_indices - CAMERA_CY, 0.5)
-        _CACHED_Z_GROUND = ((CAMERA_HEIGHT_M * CAMERA_FY) / v_diff).astype(np.float32)
-        _CACHED_IS_ABOVE_CY = (v_indices <= CAMERA_CY)
-        _CACHED_ROI = roi
+        _CACHED_U_RATIO = ((u_indices - cx) / fx).astype(np.float32)
+        _CACHED_V_RATIO = ((v_indices - cy) / fy).astype(np.float32)
+        v_diff = np.maximum(v_indices - cy, 0.5)
+        _CACHED_Z_GROUND = ((CAMERA_HEIGHT_M * fy) / v_diff).astype(np.float32)
+        _CACHED_IS_ABOVE_CY = (v_indices <= cy)
+        _CACHED_KEY = key
     return _CACHED_U_RATIO, _CACHED_V_RATIO, _CACHED_Z_GROUND, _CACHED_IS_ABOVE_CY
 
 
@@ -187,6 +202,16 @@ def analyze_depth_corridor(depth_img, roi=(50, 185, 30, 290), max_range=20.0, st
         }
 
     h_img, w_img = depth_img.shape[:2]
+
+    # Dynamically adapt camera intrinsics and ROI to actual sensor resolution
+    if w_img >= 600:
+        cx, cy, fx, fy = CAMERA_CX_640, CAMERA_CY_640, CAMERA_FX_640, CAMERA_FY_640
+        if roi == (50, 185, 30, 290):
+            # Scale default ROI to 640x480 full field of view
+            roi = (int(0.10 * h_img), int(0.85 * h_img), int(0.06 * w_img), int(0.94 * w_img))
+    else:
+        cx, cy, fx, fy = CAMERA_CX_320, CAMERA_CY_320, CAMERA_FX_320, CAMERA_FY_320
+
     r0, r1, c0, c1 = roi
     r0, r1 = max(0, r0), min(h_img, r1)
     c0, c1 = max(0, c0), min(w_img, c1)
@@ -205,7 +230,7 @@ def analyze_depth_corridor(depth_img, roi=(50, 185, 30, 290), max_range=20.0, st
     # Points in corridor within sensor range
     valid_mask = np.isfinite(corridor) & (corridor >= MIN_BODY_CLEARANCE_M) & (corridor <= max_range)
 
-    u_ratio, v_ratio, z_ground, is_above_cy = _get_roi_cached_matrices((r0, r1, c0, c1))
+    u_ratio, v_ratio, z_ground, is_above_cy = _get_roi_cached_matrices((r0, r1, c0, c1), cx=cx, cy=cy, fx=fx, fy=fy)
     Z = corridor
     Y_lat = u_ratio * Z
     Z_h = CAMERA_HEIGHT_M - v_ratio * Z
@@ -340,6 +365,7 @@ def fuse_rgb_and_depth(bgr, depth_img=None, roi=(50, 185, 30, 290)):
     if rgb_res['bbox'] is not None:
         bx, by, bw, bh = rgb_res['bbox']
         h_img, w_img = depth_img.shape[:2]
+        cx_b, cy_b, fx_b, fy_b = (CAMERA_CX_640, CAMERA_CY_640, CAMERA_FX_640, CAMERA_FY_640) if w_img >= 600 else (CAMERA_CX_320, CAMERA_CY_320, CAMERA_FX_320, CAMERA_FY_320)
         bx1, by1 = max(0, bx), max(0, by)
         bx2, by2 = min(w_img, bx + bw), min(h_img, by + bh)
         if by2 > by1 and bx2 > bx1:
@@ -347,8 +373,8 @@ def fuse_rgb_and_depth(bgr, depth_img=None, roi=(50, 185, 30, 290)):
             v_b, u_b = np.mgrid[by1:by2, bx1:bx2]
             valid_b = np.isfinite(bbox_depth) & (bbox_depth >= MIN_BODY_CLEARANCE_M) & (bbox_depth < 4.5)
             if int(np.count_nonzero(valid_b)) >= 10:
-                Zh_b = CAMERA_HEIGHT_M - ((v_b - CAMERA_CY) / CAMERA_FY) * bbox_depth
-                Ylat_b = ((u_b - CAMERA_CX) / CAMERA_FX) * bbox_depth
+                Zh_b = CAMERA_HEIGHT_M - ((v_b - cy_b) / fy_b) * bbox_depth
+                Ylat_b = ((u_b - cx_b) / fx_b) * bbox_depth
                 # True obstacles must be physically above ground level (>= 0.08m) and within vehicle lateral width
                 true_obs_b = valid_b & (Zh_b >= MIN_OBSTACLE_HEIGHT_M) & (Zh_b <= MAX_OBSTACLE_HEIGHT_M) & (np.abs(Ylat_b) <= 0.65)
                 if int(np.count_nonzero(true_obs_b)) >= 12:

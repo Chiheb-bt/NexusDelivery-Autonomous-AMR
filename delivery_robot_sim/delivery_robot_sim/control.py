@@ -4,7 +4,9 @@ Convention : erreur e = x_hat - x_target (pixels). The camera image is mirrored
 relative to the base-link yaw convention in this model: a positive image error
 requires positive angular velocity to converge to the stripe.
 """
+from __future__ import annotations
 from dataclasses import dataclass
+from typing import List, Optional, Tuple
 
 
 class PID:
@@ -266,4 +268,45 @@ class SmoothMotionController:
             new_w = max(-max_w_allowed, min(max_w_allowed, new_w))
 
         return new_v, new_w
+
+
+class PurePursuitController:
+    """Sidewalk corridor pure pursuit waypoint tracking controller."""
+    def __init__(self, lookahead_distance: float = 1.2, max_v: float = 0.8, max_w: float = 1.0):
+        self.lookahead_distance = lookahead_distance
+        self.max_v = max_v
+        self.max_w = max_w
+
+    def compute_command(
+        self,
+        current_pose: Tuple[float, float],
+        current_yaw: float,
+        path: List[Tuple[float, float]]
+    ) -> Tuple[float, float]:
+        import math
+        if not path or len(path) < 2:
+            return 0.0, 0.0
+
+        x, y = current_pose
+        target = path[-1]
+        for pt in path:
+            dist = math.hypot(pt[0] - x, pt[1] - y)
+            if dist >= self.lookahead_distance:
+                target = pt
+                break
+
+        dx = target[0] - x
+        dy = target[1] - y
+        dist = math.hypot(dx, dy)
+        if dist < 0.1:
+            return 0.0, 0.0
+
+        target_angle = math.atan2(dy, dx)
+        angle_err = target_angle - current_yaw
+        angle_err = math.atan2(math.sin(angle_err), math.cos(angle_err))
+
+        w = max(-self.max_w, min(self.max_w, 2.0 * math.sin(angle_err) / max(0.1, self.lookahead_distance)))
+        speed_factor = max(0.3, math.cos(angle_err))
+        v = min(self.max_v, self.max_v * speed_factor)
+        return round(v, 3), round(w, 3)
 

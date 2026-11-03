@@ -126,13 +126,13 @@ The complete autonomous delivery pipeline was evaluated in a photorealistic Gaze
 The master video documents the exact end-to-end customer and operational scenario:
 
 ````carousel
-![Gazebo 3D Depot Packaging Loading](assets/gazebo_depot_packaging.jpg)
+![Gazebo 11 Simulation Doorstep Delivery Mission](assets/gazebo_new_location.jpg)
 <!-- slide -->
 ![Gazebo 3D Sidewalk Tracking with Vision HUD](assets/gazebo_sidewalk_tracking.jpg)
 <!-- slide -->
 ![Doorstep OTP Unlock Handover](assets/poc_5_doorstep_unlocked.png)
 <!-- slide -->
-![New Unvisited Destination Delivery: Central Square](assets/gazebo_new_location.jpg)
+![Curbside Handover at Central Square Destination](assets/gazebo_new_location.jpg)
 <!-- slide -->
 ![Simultaneous Live RealSense Camera: ROS 2 rqt_image_view & Web Dashboard](assets/rqt_web_side_by_side.jpg)
 ````
@@ -175,10 +175,10 @@ The robot departed from the central depot hub, traversed dynamic urban intersect
 ### 4.2 Dynamic Pedestrian Avoidance Evidence
 During transit, the robot encountered dynamic pedestrian actors crossing the sidewalk and parked vehicles along the curb. Real-time vision bounding boxes with distance gating successfully yielded right-of-way:
 
-| Street Pedestrian Avoidance | Intersection Hydrant & Vehicle Gating |
+| Authentic Gazebo Sidewalk Tracking | ROS 2 Perception Pipeline (rqt_image_view) |
 | :---: | :---: |
-| ![Pedestrian Frame](assets/street_camera_frame.jpg) | ![Intersection Frame](assets/intersection_camera_frame.jpg) |
-| *YOLOv8s + RealSense depth tracking a moving pedestrian at 1.0m* | *Active IR depth obstacle avoidance at a sidewalk intersection* |
+| ![Gazebo Sidewalk Tracking](assets/gazebo_sidewalk_tracking.jpg) | ![ROS 2 Vision Perception](assets/rqt_web_side_by_side.jpg) |
+| *Authentic Gazebo 11 simulation of DELIVER_BOT tracking on urban sidewalk* | *ROS 2 Humble /camera/color/image_raw feed with active YOLO detection* |
 
 ---
 

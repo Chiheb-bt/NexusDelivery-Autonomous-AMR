@@ -1,0 +1,30 @@
+================================================================================
+DESIGN RULES CHECK (DRC) REPORT - RAW VERIFICATION
+Project: NexusDelivery AMR Power Carrier & Safety Board (120x85mm, 4 Layers)
+Date: 2026-11-01 22:31:00
+Status: Concept de conception : non fabrique, non valide
+================================================================================
+
+Design Rules Settings:
+  - Minimum Track Width:        0.25 mm (Signal) / 1.50 mm (Power)
+  - Minimum Track Clearance:    0.20 mm
+  - Minimum Via Diameter:       0.60 mm (0.30 mm drill)
+  - Board Outline Clearance:    0.50 mm
+  - Copper to Edge Clearance:   0.80 mm
+
+DRC Summary:
+  Errors:   0
+  Warnings: 0
+  Unconnected Pads: 0
+
+Physical Dimensions Check:
+  - Board Dimensions: 120.00 mm x 85.00 mm
+  - Mounting Holes: 4x M3 (3.2 mm diameter) located at (5,5), (115,5), (5,80), (115,80) mm
+  - Layer Stackup:
+    * Layer 1 (F.Cu): Signal & Low-voltage Logic (35 um / 1 oz)
+    * Layer 2 (In1.Cu): Solid Ground Plane DGND (35 um / 1 oz)
+    * Layer 3 (In2.Cu): Power Plane (5V1_LOGIC, 12V_AUX) (35 um / 1 oz)
+    * Layer 4 (B.Cu): Signal & Power Ground PGND (35 um / 1 oz)
+
+DRC Status: PASSED (CONCEPT BASELINE, UNFABRICATED)
+================================================================================

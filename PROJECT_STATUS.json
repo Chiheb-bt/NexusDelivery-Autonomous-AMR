@@ -1,41 +1,41 @@
 {
-  "project_name": "Chiheb Robotics — NexusDelivery Autonomous Fleet Platform",
+  "project_name": "NexusDelivery Autonomous Fleet Platform",
   "lead_robotics_architect": "Chiheb",
   "organization": "Chiheb Robotics Systems Lab",
-  "workspace_root": "/home/chiheb/Downloads/RDSim-devel-2wheel_diff",
-  "runtime_workspace": "/home/chiheb/rdsim_ws",
+  "maturity_level": "TRL_3_SIMULATION_PROOF_OF_CONCEPT",
+  "workspace_root": "./",
   "ros_distribution": "ROS 2 Humble (Docker reproducible environment)",
   "gazebo_version": "Gazebo Classic 11.10.2",
   "docker_image": "ros-humble-gazebo:latest",
-  "active_world": "small_city_dynamic.world (Living Urban City with Indoor Logistics Depot, Traffic Light Intersections, Animated Pedestrians, Storefront 3D Customers)",
+  "active_world": "small_city_dynamic.world",
   "active_packages": [
     "rdsim_description",
     "rdsim_gazebo",
     "delivery_robot_sim"
   ],
   "build_status": "SUCCESS",
-  "runtime_status": "VERIFIED_MISSION_SUCCESS_DYNAMIC_WORLD",
-  "unit_tests_status": "75_OF_75_PASSED",
-  "solid_wall_collision_check": "VERIFIED_LIANG_BARSKY_SEGMENT_BOX_INTERSECTION",
-  "traffic_light_directional_gating": "VERIFIED_APPROACH_HEADING_AND_PROXIMITY_GATED",
-  "camera_ai_perception_overlay": "VERIFIED_CORNER_BRACKETS_METRIC_RANGE_AND_TTC_TRACKING",
-  "dashboard_security_auth": "VERIFIED_TOKEN_PROTECTED_OPERATOR_ACCESS",
-  "remote_tunnel_publishing": "VERIFIED_CLOUDFLARE_ZERO_TRUST_TUNNEL",
-  "hardware_prototype_specification": "docs/HARDWARE_PROTOTYPE_SPEC.md",
-  "lidar_removed_from_active_pipeline": "VERIFIED",
-  "gps_removed_from_active_pipeline": "VERIFIED",
-  "odom_gt_restricted_to_evaluation": "VERIFIED",
-  "safety_supervisor": "VERIFIED_10_STATES_LATCHED_FAULT_AND_RECOVERY_CHECK",
-  "cargo_compartment_security": "VERIFIED_DYNAMIC_OTP_TOKEN_AND_TAMPER_PROTECTION",
-  "dynamic_pedestrian_tracking": "VERIFIED_LATERAL_RATE_AND_TTC_YIELDING",
-  "pedestrian_actors_motion_verified": "VERIFIED_ALL_6_ACTORS_MOVING_127M_DEPOT_CROSSING",
-  "motion_control": "VERIFIED_SMOOTH_MOTION_CONTROLLER_CRITICALLY_DAMPED_IMU",
-  "traffic_light_control_loop": "VERIFIED_CLOSED_LOOP_STOP_LINE_HOLD_AND_RESUMPTION",
-  "curbside_entrance_pivots": "VERIFIED_IN_PLACE_DOORSTEP_HEADING_ALIGNMENT",
-  "web_mission_control": "EXECUTIVE_BRIGHT_CONSOLE_ACTIVE_PORT_8080",
-  "latest_verified_run_directory": "results/verified_realworld_mission_20261024_0240",
+  "unit_tests_status": "79_OF_79_PASSED",
+  "test_suite_command": "python3 -c \"import unittest, sys; sys.path.insert(0, '.'); sys.path.insert(0, 'delivery_robot_sim'); suite = unittest.defaultTestLoader.discover('delivery_robot_sim/tests'); runner = unittest.TextTestRunner(verbosity=2); res = runner.run(suite); sys.exit(0 if res.wasSuccessful() else 1)\"",
+  "subsystem_maturity_levels": {
+    "perception": "TRL_3_SIMULATION_DEPTH_CORRIDOR_VERIFIED_OUTDOOR_SUNLIGHT_IR_UNTESTED",
+    "localization": "TRL_3_SIMULATION_DEAD_RECKONING_VERIFIED_OUTDOOR_SLIP_DRIFT_UNTESTED",
+    "navigation": "TRL_3_TOPOLOGICAL_LIANG_BARSKY_CORRIDOR_VERIFIED_IN_SIMULATION",
+    "safety": "TRL_3_10_STATE_SUPERVISOR_TEST_VERIFIED_HARDWARE_ESTOP_UNWIRED",
+    "cargo": "TRL_3_HMAC_SHA256_OTP_TEST_VERIFIED_SOLENOID_LATCH_UNBUILT",
+    "electronics": "TRL_2_CARRIER_BOARD_SCHEMATIC_CONCEPT_FORMULATED_UNMANUFACTURED",
+    "mechanics": "TRL_3_2D_DXF_CAD_FLATPACK_CONCEPT_UNFABRICATED",
+    "energy": "TRL_2_LIFEPO4_8S_DALY_BMS_PAPER_SPECIFICATION_UNTESTED"
+  },
+  "provenance_and_licensing": {
+    "upstream_scaffolding": "AuTURBO/RDSim (Branch devel/2wheel_diff, commit 335fb578ee35db732542c4459f23c8e4ca7716e5)",
+    "upstream_maintainer": "ggh-png (0380089@gmail.com)",
+    "upstream_inquiry_status": "FORMAL_14_DAY_LICENSE_CLARIFICATION_INQUIRY_INITIATED_20261101",
+    "osrf_models_status": "43_MODELS_USED_ATTRIBUTED_IN_NOTICE_APACHE_2_0_AND_CC_BY_2_0",
+    "notice_file": "NOTICE",
+    "third_party_license_dir": "third_party/licenses/"
+  },
   "evaluation_metrics": {
-    "mission_completion_status": "SUCCESS",
+    "mission_completion_status": "SUCCESS_IN_SIMULATION",
     "start_location": "DEPOT_POST_OFFICE (-31.5, -0.75)",
     "destination_settings": [
       "CLIENT_1_NORTH_AVENUE (-14.2, 15.0)",
@@ -49,33 +49,25 @@
     "average_speed_mps": 0.694,
     "maximum_speed_mps": 1.431,
     "number_of_stops": 18,
-    "obstacle_avoidance_outcome": "AVOIDANCE_AND_REACQUISITION_VERIFIED",
     "orders_completed": 2,
     "orders_failed": 0,
     "returned_to_depot": true,
-    "perception_and_control_sensor_stack": "Front RGB Camera (/camera/image_raw) + RGB-D Depth Camera (/camera/depth/image_raw) + IMU (/imu) + Wheel Odometry (/odom). NO LiDAR, NO GPS."
+    "evidence_level": "MESURÉ-SIM",
+    "sensor_stack": "Front RGB Camera (/camera/image_raw) + RGB-D Depth Camera (/camera/depth/image_raw) + IMU (/imu) + Wheel Odometry (/odom). NO LiDAR, NO GPS."
+  },
+  "bill_of_materials": {
+    "source_file": "delivery_robot_sim/web_dashboard/downloads/BOM.csv",
+    "total_parts_capex_usd": 1274.50,
+    "total_landed_tunisia_usd": 1854.50,
+    "arithmetic_verification": "VERIFIED_BY_UNIT_TEST"
   },
   "documentation": {
+    "audit_report": "docs/AUDIT.md",
     "architecture": "docs/ARCHITECTURE.md",
     "specifications": "docs/MISSION_SPECIFICATIONS.md",
-    "operator_guide": "docs/OPERATOR_GUIDE.md",
-    "proof_of_concept": "docs/NEXUS_DELIVERY_PROOF_OF_CONCEPT.md",
-    "hardware_assembly_guide": "docs/HARDWARE_ASSEMBLY_GUIDE.md",
-    "hardware_prototype_spec": "docs/HARDWARE_PROTOTYPE_SPEC.md"
-  },
-  "proof_of_concept_assets": {
-    "showcase_banner": "docs/assets/nexus_poc_showcase_banner.png",
-    "customer_portal_capture": "docs/assets/poc_1_customer_portal.png",
-    "fleet_cockpit_capture": "docs/assets/poc_2_fleet_cockpit.png",
-    "hardware_simulator_capture": "docs/assets/poc_3_hardware_simulator.png",
-    "cad_blueprint_capture": "docs/assets/poc_4_cad_blueprint.png",
-    "doorstep_unlocked_capture": "docs/assets/poc_5_doorstep_unlocked.png",
-    "mission_replay_gif": "docs/assets/nexus_delivery_poc_replay.gif",
-    "mission_trajectory_png": "docs/assets/nexus_delivery_poc_trajectory.png",
+    "hardware_spec": "docs/HARDWARE_PROTOTYPE_SPEC.md",
     "chassis_cad_dxf": "docs/cad/delivery_robot_chassis_2d_print.dxf",
-    "chassis_cad_svg": "docs/cad/delivery_robot_chassis_blueprint.svg",
-    "bill_of_materials_csv": "delivery_robot_sim/web_dashboard/downloads/BOM.csv",
-    "total_unit_bom_usd": 1065.00
-  },
-  "confirmed_blockers": []
+    "security_policy": "SECURITY.md",
+    "citation": "CITATION.cff"
+  }
 }

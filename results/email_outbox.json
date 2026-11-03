@@ -1,0 +1,281 @@
+[
+  {
+    "to": "customer_1793733405@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "A2lss1NiNjXQw_clpueZYT7tD8Yg6FeKsbQN4Pf-30g",
+    "verify_url": "http://localhost:8080/client?verify_token=A2lss1NiNjXQw_clpueZYT7tD8Yg6FeKsbQN4Pf-30g",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=A2lss1NiNjXQw_clpueZYT7tD8Yg6FeKsbQN4Pf-30g",
+    "timestamp": 1793733425.343653,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793733415@nexus.tn",
+    "name": "Rate Test",
+    "token": "DNqeOfhLEwwuGr7SGhv3Qvha84ico2InBdjamUDu17k",
+    "verify_url": "http://localhost:8080/client?verify_token=DNqeOfhLEwwuGr7SGhv3Qvha84ico2InBdjamUDu17k",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=DNqeOfhLEwwuGr7SGhv3Qvha84ico2InBdjamUDu17k",
+    "timestamp": 1793733465.5477731,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "customer_1793733811@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "PJYRlyJLNaksk5ZeMHhTNxdRFhr1HzOB70Rgj3OcpSM",
+    "verify_url": "http://localhost:8080/client?verify_token=PJYRlyJLNaksk5ZeMHhTNxdRFhr1HzOB70Rgj3OcpSM",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=PJYRlyJLNaksk5ZeMHhTNxdRFhr1HzOB70Rgj3OcpSM",
+    "timestamp": 1793733831.4406607,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793733831@nexus.tn",
+    "name": "Rate Test",
+    "token": "-MIIbysjuoJr8rgI4lJUc48nKtYH5t8dkoxZBEay7YM",
+    "verify_url": "http://localhost:8080/client?verify_token=-MIIbysjuoJr8rgI4lJUc48nKtYH5t8dkoxZBEay7YM",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=-MIIbysjuoJr8rgI4lJUc48nKtYH5t8dkoxZBEay7YM",
+    "timestamp": 1793733881.7194471,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "curl_test@nexus.tn",
+    "name": "Curl Test",
+    "token": "3DLBbP2j_LJd-m2nbg77SLAVrC0sFNLNgef6odux_s8",
+    "verify_url": "http://localhost:8080/client?verify_token=3DLBbP2j_LJd-m2nbg77SLAVrC0sFNLNgef6odux_s8",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=3DLBbP2j_LJd-m2nbg77SLAVrC0sFNLNgef6odux_s8",
+    "timestamp": 1793733891.742904,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "fast_test@nexus.tn",
+    "name": "Fast Test",
+    "token": "H-OxvcgIzFX5PWDfn5_eNSkbBPtT-S6hIIY7Sq2243k",
+    "verify_url": "http://localhost:8080/client?verify_token=H-OxvcgIzFX5PWDfn5_eNSkbBPtT-S6hIIY7Sq2243k",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=H-OxvcgIzFX5PWDfn5_eNSkbBPtT-S6hIIY7Sq2243k",
+    "timestamp": 1793734004.7253716,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "customer_1793734010@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "5omQNSEqt5RK5tGFf6AzMY5GHkJd707quATUoEikUvY",
+    "verify_url": "http://localhost:8080/client?verify_token=5omQNSEqt5RK5tGFf6AzMY5GHkJd707quATUoEikUvY",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=5omQNSEqt5RK5tGFf6AzMY5GHkJd707quATUoEikUvY",
+    "timestamp": 1793734010.5863173,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793734010@nexus.tn",
+    "name": "Rate Test",
+    "token": "elmildf21m2MTiranIgfBHWhzv2GGwZknI0pFea8Zw0",
+    "verify_url": "http://localhost:8080/client?verify_token=elmildf21m2MTiranIgfBHWhzv2GGwZknI0pFea8Zw0",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=elmildf21m2MTiranIgfBHWhzv2GGwZknI0pFea8Zw0",
+    "timestamp": 1793734010.681849,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "customer_1793734186@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "W9tOEtY7rf_FTnw9n_07ImRadusL0lP5zBTsoIwyCI0",
+    "verify_url": "http://localhost:8080/client?verify_token=W9tOEtY7rf_FTnw9n_07ImRadusL0lP5zBTsoIwyCI0",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=W9tOEtY7rf_FTnw9n_07ImRadusL0lP5zBTsoIwyCI0",
+    "timestamp": 1793734186.7061756,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793734186@nexus.tn",
+    "name": "Rate Test",
+    "token": "peNxQjk9sv1v_JeXh9txt2_2Cr0qEvopy10pn766Zvc",
+    "verify_url": "http://localhost:8080/client?verify_token=peNxQjk9sv1v_JeXh9txt2_2Cr0qEvopy10pn766Zvc",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=peNxQjk9sv1v_JeXh9txt2_2Cr0qEvopy10pn766Zvc",
+    "timestamp": 1793734186.8022926,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "customer_1793734246@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "Y2siHFpcnBsvJkB5UFwNyGXTVwpz8ebEbUz5MQvNux8",
+    "verify_url": "http://localhost:8080/client?verify_token=Y2siHFpcnBsvJkB5UFwNyGXTVwpz8ebEbUz5MQvNux8",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=Y2siHFpcnBsvJkB5UFwNyGXTVwpz8ebEbUz5MQvNux8",
+    "timestamp": 1793734246.6946084,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793734246@nexus.tn",
+    "name": "Rate Test",
+    "token": "LFaEsEXH97z93rS0IYGhwGvI3F8Ph5r2MfndtXOlFH4",
+    "verify_url": "http://localhost:8080/client?verify_token=LFaEsEXH97z93rS0IYGhwGvI3F8Ph5r2MfndtXOlFH4",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=LFaEsEXH97z93rS0IYGhwGvI3F8Ph5r2MfndtXOlFH4",
+    "timestamp": 1793734246.7875397,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "sami_1793734296608@nexus.tn",
+    "name": "Sami Trabelsi",
+    "token": "bEpFfwciOkPOZ5Dro4mhWFHvzV_95C74gVrFlOjjR6M",
+    "verify_url": "http://localhost:8080/client?verify_token=bEpFfwciOkPOZ5Dro4mhWFHvzV_95C74gVrFlOjjR6M",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=bEpFfwciOkPOZ5Dro4mhWFHvzV_95C74gVrFlOjjR6M",
+    "timestamp": 1793734296.6524155,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "customer_1793734304@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "WGJeLMgt85-rilomgwM3Bp7dF_cjSKiEZv1apP1eCRc",
+    "verify_url": "http://localhost:8080/client?verify_token=WGJeLMgt85-rilomgwM3Bp7dF_cjSKiEZv1apP1eCRc",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=WGJeLMgt85-rilomgwM3Bp7dF_cjSKiEZv1apP1eCRc",
+    "timestamp": 1793734304.4838638,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793734304@nexus.tn",
+    "name": "Rate Test",
+    "token": "ZNsjpP6iScPL7aLg7ate0FMlC9JmXS9HWhGdhqWCA7k",
+    "verify_url": "http://localhost:8080/client?verify_token=ZNsjpP6iScPL7aLg7ate0FMlC9JmXS9HWhGdhqWCA7k",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=ZNsjpP6iScPL7aLg7ate0FMlC9JmXS9HWhGdhqWCA7k",
+    "timestamp": 1793734304.5809312,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "test_e2e_1793742249@nexus.tn",
+    "name": "Sarah Connor",
+    "token": "2tFUhf0qBV1jDwmIgv3tumUa_ldpxXJoRkOSrHN2o4Y",
+    "verify_url": "http://localhost:8080/client?verify_token=2tFUhf0qBV1jDwmIgv3tumUa_ldpxXJoRkOSrHN2o4Y",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=2tFUhf0qBV1jDwmIgv3tumUa_ldpxXJoRkOSrHN2o4Y",
+    "timestamp": 1793742249.9822443,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "sami_1793742252252@nexus.tn",
+    "name": "Sami Trabelsi",
+    "token": "dNpBqVrJw0O7F2rY8cZ-rH4IcawnquCAHY9BUohbdPs",
+    "verify_url": "http://localhost:8080/client?verify_token=dNpBqVrJw0O7F2rY8cZ-rH4IcawnquCAHY9BUohbdPs",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=dNpBqVrJw0O7F2rY8cZ-rH4IcawnquCAHY9BUohbdPs",
+    "timestamp": 1793742252.3039532,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "sami_1793742304274@nexus.tn",
+    "name": "Sami Trabelsi",
+    "token": "_h5zNvWP0uClBUqNtQfVKkESBOa42PV5CLNFxCdRVWw",
+    "verify_url": "http://localhost:8080/client?verify_token=_h5zNvWP0uClBUqNtQfVKkESBOa42PV5CLNFxCdRVWw",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=_h5zNvWP0uClBUqNtQfVKkESBOa42PV5CLNFxCdRVWw",
+    "timestamp": 1793742304.319975,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "sami_1793742395781@nexus.tn",
+    "name": "Sami Trabelsi",
+    "token": "oEsm2KK8kdBLgq4n7JT7TavzSgtXhs50lUDHZhCfFhw",
+    "verify_url": "http://localhost:8080/client?verify_token=oEsm2KK8kdBLgq4n7JT7TavzSgtXhs50lUDHZhCfFhw",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=oEsm2KK8kdBLgq4n7JT7TavzSgtXhs50lUDHZhCfFhw",
+    "timestamp": 1793742395.8264947,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "test_e2e_1793742684@nexus.tn",
+    "name": "Sarah Connor",
+    "token": "3-2Lt5bOWZQQMcZBdiEnFfZlT1glfyg_MiBgdjbNI0A",
+    "verify_url": "http://localhost:8080/client?verify_token=3-2Lt5bOWZQQMcZBdiEnFfZlT1glfyg_MiBgdjbNI0A",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=3-2Lt5bOWZQQMcZBdiEnFfZlT1glfyg_MiBgdjbNI0A",
+    "timestamp": 1793742684.789498,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "test_e2e_1793743144@nexus.tn",
+    "name": "Sarah Connor",
+    "token": "Jrsy6DG2tDCG3o7ElQbFXx5JDJ_rK3EswYOpz_RqPvU",
+    "verify_url": "http://localhost:8080/client?verify_token=Jrsy6DG2tDCG3o7ElQbFXx5JDJ_rK3EswYOpz_RqPvU",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=Jrsy6DG2tDCG3o7ElQbFXx5JDJ_rK3EswYOpz_RqPvU",
+    "timestamp": 1793743144.1650205,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "customer_1793743330@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "guXJZjobFJz4sZuEB_lAAe3VgGLVg6NntpVohVzldek",
+    "verify_url": "http://localhost:8080/client?verify_token=guXJZjobFJz4sZuEB_lAAe3VgGLVg6NntpVohVzldek",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=guXJZjobFJz4sZuEB_lAAe3VgGLVg6NntpVohVzldek",
+    "timestamp": 1793743330.8582246,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793743330@nexus.tn",
+    "name": "Rate Test",
+    "token": "jXV6ttTVf6WTYz7rrRQKrKnKXiMTf48r4KLTpfO2TY4",
+    "verify_url": "http://localhost:8080/client?verify_token=jXV6ttTVf6WTYz7rrRQKrKnKXiMTf48r4KLTpfO2TY4",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=jXV6ttTVf6WTYz7rrRQKrKnKXiMTf48r4KLTpfO2TY4",
+    "timestamp": 1793743330.9534714,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "customer_1793743366@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "0Be7GRSGEIVPaFqCBbbh0GNZcsAG7ak5irTZoiroiBI",
+    "verify_url": "http://localhost:8080/client?verify_token=0Be7GRSGEIVPaFqCBbbh0GNZcsAG7ak5irTZoiroiBI",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=0Be7GRSGEIVPaFqCBbbh0GNZcsAG7ak5irTZoiroiBI",
+    "timestamp": 1793743369.860436,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793743369@nexus.tn",
+    "name": "Rate Test",
+    "token": "PD9fykJMNA5ZlAcCtt2gJjCOp6yFKyg8L47-gc52-Qk",
+    "verify_url": "http://localhost:8080/client?verify_token=PD9fykJMNA5ZlAcCtt2gJjCOp6yFKyg8L47-gc52-Qk",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=PD9fykJMNA5ZlAcCtt2gJjCOp6yFKyg8L47-gc52-Qk",
+    "timestamp": 1793743369.964751,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "test_e2e_1793743370@nexus.tn",
+    "name": "Sarah Connor",
+    "token": "lMbczP4VlNKwBT1uCHYrA2xJYQmG_cpemURFsowdubo",
+    "verify_url": "http://localhost:8080/client?verify_token=lMbczP4VlNKwBT1uCHYrA2xJYQmG_cpemURFsowdubo",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=lMbczP4VlNKwBT1uCHYrA2xJYQmG_cpemURFsowdubo",
+    "timestamp": 1793743370.6636572,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "sami_1793743372789@nexus.tn",
+    "name": "Sami Trabelsi",
+    "token": "B5tIlYoy_QSHfYsRkwwurzqioccCUAnbpfqp75xZnOg",
+    "verify_url": "http://localhost:8080/client?verify_token=B5tIlYoy_QSHfYsRkwwurzqioccCUAnbpfqp75xZnOg",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=B5tIlYoy_QSHfYsRkwwurzqioccCUAnbpfqp75xZnOg",
+    "timestamp": 1793743372.833595,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "customer_1793744592@nexus.tn",
+    "name": "Nadia Ben Ammar",
+    "token": "I_ymABS30XzZj3sz0RN4OXszNEb6I2A0mcUhh9tZJ64",
+    "verify_url": "http://localhost:8080/client?verify_token=I_ymABS30XzZj3sz0RN4OXszNEb6I2A0mcUhh9tZJ64",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=I_ymABS30XzZj3sz0RN4OXszNEb6I2A0mcUhh9tZJ64",
+    "timestamp": 1793744596.7873127,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "rate_limit_1793744596@nexus.tn",
+    "name": "Rate Test",
+    "token": "9VBxFieG1d8h2oZx4s5a5wo7DsJcvVxsk8kXKY6sv2I",
+    "verify_url": "http://localhost:8080/client?verify_token=9VBxFieG1d8h2oZx4s5a5wo7DsJcvVxsk8kXKY6sv2I",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=9VBxFieG1d8h2oZx4s5a5wo7DsJcvVxsk8kXKY6sv2I",
+    "timestamp": 1793744596.9109805,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "test_e2e_1793744597@nexus.tn",
+    "name": "Sarah Connor",
+    "token": "K4zwP-lhJw0qBLzukXGzUihC3LsepRaZD8XQxrSlkVg",
+    "verify_url": "http://localhost:8080/client?verify_token=K4zwP-lhJw0qBLzukXGzUihC3LsepRaZD8XQxrSlkVg",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=K4zwP-lhJw0qBLzukXGzUihC3LsepRaZD8XQxrSlkVg",
+    "timestamp": 1793744597.5729086,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  },
+  {
+    "to": "sami_1793744599846@nexus.tn",
+    "name": "Sami Trabelsi",
+    "token": "vOESZjgolUvSKS9t579r0Wbsl2T7FZ1RLje8y8QYOmA",
+    "verify_url": "http://localhost:8080/client?verify_token=vOESZjgolUvSKS9t579r0Wbsl2T7FZ1RLje8y8QYOmA",
+    "api_verify_url": "http://localhost:8080/api/auth/verify_email?token=vOESZjgolUvSKS9t579r0Wbsl2T7FZ1RLje8y8QYOmA",
+    "timestamp": 1793744599.8934355,
+    "status": "SAVED_TO_OUTBOX_DEV_MODE"
+  }
+]

@@ -75,6 +75,7 @@ docker run --rm \
   -v /etc/group:/etc/group:ro \
   "${dri_args[@]}" \
   -e RDSIM_TRAFFIC_LIGHT="$traffic_light" \
+  -e RDSIM_SCENARIO="${RDSIM_SCENARIO:-empty}" \
   -e RDSIM_RESULTS_DIR="$container_results" \
   -e QT_X11_NO_MITSHM=1 \
   -e LIBGL_ALWAYS_SOFTWARE="${LIBGL_ALWAYS_SOFTWARE:-$libgl_software}" \

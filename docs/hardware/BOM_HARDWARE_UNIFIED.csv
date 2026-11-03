@@ -1,0 +1,20 @@
+Category,Component,Manufacturer,Part Number,Key Specifications,Quantity,Unit Cost USD,Extended Cost USD,Sourcing Date,Status,Source / Link
+Compute Core,Raspberry Pi 5 (8GB),Raspberry Pi Ltd,SC1112,Quad Cortex-A76 @ 2.4GHz 8GB LPDDR4X,1,80.00,80.00,2026-11-01,DATASHEET,https://www.raspberrypi.com/products/raspberry-pi-5/
+AI Coprocessor,Hailo-8L M.2 AI Module,Hailo Technologies,HM21LB1C2AE,13 INT8 TOPS @ 2.5W M.2 2242,1,75.00,75.00,2026-11-01,DATASHEET,https://hailo.ai/products/ai-accelerators/hailo-8l-ai-acceleration-module/
+M.2 Interface HAT,Raspberry Pi M.2 HAT+,Raspberry Pi Ltd,SC1115,PCIe Gen 3.0 to M.2 Key-M adapter,1,12.00,12.00,2026-11-01,DATASHEET,https://www.raspberrypi.com/products/m2-hat-plus/
+Perception Sensor,Intel RealSense D435i,Intel Corporation,999AFR,Active IR Stereo Depth (0.2-5.0m) + RGB + IMU,1,349.00,349.00,2026-11-01,DATASHEET,https://www.intelrealsense.com/depth-camera-d435i/
+Motor Controller,ODrive S1 Motor Driver,ODrive Robotics,ODrive-S1-40A,24V-56V 40A cont FOC motor controller CAN/UART,1,169.00,169.00,2026-11-01,DATASHEET,https://odriverobotics.com/shop/odrive-s1
+Traction Drive,8" Brushless Geared Hub Motors,Generic BLDC Supplier,BLDC-24V-250W-HUB,24V 250W geared hub with 14-bit Hall encoders,2,95.00,190.00,2026-11-01,ESTIMATION,Catalogue fournisseur moteurs hub BLDC
+Main Battery,24V 20Ah LiFePO4 Pack,Daly / Generic LFP,8S-LFP-20AH,25.6V nom 512Wh Daly Smart BMS I2C/CAN,1,195.00,195.00,2026-11-01,ESTIMATION,Catalogue batterie LiFePO4 8S
+Power Converter 5V,Synchronous Buck 5V 5A,XLSEMI / Generic,XL4015-MOD,24V to 5.1V 5.0A out for Raspberry Pi 5 & NPU,1,8.50,8.50,2026-11-01,ESTIMATION,Module DC-DC step-down buck
+Power Converter 12V,Synchronous Buck 12V 3A,XLSEMI / Generic,XL4016-MOD,24V to 12.0V 3.0A out for Solenoids & Fans,1,7.00,7.00,2026-11-01,ESTIMATION,Module DC-DC step-down buck
+Hatch Security,Electronic Deadbolt Solenoids,Generic Solenoid,DC-12V-10MM-LATCH,12V DC spring latch 1.2A pulse 10mm throw,2,14.00,28.00,2026-11-01,ESTIMATION,Solénoïde à pêne biseauté 12V
+Lock Relay,Optocoupler Relay Module,Songle / Generic,RELAY-5V-1CH,5V trigger optoisolated with 1N4007 flyback diode,1,3.50,3.50,2026-11-01,ESTIMATION,Module relais 1 canal optocouplé
+Safety Interlock,Emergency Stop Switch,Schneider / Generic,LAY37-11ZS,22mm panel mount push-lock twist-release,1,9.00,9.00,2026-11-01,ESTIMATION,Interrupteur arrêt d urgence 22mm
+Status Lighting,WS2812B RGB NeoPixel Ring,Worldsemi,WS2812B-16R,16 addressable RGB LEDs 5V single-wire,1,6.50,6.50,2026-11-01,ESTIMATION,Anneau 16 LED WS2812B
+Caster Wheels,Heavy-Duty Swivel Casters,Generic Hardware,CASTER-75MM-PU,75mm diameter polyurethane 4-hole mount,2,11.00,22.00,2026-11-01,ESTIMATION,Roulettes pivotantes polyuréthane
+Structural Frame,Aluminum 5052-H32 Laser-Cut Shell,Local CNC Service,CR-NEXUS-FRAME-V2,4.0mm laser-cut chassis plates and DIN 912 fasteners,1,75.00,75.00,2026-11-01,ESTIMATION,Tôlerie découpe laser alu 5052
+Carrier & Wiring,Carrier Board PCB & Wiring Harness,JLCPCB / Generic,CR-NEXUS-PDB-V1,4-layer carrier PCB concept and 10 AWG silicone harness,1,45.00,45.00,2026-11-01,ESTIMATION,Concept carte porteuse et câblage
+Total Pièces Brutes,NexusDelivery Autonomous AMR,Chiheb Robotics,FULL-PARTS-V2,Total composants bruts sortie usine (hors fret et douane),18,-,1274.50,2026-11-01,CALCULÉ,Somme exacte des 16 postes ci-dessus
+Fret et Douane Tunisie,Transport International & Douane,DHL / Douane TN,LOGISTICS-TN,Fret DHL/FedEx (15kg) et droits douane/TVA Tunisie (~30%),1,580.00,580.00,2026-11-01,ESTIMATION - A VERIFIER,Estimation indicative transport et douane tunisienne
+Total Rendu Tunisie,NexusDelivery Landed Cost,Chiheb Robotics,TOTAL-LANDED-TN,Coût total d approvisionnement rendu en Tunisie,19,-,1854.50,2026-11-01,ESTIMATION - A VERIFIER,Total pièces brutes + fret et douane

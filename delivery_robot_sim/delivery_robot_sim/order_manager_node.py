@@ -42,7 +42,7 @@ class OrderManagerNode(Node):
         mission_id = str(self.get_parameter('mission_id').value)
         depot_x = float(self.get_parameter('depot_x').value)
         depot_y = float(self.get_parameter('depot_y').value)
-        self.scenario = str(self.get_parameter('initial_scenario').value)
+        self.scenario = os.environ.get('RDSIM_SCENARIO', str(self.get_parameter('initial_scenario').value))
         self.dynamic_order_time_s = float(self.get_parameter('dynamic_order_time_s').value)
         self.dwell_time_s = float(self.get_parameter('dwell_time_s').value)
         self.results_dir = str(self.get_parameter('results_dir').value)
@@ -91,6 +91,7 @@ class OrderManagerNode(Node):
         self.sub_arrival = self.create_subscription(String, '/delivery/arrival_event', self._on_arrival, 10)
         self.sub_new_order = self.create_subscription(String, '/delivery/new_order', self._on_new_order, 10)
         self.sub_cancel_order = self.create_subscription(String, '/delivery/cancel_order', self._on_cancel_order, 10)
+        self.sub_handover = self.create_subscription(String, '/delivery/confirm_handover', self._on_handover_confirmed, 10)
 
         self.pub_target = self.create_publisher(String, '/delivery/current_target', 10)
         self.pub_status = self.create_publisher(String, '/delivery/mission_status', 10)
@@ -131,6 +132,25 @@ class OrderManagerNode(Node):
         if self.order_mgr.cancel_order(order_id, reason='External cancellation command'):
             self.get_logger().warn(f'CANCELLED order {order_id}')
 
+    def _on_handover_confirmed(self, msg: String):
+        """Handle customer confirmation of parcel retrieval: lock compartment and return to depot."""
+        try:
+            data = json.loads(msg.data)
+            order_id = data.get('order_id', self.dwell_order_id or '')
+            now = self._sim_time()
+            self.get_logger().info(f'Handover confirmed for {order_id}. Compartment locked. Initiating return to depot.')
+            if order_id in self.order_mgr.orders:
+                self.order_mgr.confirm_delivery(order_id, now=now)
+            self.dwell_until = None
+            self.dwell_action = None
+            self.dwell_order_id = None
+            self.dwell_otp = None
+            self.order_mgr.returning_to_depot = True
+            self.order_mgr.mission_state = MissionLifecycleState.RETURNING_TO_DEPOT.value
+            self._publish_status(now)
+        except Exception as e:
+            self.get_logger().error(f'Error handling handover confirmation: {e}')
+
     def _on_arrival(self, msg: String):
         """Handle arrival notification from navigation driver."""
         try:
@@ -157,22 +177,24 @@ class OrderManagerNode(Node):
 
                 self.get_logger().info(
                     f'Arrived at client destination for {order_id}. '
-                    f'CUSTOMER_NOTIFICATION: OTP={otp}. Beginning package unloading dwell ({self.dwell_time_s}s)...'
+                    f'CUSTOMER_NOTIFICATION: OTP={otp}. Robot stopped and awaiting customer verification on website.'
                 )
-                self.dwell_until = now + self.dwell_time_s
-                self.dwell_action = 'DELIVERY'
+                # Strict commercial behavior: robot remains waiting at doorstep until customer validates OTP
+                self.dwell_until = None
+                self.dwell_action = None
                 self.dwell_order_id = order_id
                 self.dwell_otp = otp
-                self.order_mgr.mission_state = MissionLifecycleState.DELIVERING.value
+                self.order_mgr.mission_state = 'WAITING_FOR_CUSTOMER'
 
-                # Broadcast client handover event for Web HUD
+                # Broadcast client handover event for Web HUD & Customer Portal
                 handover_evt = {
-                    'event': 'HANDOVER_INTERACTION',
+                    'event': 'CUSTOMER_ARRIVAL_NOTIFICATION',
+                    'action': 'WAITING_FOR_CUSTOMER',
                     'order_id': order_id,
                     'customer_name': cust_name,
                     'package_id': pkg_id,
                     'otp': otp,
-                    'hatch_status': 'UNLOCKED',
+                    'hatch_status': 'LOCKED',
                     'timestamp': now
                 }
                 msg_h = String()

@@ -43,6 +43,7 @@ docker run --rm \
   -e HOME=/tmp \
   -e ROS_HOME=/tmp/.ros \
   -e RDSIM_TRAFFIC_LIGHT="$traffic_light" \
+  -e RDSIM_SCENARIO="${RDSIM_SCENARIO:-empty}" \
   -e RDSIM_RESULTS_DIR="$container_results" \
   -v "$project_dir:$project_dir:ro" \
   -v "$project_dir:/rdsim:ro" \

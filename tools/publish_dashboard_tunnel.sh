@@ -53,13 +53,20 @@ if [ -z "${TUNNEL_URL}" ]; then
   exit 1
 fi
 
+OPERATOR_PIN="${NEXUS_OPERATOR_PIN:-}"
+if [ -z "${OPERATOR_PIN}" ]; then
+  echo "[-] ERROR: NEXUS_OPERATOR_PIN environment variable is not defined."
+  echo "[-] Set it before publishing: export NEXUS_OPERATOR_PIN='your-strong-pin'"
+  exit 1
+fi
+
 echo ""
 echo "================================================================================"
-echo "🚀 NEXUSDELIVERY FLEET MISSION CONTROL IS NOW PUBLISHED PUBLICLY!"
+echo "NEXUSDELIVERY FLEET MISSION CONTROL IS PUBLISHED"
 echo "================================================================================"
-echo "  🌐 PUBLIC SECURE URL  : ${TUNNEL_URL}"
-echo "  🔑 ACCESS OPERATOR PIN: nexus-operator-2026"
-echo "  🛡️ STATUS             : ACTIVE ZERO-TRUST PROXY"
+echo "  PUBLIC SECURE URL   : ${TUNNEL_URL}"
+echo "  ACCESS OPERATOR PIN : [CONFIGURED VIA NEXUS_OPERATOR_PIN]"
+echo "  STATUS              : ACTIVE PROXY"
 echo "================================================================================"
 echo "Share this URL to monitor and command the robot from any phone, laptop, or remote location."
 echo "Log output available at: ${LOG_FILE}"
