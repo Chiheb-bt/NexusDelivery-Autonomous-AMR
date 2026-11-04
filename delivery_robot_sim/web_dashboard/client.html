@@ -126,96 +126,99 @@
     <div class="hero-backdrop-glow"></div>
     <div class="hero-content">
       
-      <!-- Top Badge -->
-      <div class="hero-chip">
-        <span class="chip-dot"></span>
-        <span>COMMERCIAL AUTONOMOUS SIDEWALK ROBOTICS • TRL 3–4 SIMULATION BASELINE</span>
-      </div>
-
-      <h1 class="hero-title">
-        Autonomous Sidewalk Delivery. <br>
-        <span class="gradient-text">Explore Anywhere. Pin Anywhere.</span>
-      </h1>
-
-      <p class="hero-subtitle">
-        Drop your delivery pin on any verified sidewalk in the Gazebo urban grid. Our smart zero-emission sidewalk rovers calculate optimal corridor trajectories and deliver gourmet meals, espresso, and healthcare directly to your doorstep.
-      </p>
-
-      <!-- Key Capabilities Tags -->
-      <div class="hero-feature-tags">
-        <div class="feature-tag">
-          <span class="tag-icon">🗺️</span>
-          <span>Gazebo Vector Map & Sidewalk Corridors</span>
+      <!-- Left Column: Hero Copy & Capabilities -->
+      <div class="hero-text-col">
+        <!-- Top Badge -->
+        <div class="hero-chip">
+          <span class="chip-dot"></span>
+          <span>COMMERCIAL AUTONOMOUS SIDEWALK ROBOTICS • TRL 3–4 SIMULATION BASELINE</span>
         </div>
-        <div class="feature-tag">
-          <span class="tag-icon">📷</span>
-          <span>Camera-Led Vision Autonomy (Zero LiDAR • Zero GPS)</span>
-        </div>
-        <div class="feature-tag">
-          <span class="tag-icon">🔒</span>
-          <span>Curbside 6-Digit OTP Encrypted Handover</span>
-        </div>
-        <div class="feature-tag">
-          <span class="tag-icon">🤖</span>
-          <span>Differential-Drive Mobile Platform (ROS 2 Humble)</span>
-        </div>
-      </div>
 
-      <!-- Action Buttons -->
-      <div class="hero-actions">
-        <a href="#worldMapSection" class="btn-hero-cta" onclick="playChime('click')">
-          <span>Explore Map & Set Drop Pin</span>
-          <span class="btn-arrow">📍</span>
-        </a>
-        <a href="#storeCatalogSection" class="btn-hero-secondary" onclick="playChime('click')">
-          <span class="btn-icon">🍔</span>
-          <span>Browse Curbside Menu</span>
-        </a>
-      </div>
+        <h1 class="hero-title">
+          Autonomous Sidewalk Delivery. <br>
+          <span class="gradient-text">Explore Anywhere. Pin Anywhere.</span>
+        </h1>
 
-    </div>
+        <p class="hero-subtitle">
+          Drop your delivery pin on any verified sidewalk in the Gazebo urban grid. Our smart zero-emission sidewalk rovers calculate optimal corridor trajectories and deliver gourmet meals, espresso, and healthcare directly to your doorstep.
+        </p>
 
-    <!-- Floating Live Rover Telemetry HUD Card -->
-    <div class="hero-visual-card">
-      <div class="visual-card-inner">
-        <div class="visual-card-header">
-          <div class="visual-badge">
-            <span class="pulse-beacon" id="heroPulseBeacon"></span>
-            <span id="heroTelemetryBadge">STANDBY AT DEPOT</span>
+        <!-- Key Capabilities Tags -->
+        <div class="hero-feature-tags">
+          <div class="feature-tag">
+            <span class="tag-icon">🗺️</span>
+            <span>Gazebo Vector Map & Sidewalk Corridors</span>
           </div>
-          <span class="visual-speed-metric" id="heroVisualSpeed">0.00 m/s</span>
-        </div>
-
-        <div class="visual-telemetry-screen">
-          <div class="hud-stat-box">
-            <span class="hsb-label">LOGISTICS HUB</span>
-            <strong class="hsb-val text-cyan">Central Depot Dock (-31.5, -0.75)</strong>
+          <div class="feature-tag">
+            <span class="tag-icon">📷</span>
+            <span>Camera-Led Vision Autonomy (Zero LiDAR • Zero GPS)</span>
           </div>
-          <div class="hud-stat-box">
-            <span class="hsb-label">NAVIGATION MODE</span>
-            <strong class="hsb-val text-emerald">VISION-ONLY CORRIDOR</strong>
+          <div class="feature-tag">
+            <span class="tag-icon">🔒</span>
+            <span>Curbside 6-Digit OTP Encrypted Handover</span>
           </div>
-          <div class="hud-stat-box">
-            <span class="hsb-label">SENSOR STACK</span>
-            <strong class="hsb-val text-amber">RGB-D + IMU + Odometry</strong>
-          </div>
-          <div class="hud-stat-box">
-            <span class="hsb-label">OBSTACLE PERCEPTION</span>
-            <strong class="hsb-val text-emerald" id="heroCorridorClear">ACTIVE SIDEWALK SCAN</strong>
+          <div class="feature-tag">
+            <span class="tag-icon">🤖</span>
+            <span>Differential-Drive Mobile Platform (ROS 2 Humble)</span>
           </div>
         </div>
 
-        <div class="visual-card-footer">
-          <div class="visual-meta">
-            <span class="meta-label">ACTIVE MISSION:</span>
-            <span class="meta-value" id="heroVisualTarget">Avenue Habib Bourguiba, Tunis</span>
-          </div>
-          <div class="visual-eta">
-            <span class="meta-label">ETA TO DOORSTEP:</span>
-            <span class="meta-value text-emerald" id="heroVisualEta">~3 min</span>
-          </div>
+        <!-- Action Buttons -->
+        <div class="hero-actions">
+          <a href="#worldMapSection" class="btn-hero-cta" onclick="playChime('click')">
+            <span>Explore Map & Set Drop Pin</span>
+            <span class="btn-arrow">📍</span>
+          </a>
+          <a href="#storeCatalogSection" class="btn-hero-secondary" onclick="playChime('click')">
+            <span class="btn-icon">🍔</span>
+            <span>Browse Curbside Menu</span>
+          </a>
         </div>
       </div>
+
+      <!-- Right Column: Floating Live Rover Telemetry HUD Card -->
+      <div class="hero-visual-card">
+        <div class="visual-card-inner">
+          <div class="visual-card-header">
+            <div class="visual-badge">
+              <span class="pulse-beacon" id="heroPulseBeacon"></span>
+              <span id="heroTelemetryBadge">STANDBY AT DEPOT</span>
+            </div>
+            <span class="visual-speed-metric" id="heroVisualSpeed">0.00 m/s</span>
+          </div>
+
+          <div class="visual-telemetry-screen">
+            <div class="hud-stat-box">
+              <span class="hsb-label">LOGISTICS HUB</span>
+              <strong class="hsb-val text-cyan">Central Depot Dock (-31.5, -0.75)</strong>
+            </div>
+            <div class="hud-stat-box">
+              <span class="hsb-label">NAVIGATION MODE</span>
+              <strong class="hsb-val text-emerald">VISION-ONLY CORRIDOR</strong>
+            </div>
+            <div class="hud-stat-box">
+              <span class="hsb-label">SENSOR STACK</span>
+              <strong class="hsb-val text-amber">RGB-D + IMU + Odometry</strong>
+            </div>
+            <div class="hud-stat-box">
+              <span class="hsb-label">OBSTACLE PERCEPTION</span>
+              <strong class="hsb-val text-emerald" id="heroCorridorClear">ACTIVE SIDEWALK SCAN</strong>
+            </div>
+          </div>
+
+          <div class="visual-card-footer">
+            <div class="visual-meta">
+              <span class="meta-label">ACTIVE MISSION:</span>
+              <span class="meta-value" id="heroVisualTarget">Avenue Habib Bourguiba, Tunis</span>
+            </div>
+            <div class="visual-eta">
+              <span class="meta-label">ETA TO DOORSTEP:</span>
+              <span class="meta-value text-emerald" id="heroVisualEta">~3 min</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 

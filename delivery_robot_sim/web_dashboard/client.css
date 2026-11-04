@@ -452,8 +452,18 @@ button, input, select {
 .hero-section {
   position: relative;
   padding: 3.5rem 1.5rem 2.5rem 1.5rem;
-  background: linear-gradient(180deg, #ffffff 0%, var(--bg-primary) 100%);
+  background: radial-gradient(circle at 85% 25%, rgba(2, 132, 199, 0.06) 0%, transparent 60%),
+              linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-primary) 100%);
   border-bottom: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+:root[data-theme="dark"] .hero-section,
+body.dark-theme .hero-section {
+  background: radial-gradient(circle at 80% 25%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+              radial-gradient(circle at 10% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+              linear-gradient(180deg, #111827 0%, #0a0f1d 100%);
+  border-bottom-color: var(--border-light);
 }
 
 .hero-content {
@@ -463,6 +473,12 @@ button, input, select {
   grid-template-columns: 1.15fr 0.85fr;
   align-items: center;
   gap: 3rem;
+}
+
+.hero-text-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .hero-chip {
@@ -587,6 +603,20 @@ button, input, select {
 
 .hero-visual-card:hover {
   box-shadow: var(--shadow-card-hover);
+}
+
+:root[data-theme="dark"] .hero-visual-card,
+body.dark-theme .hero-visual-card {
+  background: #111827;
+  border-color: rgba(56, 189, 248, 0.25);
+  box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(56, 189, 248, 0.15);
+}
+
+:root[data-theme="dark"] .feature-tag,
+body.dark-theme .feature-tag {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
 }
 
 .visual-card-inner {
