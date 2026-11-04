@@ -451,9 +451,12 @@
             <div class="otp-display-pill">
               <span class="otp-digit-highlight" id="displayOtpCode">482910</span>
             </div>
-            <button class="btn-open-otp-modal" onclick="openOtpModal()">
+            <button class="btn-open-otp-modal" id="btnOpenOtpModal" onclick="openOtpModal()">
               <span>Enter Code & Unlock Hatch</span>
               <span class="btn-arrow">🔓</span>
+            </button>
+            <button class="btn-return-depot-direct" id="btnDirectReturn" onclick="confirmPackageRetrieved()" style="display: none; margin-top: 10px; width: 100%; padding: 12px; background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; border: none; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s;">
+              <span>🚀 Package Retrieved — Return Rover to Depot</span>
             </button>
           </div>
         </div>

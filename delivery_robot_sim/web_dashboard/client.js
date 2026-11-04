@@ -54,8 +54,8 @@ const FALLBACK_PRODUCTS = [
     price: 14.50,
     weight_kg: 0.8,
     icon: '🍕',
-    image: 'images/products/pizza_margherita.svg',
-    photo: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=600&q=80',
+    image: 'images/products/pizza_margherita.jpg',
+    photo: 'images/products/pizza_margherita.jpg',
     desc: 'Fresh buffalo mozzarella, organic San Marzano tomato, wood-fired 48h sourdough crust, fresh basil.',
     temp_tag: '🔥 65°C Heated'
   },
@@ -66,8 +66,8 @@ const FALLBACK_PRODUCTS = [
     price: 22.00,
     weight_kg: 0.5,
     icon: '🍣',
-    image: 'images/products/sushi_bento.svg',
-    photo: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80',
+    image: 'images/products/sushi_bento.jpg',
+    photo: 'images/products/sushi_bento.jpg',
     desc: 'Glazed salmon nigiri, maguro tuna, 4x avocado maki rolls, steamed edamame, and pickled ginger.',
     temp_tag: '❄️ 4°C Chilled'
   },
@@ -78,8 +78,8 @@ const FALLBACK_PRODUCTS = [
     price: 11.00,
     weight_kg: 0.4,
     icon: '🥗',
-    image: 'images/products/mediterranean_salad.svg',
-    photo: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+    image: 'images/products/mediterranean_salad.jpg',
+    photo: 'images/products/mediterranean_salad.jpg',
     desc: 'Crisp romaine, Kalamata olives, diced Greek feta, cucumber slices, and extra virgin olive oil.',
     temp_tag: '🥗 Fresh 100%'
   },
@@ -90,8 +90,8 @@ const FALLBACK_PRODUCTS = [
     price: 4.50,
     weight_kg: 0.3,
     icon: '☕',
-    image: 'images/products/cold_brew_coffee.svg',
-    photo: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80',
+    image: 'images/products/cold_brew_coffee.jpg',
+    photo: 'images/products/cold_brew_coffee.jpg',
     desc: 'Cold-steeped single origin Ethiopian beans infused with nitrogen micro-bubbles for velvet crema.',
     temp_tag: '☕ Nitro Crema'
   },
@@ -102,8 +102,8 @@ const FALLBACK_PRODUCTS = [
     price: 18.00,
     weight_kg: 0.6,
     icon: '💊',
-    image: 'images/products/healthcare_pack.svg',
-    photo: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&w=600&q=80',
+    image: 'images/products/healthcare_pack.jpg',
+    photo: 'images/products/healthcare_pack.jpg',
     desc: 'Thermal emergency wrap, clinical thermometer, rapid antiseptic wipes, and essential first aid.',
     temp_tag: '💊 Sealed Safe'
   },
@@ -114,8 +114,8 @@ const FALLBACK_PRODUCTS = [
     price: 12.00,
     weight_kg: 0.7,
     icon: '🥐',
-    image: 'images/products/french_bakery.svg',
-    photo: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+    image: 'images/products/french_bakery.jpg',
+    photo: 'images/products/french_bakery.jpg',
     desc: 'Flaky golden butter croissants, pain au chocolat, almond Danish swirl, and raw cane sugar glaze.',
     temp_tag: '🥐 Warm Baked'
   }
@@ -782,11 +782,16 @@ function renderCatalog(filterCategory = 'all') {
     : catalogProducts.filter(p => p.category === filterCategory);
 
   grid.innerHTML = items.map(prod => {
+    const fallback = FALLBACK_PRODUCTS.find(f => f.id === prod.id);
     const inCart = clientCart.find(i => i.id === prod.id);
     const qty = inCart ? inCart.qty : 0;
-    const imgSrc = prod.image || 'images/products/pizza_margherita.svg';
-    const tempTag = prod.temp_tag || '📦 SEALED SAFE';
-    const weightLabel = prod.weight_kg ? `${prod.weight_kg} kg` : '0.5 kg';
+    let imgSrc = prod.photo || prod.image || (fallback ? (fallback.photo || fallback.image) : 'images/products/pizza_margherita.jpg');
+    if (typeof imgSrc === 'string' && imgSrc.endsWith('.svg')) {
+      imgSrc = imgSrc.replace(/\.svg$/, '.jpg');
+    }
+    const tempTag = prod.temp_tag || (fallback ? fallback.temp_tag : '📦 SEALED SAFE');
+    const descText = prod.desc || (fallback ? fallback.desc : 'Freshly prepared and sealed inside temperature-controlled robot compartment.');
+    const weightLabel = prod.weight_kg ? `${prod.weight_kg} kg` : (fallback ? `${fallback.weight_kg} kg` : '0.5 kg');
 
     return `
       <article class="product-card" id="card-${prod.id}">
@@ -795,7 +800,7 @@ function renderCatalog(filterCategory = 'all') {
                alt="${prod.name}" 
                class="product-img" 
                loading="lazy"
-               onerror="this.onerror=null; this.src='images/products/pizza_margherita.svg';">
+               onerror="this.onerror=null; this.src='images/products/pizza_margherita.jpg';">
           <span class="product-badge">${prod.category}</span>
           <span class="product-temp-tag">${tempTag}</span>
         </div>
@@ -804,7 +809,7 @@ function renderCatalog(filterCategory = 'all') {
             <h3 class="product-title">${prod.name}</h3>
             <span class="product-weight">${weightLabel}</span>
           </div>
-          <p class="product-desc">${prod.desc || 'Freshly prepared and sealed inside temperature-controlled robot compartment.'}</p>
+          <p class="product-desc">${descText}</p>
           <div class="product-footer">
             <span class="product-price">$${Number(prod.price).toFixed(2)}</span>
             <div class="product-actions" id="actions-${prod.id}">
@@ -1159,6 +1164,26 @@ function updateTelemetryDisplays(tel) {
     hatchEl.textContent = isUnlocked ? 'UNLOCKED (60°) 🔓' : 'LOCKED 🔒';
     hatchEl.className = isUnlocked ? 'metric-value text-emerald' : 'metric-value text-amber';
   }
+
+  const btnDirectReturn = document.getElementById('btnDirectReturn');
+  const btnOpenOtp = document.getElementById('btnOpenOtpModal');
+  const isDoorstepArrival = tel.mission_state === 'WAITING_FOR_CUSTOMER' || tel.mission_state === 'HANDOVER_IN_PROGRESS' || (tel.target_action === 'DELIVERY' && (tel.dist_to_target || 0) < 2.0);
+  const isReturning = tel.mission_state === 'RETURNING_TO_DEPOT' || tel.target_action === 'PARK';
+
+  if (btnDirectReturn) {
+    if (isDoorstepArrival || tel.hatch_status === 'OPEN') {
+      btnDirectReturn.style.display = 'block';
+    } else {
+      btnDirectReturn.style.display = 'none';
+    }
+  }
+  if (btnOpenOtp) {
+    if (isReturning) {
+      btnOpenOtp.style.display = 'none';
+    } else {
+      btnOpenOtp.style.display = 'block';
+    }
+  }
 }
 
 function handleClientCamFallback(img) {
@@ -1237,6 +1262,9 @@ function updateOtpDisplay() {
   }
 }
 
+let returnCountdownTimerId = null;
+let lastHandoverOrderId = '';
+
 async function verifyOtpCode(code) {
   const feedback = document.getElementById('otpFeedbackMsg');
   const successBox = document.getElementById('hatchSuccessDisplay');
@@ -1262,11 +1290,44 @@ async function verifyOtpCode(code) {
     const data = await res.json();
     if (data.success) {
       playChime('success');
+      lastHandoverOrderId = data.order_id || (activeOrder ? activeOrder.order_id : '') || 'ORD-ACTIVE';
       if (feedback) {
-        feedback.textContent = '✓ CODE CONFIRMED — HATCH UNLOCKED!';
+        feedback.textContent = '✓ CODE VALIDÉ — COFFRE DÉVERROUILLÉ (60°) !';
         feedback.className = 'otp-feedback-msg success';
       }
-      if (successBox) successBox.style.display = 'block';
+      if (successBox) {
+        successBox.innerHTML = `
+          <div class="success-check-ring">✓</div>
+          <h4 style="color:#10b981; margin:8px 0; font-size:1.15rem;">Motorized Hatch Unlocked (60°)</h4>
+          <p style="margin:4px 0 12px; color:#cbd5e1; font-size:0.9rem;">Please lift the lid and retrieve your items. Have a wonderful meal!</p>
+          <div style="background:rgba(15,23,42,0.85); border:1px solid #38bdf8; border-radius:8px; padding:12px; margin-bottom:14px; text-align:center;">
+            <span style="font-size:0.85rem; color:#94a3b8;">Automatic hatch closure & return to depot in:</span>
+            <div style="font-size:1.8rem; font-weight:800; color:#f59e0b; margin:4px 0;" id="modalReturnCountdown">5s</div>
+            <div style="width:100%; height:5px; background:#334155; border-radius:3px; overflow:hidden;">
+              <div id="countdownProgressBar" style="width:100%; height:100%; background:#10b981; transition:width 1s linear;"></div>
+            </div>
+          </div>
+          <button class="btn-complete-pickup" onclick="confirmPackageRetrieved()" style="background:linear-gradient(135deg, #059669, #10b981); width:100%; padding:14px; font-weight:700; font-size:0.95rem; border-radius:8px; cursor:pointer; border:none; color:#ffffff; box-shadow:0 4px 14px rgba(16,185,129,0.4);">
+            🚀 Done — Return Rover to Depot Now
+          </button>
+        `;
+        successBox.style.display = 'block';
+
+        let timeLeft = 5;
+        if (returnCountdownTimerId) clearInterval(returnCountdownTimerId);
+        returnCountdownTimerId = setInterval(() => {
+          timeLeft -= 1;
+          const cdEl = document.getElementById('modalReturnCountdown');
+          const barEl = document.getElementById('countdownProgressBar');
+          if (cdEl) cdEl.textContent = `${timeLeft}s`;
+          if (barEl) barEl.style.width = `${Math.max(0, (timeLeft / 5) * 100)}%`;
+          if (timeLeft <= 0) {
+            clearInterval(returnCountdownTimerId);
+            returnCountdownTimerId = null;
+            confirmPackageRetrieved();
+          }
+        }, 1000);
+      }
 
       latestTelemetry.hatch_status = 'OPEN';
       latestTelemetry.hatch_angle = 1.05;
@@ -1274,7 +1335,7 @@ async function verifyOtpCode(code) {
       if (gazeboMap) {
         gazeboMap.updateTelemetry(latestTelemetry);
       }
-      showToast('🎉 Compartment unlatched to 60°! Enjoy your delivery!');
+      showToast('🎉 Compartment unlatched to 60°! Retrieve your parcel.');
     } else {
       playChime('error');
       if (feedback) {
@@ -1300,9 +1361,15 @@ async function verifyOtpCode(code) {
 }
 
 async function confirmPackageRetrieved() {
+  if (returnCountdownTimerId) {
+    clearInterval(returnCountdownTimerId);
+    returnCountdownTimerId = null;
+  }
   playChime('click');
   closeOtpModal();
   showToast('Package retrieved. Closing hatch and initiating return to depot... 👋');
+
+  const oid = (activeOrder && activeOrder.order_id) ? activeOrder.order_id : (lastHandoverOrderId || '');
 
   try {
     const token = localStorage.getItem('nexus_client_token');
@@ -1313,13 +1380,16 @@ async function confirmPackageRetrieved() {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({
-        order_id: activeOrder ? activeOrder.order_id : ''
+        order_id: oid
       })
     });
     const data = await res.json();
     if (data.success) {
       if (activeOrder) activeOrder.status = 'RETURNING_TO_DEPOT';
-      showToast('✓ Handover complete! Rover returning to Central Logistics Hub.');
+      latestTelemetry.hatch_status = 'LOCKED';
+      latestTelemetry.hatch_angle = 0.0;
+      updateTelemetryDisplays(latestTelemetry);
+      showToast('✓ Handover confirmed! Hatch locked. Rover returning to depot.');
       playChime('success');
       loadAccountOrders();
     }

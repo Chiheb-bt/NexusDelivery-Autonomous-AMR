@@ -210,8 +210,8 @@ PRODUCT_CATALOG = [
         'price': 14.50,
         'weight_kg': 0.8,
         'icon': '🍕',
-        'image': 'images/products/pizza_margherita.svg',
-        'photo': 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=600&q=80',
+        'image': 'images/products/pizza_margherita.jpg',
+        'photo': 'images/products/pizza_margherita.jpg',
         'desc': 'Fresh buffalo mozzarella, organic San Marzano tomato, wood-fired 48h sourdough crust, fresh basil.',
         'temp_tag': '🔥 65°C Heated'
     },
@@ -222,8 +222,8 @@ PRODUCT_CATALOG = [
         'price': 22.00,
         'weight_kg': 0.5,
         'icon': '🍣',
-        'image': 'images/products/sushi_bento.svg',
-        'photo': 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80',
+        'image': 'images/products/sushi_bento.jpg',
+        'photo': 'images/products/sushi_bento.jpg',
         'desc': 'Glazed salmon nigiri, maguro tuna, 4x avocado maki rolls, steamed edamame, and pickled ginger.',
         'temp_tag': '❄️ 4°C Chilled'
     },
@@ -234,8 +234,8 @@ PRODUCT_CATALOG = [
         'price': 11.00,
         'weight_kg': 0.4,
         'icon': '🥗',
-        'image': 'images/products/mediterranean_salad.svg',
-        'photo': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+        'image': 'images/products/mediterranean_salad.jpg',
+        'photo': 'images/products/mediterranean_salad.jpg',
         'desc': 'Crisp romaine, Kalamata olives, diced Greek feta, cucumber slices, and extra virgin olive oil.',
         'temp_tag': '🥗 Fresh 100%'
     },
@@ -246,8 +246,8 @@ PRODUCT_CATALOG = [
         'price': 4.50,
         'weight_kg': 0.3,
         'icon': '☕',
-        'image': 'images/products/cold_brew_coffee.svg',
-        'photo': 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80',
+        'image': 'images/products/cold_brew_coffee.jpg',
+        'photo': 'images/products/cold_brew_coffee.jpg',
         'desc': 'Cold-steeped single origin Ethiopian beans infused with nitrogen micro-bubbles for velvet crema.',
         'temp_tag': '☕ Nitro Crema'
     },
@@ -258,8 +258,8 @@ PRODUCT_CATALOG = [
         'price': 18.00,
         'weight_kg': 0.6,
         'icon': '💊',
-        'image': 'images/products/healthcare_pack.svg',
-        'photo': 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&w=600&q=80',
+        'image': 'images/products/healthcare_pack.jpg',
+        'photo': 'images/products/healthcare_pack.jpg',
         'desc': 'Thermal emergency wrap, clinical thermometer, rapid antiseptic wipes, and essential first aid.',
         'temp_tag': '💊 Sealed Safe'
     },
@@ -270,8 +270,8 @@ PRODUCT_CATALOG = [
         'price': 12.00,
         'weight_kg': 0.7,
         'icon': '🥐',
-        'image': 'images/products/french_bakery.svg',
-        'photo': 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+        'image': 'images/products/french_bakery.jpg',
+        'photo': 'images/products/french_bakery.jpg',
         'desc': 'Flaky golden butter croissants, pain au chocolat, almond Danish swirl, and raw cane sugar glaze.',
         'temp_tag': '🥐 Warm Baked'
     }
@@ -1847,14 +1847,33 @@ class WebBridgeNode(Node):
                 self.mission_state = 'RETURNING_TO_DEPOT'
             return {'success': True, 'order_id': order_id, 'status': 'CANCELLED', 'message': msg}
 
-    def confirm_delivery(self, order_id: str) -> dict:
+    def confirm_delivery(self, order_id: str = '') -> dict:
         """Handover confirmation and return-to-depot mission trigger (PHASE 6)."""
         with self.lock:
-            order = next((o for o in self.orders if o.get('order_id') == order_id or o.get('id') == order_id), None)
+            order = None
+            oid = str(order_id).strip() if order_id else ''
+
+            if oid:
+                order = next((o for o in self.orders if o.get('order_id') == oid or o.get('id') == oid), None)
+                if not order:
+                    order = self.db.get_order(oid)
+
+            # Robust fallback: identify active or delivered order if order_id is omitted or unmatched
             if not order:
-                order = self.db.get_order(order_id)
+                for o in self.orders:
+                    if o.get('status') in ('DELIVERED', 'HANDOVER_IN_PROGRESS', 'ARRIVED', 'ROBOT_ARRIVED', 'WAITING_FOR_CUSTOMER'):
+                        order = o
+                        break
             if not order:
-                return {'success': False, 'error': 'Order not found'}
+                all_orders = self.db.get_all_orders()
+                for o in all_orders:
+                    if o.get('status') in ('DELIVERED', 'HANDOVER_IN_PROGRESS', 'ARRIVED', 'ROBOT_ARRIVED', 'WAITING_FOR_CUSTOMER'):
+                        order = o
+                        break
+            if not order and self.orders:
+                order = self.orders[-1]
+
+            final_oid = (order.get('order_id') or order.get('id')) if order else (oid or 'ORD-ACTIVE')
 
             # Safe compartment locking & lowering
             self.hatch_status = 'LOCKED'
@@ -1864,8 +1883,9 @@ class WebBridgeNode(Node):
             self.cargo_ctrl._actuate_lift(0.0)
 
             # Transition: DELIVERED -> RETURNING_TO_DEPOT
-            self.db.update_order_status(order_id, 'RETURNING_TO_DEPOT')
-            order['status'] = 'RETURNING_TO_DEPOT'
+            if order:
+                self.db.update_order_status(final_oid, 'RETURNING_TO_DEPOT')
+                order['status'] = 'RETURNING_TO_DEPOT'
             self.mission_state = 'RETURNING_TO_DEPOT'
             self.target_name = 'DEPOT_POST_OFFICE'
             self.target_xy = (-31.5, -0.75)
@@ -1879,7 +1899,7 @@ class WebBridgeNode(Node):
                     self.pub_hatch_cmd.publish(h_cmd)
 
                 if getattr(self, 'pub_handover', None) is not None:
-                    h_data = {'order_id': order_id, 'action': 'CONFIRMED_RECEIPT', 'timestamp': time.time()}
+                    h_data = {'order_id': final_oid, 'action': 'CONFIRMED_RECEIPT', 'timestamp': time.time()}
                     h_msg = String()
                     h_msg.data = json.dumps(h_data)
                     self.pub_handover.publish(h_msg)
@@ -1889,7 +1909,7 @@ class WebBridgeNode(Node):
                         'target_name': 'DEPOT_POST_OFFICE',
                         'target_xy': [-31.5, -0.75],
                         'action': 'PARK',
-                        'order_id': order_id
+                        'order_id': final_oid
                     }
                     msg = String()
                     msg.data = json.dumps(t_data)
@@ -1897,7 +1917,7 @@ class WebBridgeNode(Node):
 
             return {
                 'success': True,
-                'order_id': order_id,
+                'order_id': final_oid,
                 'status': 'RETURNING_TO_DEPOT',
                 'hatch_status': 'LOCKED',
                 'message': 'Handover confirmed. Compartment locked. Rover is returning to depot facility.'
