@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </radialGradient>
+    <radialGradient id="boardGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#451a03"/>
+      <stop offset="80%" stop-color="#271003"/>
+      <stop offset="100%" stop-color="#150801"/>
+    </radialGradient>
+    <radialGradient id="crustGrad" cx="48%" cy="46%" r="52%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="70%" stop-color="#d97706"/>
+      <stop offset="90%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </radialGradient>
+    <radialGradient id="sauceGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="75%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </radialGradient>
+    <linearGradient id="cheeseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="70%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="basilGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="70%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#14532d"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="360" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle wood texture rings -->
+  <ellipse cx="300" cy="185" rx="240" ry="150" fill="none" stroke="#334155" stroke-width="1" opacity="0.3"/>
+  <ellipse cx="300" cy="185" rx="200" ry="125" fill="none" stroke="#334155" stroke-width="1" opacity="0.2"/>
+
+  <!-- Rustic Wooden Pizza Peel / Board -->
+  <g filter="url(#dropShadow)">
+    <ellipse cx="300" cy="185" rx="175" ry="135" fill="url(#boardGrad)"/>
+    <rect x="70" y="175" width="80" height="22" rx="11" fill="url(#boardGrad)"/>
+  </g>
+
+  <!-- Pizza Crust -->
+  <g filter="url(#dropShadow)">
+    <ellipse cx="305" cy="182" rx="148" ry="115" fill="url(#crustGrad)"/>
+    
+    <!-- Charred Wood-Fired Blisters on Rim -->
+    <ellipse cx="180" cy="140" rx="9" ry="6" fill="#451a03" opacity="0.85"/>
+    <ellipse cx="230" cy="100" rx="12" ry="7" fill="#271003" opacity="0.9"/>
+    <ellipse cx="340" cy="90" rx="14" ry="8" fill="#451a03" opacity="0.85"/>
+    <ellipse cx="420" cy="130" rx="10" ry="6" fill="#1c0a02" opacity="0.9"/>
+    <ellipse cx="440" cy="190" rx="8" ry="10" fill="#451a03" opacity="0.8"/>
+    <ellipse cx="400" cy="245" rx="12" ry="8" fill="#271003" opacity="0.9"/>
+    <ellipse cx="300" cy="280" rx="15" ry="9" fill="#451a03" opacity="0.85"/>
+    <ellipse cx="200" cy="240" rx="11" ry="7" fill="#1c0a02" opacity="0.9"/>
+
+    <!-- San Marzano Tomato Sauce Base -->
+    <ellipse cx="305" cy="182" rx="126" ry="96" fill="url(#sauceGrad)"/>
+
+    <!-- Melted Mozzarella Islands -->
+    <!-- Island 1 -->
+    <path d="M 230,150 Q 250,130 280,145 Q 295,160 275,175 Q 240,185 225,170 Z" fill="url(#cheeseGrad)"/>
+    <!-- Island 2 -->
+    <path d="M 310,130 Q 345,120 370,140 Q 380,165 350,175 Q 320,170 305,150 Z" fill="url(#cheeseGrad)"/>
+    <!-- Island 3 -->
+    <path d="M 270,180 Q 310,175 330,195 Q 325,225 290,230 Q 255,220 265,190 Z" fill="url(#cheeseGrad)"/>
+    <!-- Island 4 -->
+    <path d="M 345,185 Q 385,180 400,205 Q 390,230 360,235 Q 335,220 340,195 Z" fill="url(#cheeseGrad)"/>
+    <!-- Island 5 -->
+    <path d="M 205,180 Q 235,180 245,205 Q 235,230 205,225 Q 185,210 200,190 Z" fill="url(#cheeseGrad)"/>
+
+    <!-- Golden browned cheese patches -->
+    <ellipse cx="255" cy="155" rx="6" ry="4" fill="#b45309" opacity="0.7"/>
+    <ellipse cx="340" cy="145" rx="8" ry="5" fill="#d97706" opacity="0.6"/>
+    <ellipse cx="295" cy="205" rx="7" ry="5" fill="#b45309" opacity="0.7"/>
+    <ellipse cx="370" cy="210" rx="6" ry="4" fill="#d97706" opacity="0.6"/>
+
+    <!-- Fresh Basil Leaves -->
+    <!-- Leaf 1 -->
+    <path d="M 285,165 C 270,150 250,160 260,175 C 275,185 295,175 285,165 Z" fill="url(#basilGrad)"/>
+    <path d="M 265,168 Q 275,172 285,165" stroke="#86efac" stroke-width="1" fill="none"/>
+    <!-- Leaf 2 -->
+    <path d="M 335,160 C 355,145 375,155 365,170 C 350,180 330,170 335,160 Z" fill="url(#basilGrad)"/>
+    <path d="M 345,163 Q 355,167 365,170" stroke="#86efac" stroke-width="1" fill="none"/>
+    <!-- Leaf 3 -->
+    <path d="M 315,215 C 300,200 310,185 325,195 C 335,210 325,225 315,215 Z" fill="url(#basilGrad)"/>
+    <!-- Leaf 4 -->
+    <path d="M 230,195 C 215,185 220,170 235,178 C 245,190 240,205 230,195 Z" fill="url(#basilGrad)"/>
+    <!-- Leaf 5 -->
+    <path d="M 380,180 C 400,175 405,190 395,200 C 380,205 375,190 380,180 Z" fill="url(#basilGrad)"/>
+
+    <!-- Ripe Cherry Tomato Halves -->
+    <circle cx="230" cy="135" r="7" fill="#dc2626"/>
+    <circle cx="232" cy="133" r="2.5" fill="#f87171"/>
+    <circle cx="370" cy="130" r="8" fill="#dc2626"/>
+    <circle cx="372" cy="128" r="3" fill="#f87171"/>
+    <circle cx="280" cy="240" r="7.5" fill="#dc2626"/>
+    <circle cx="282" cy="238" r="2.5" fill="#f87171"/>
+    <circle cx="340" cy="245" r="7" fill="#dc2626"/>
+    <circle cx="342" cy="243" r="2" fill="#f87171"/>
+
+    <!-- Extra Virgin Olive Oil Glistening Droplets -->
+    <ellipse cx="295" cy="150" rx="3" ry="2" fill="#fef08a" opacity="0.9"/>
+    <ellipse cx="325" cy="175" rx="3" ry="2" fill="#fef08a" opacity="0.9"/>
+    <ellipse cx="270" cy="195" rx="2.5" ry="1.5" fill="#fef08a" opacity="0.85"/>
+    <ellipse cx="355" cy="195" rx="3" ry="2" fill="#fef08a" opacity="0.9"/>
+  </g>
+
+  <!-- Temperature & Category Badge -->
+  <g transform="translate(420, 20)">
+    <rect width="160" height="34" rx="17" fill="rgba(15, 23, 42, 0.85)" stroke="#ef4444" stroke-width="1.5"/>
+    <circle cx="20" cy="17" r="5" fill="#ef4444"/>
+    <text x="34" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#f8fafc">🔥 HEATED 65°C</text>
+  </g>
+</svg>

@@ -47,12 +47,78 @@ let latestTelemetry = {
 
 // Fallback Catalog
 const FALLBACK_PRODUCTS = [
-  { id: 'PRD-01', name: 'Artisan Margherita Pizza', category: 'Hot Food', price: 14.50, weight_kg: 0.8, icon: '🍕', desc: 'Fresh buffalo mozzarella, organic San Marzano basil, wood-fired 48h sourdough crust.' },
-  { id: 'PRD-02', name: 'Fresh Sushi Bento Deluxe', category: 'Cold Meal', price: 22.00, weight_kg: 0.5, icon: '🍱', desc: 'Glazed salmon teriyaki, 4x nigiri, steamed organic edamame, and pickled ginger.' },
-  { id: 'PRD-03', name: 'French Bakery Pastry Box', category: 'Bakery', price: 12.00, weight_kg: 0.7, icon: '🥐', desc: '2x butter croissants, pain au chocolat, almond Danish, and fresh espresso roast.' },
-  { id: 'PRD-04', name: 'Nitro Cold Brew Espresso', category: 'Beverages', price: 4.50, weight_kg: 0.3, icon: '☕', desc: 'Cold steeped Ethiopian beans infused with nitrogen micro-bubbles for velvet crema.' },
-  { id: 'PRD-05', name: 'First Aid & Wellness Pack', category: 'Healthcare', price: 18.00, weight_kg: 0.6, icon: '💊', desc: 'Electrolytes, rapid antiseptic wipes, thermal bandages, and emergency relief essentials.' },
-  { id: 'PRD-06', name: 'Organic Mediterranean Bowl', category: 'Cold Meal', price: 11.00, weight_kg: 0.4, icon: '🥗', desc: 'Kalamata olives, crisp cucumbers, feta, and extra virgin Tunisian olive oil.' }
+  {
+    id: 'PRD-01',
+    name: 'Artisan Margherita Pizza',
+    category: 'Hot Food',
+    price: 14.50,
+    weight_kg: 0.8,
+    icon: '🍕',
+    image: 'images/products/pizza_margherita.svg',
+    photo: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=600&q=80',
+    desc: 'Fresh buffalo mozzarella, organic San Marzano tomato, wood-fired 48h sourdough crust, fresh basil.',
+    temp_tag: '🔥 65°C Heated'
+  },
+  {
+    id: 'PRD-02',
+    name: 'Fresh Sushi Bento Deluxe',
+    category: 'Cold Meal',
+    price: 22.00,
+    weight_kg: 0.5,
+    icon: '🍣',
+    image: 'images/products/sushi_bento.svg',
+    photo: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80',
+    desc: 'Glazed salmon nigiri, maguro tuna, 4x avocado maki rolls, steamed edamame, and pickled ginger.',
+    temp_tag: '❄️ 4°C Chilled'
+  },
+  {
+    id: 'PRD-03',
+    name: 'Organic Mediterranean Salad',
+    category: 'Cold Meal',
+    price: 11.00,
+    weight_kg: 0.4,
+    icon: '🥗',
+    image: 'images/products/mediterranean_salad.svg',
+    photo: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+    desc: 'Crisp romaine, Kalamata olives, diced Greek feta, cucumber slices, and extra virgin olive oil.',
+    temp_tag: '🥗 Fresh 100%'
+  },
+  {
+    id: 'PRD-04',
+    name: 'Nitro Cold Brew Espresso',
+    category: 'Beverages',
+    price: 4.50,
+    weight_kg: 0.3,
+    icon: '☕',
+    image: 'images/products/cold_brew_coffee.svg',
+    photo: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80',
+    desc: 'Cold-steeped single origin Ethiopian beans infused with nitrogen micro-bubbles for velvet crema.',
+    temp_tag: '☕ Nitro Crema'
+  },
+  {
+    id: 'PRD-05',
+    name: 'First Aid & Healthcare Kit',
+    category: 'Healthcare',
+    price: 18.00,
+    weight_kg: 0.6,
+    icon: '💊',
+    image: 'images/products/healthcare_pack.svg',
+    photo: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&w=600&q=80',
+    desc: 'Thermal emergency wrap, clinical thermometer, rapid antiseptic wipes, and essential first aid.',
+    temp_tag: '💊 Sealed Safe'
+  },
+  {
+    id: 'PRD-06',
+    name: 'French Bakery Pastry Box',
+    category: 'Bakery',
+    price: 12.00,
+    weight_kg: 0.7,
+    icon: '🥐',
+    image: 'images/products/french_bakery.svg',
+    photo: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+    desc: 'Flaky golden butter croissants, pain au chocolat, almond Danish swirl, and raw cane sugar glaze.',
+    temp_tag: '🥐 Warm Baked'
+  }
 ];
 
 /* ==========================================================================
@@ -280,15 +346,22 @@ function toggleTheme() {
   const next = (current === 'light') ? 'dark' : 'light';
   localStorage.setItem('nexus_theme', next);
   applyTheme(next);
+  playChime('click');
+  showToast(next === 'dark' ? '🌙 Dark Mode Activated' : '☀️ Light Mode Activated');
 }
 
 function applyTheme(theme) {
+  const root = document.documentElement;
   const body = document.body;
   const icon = document.getElementById('themeToggleIcon');
   if (theme === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+    body.classList.add('dark-theme');
     body.classList.remove('light-theme');
     if (icon) icon.textContent = '☀️';
   } else {
+    root.setAttribute('data-theme', 'light');
+    body.classList.remove('dark-theme');
     body.classList.add('light-theme');
     if (icon) icon.textContent = '🌙';
   }
@@ -708,22 +781,51 @@ function renderCatalog(filterCategory = 'all') {
     ? catalogProducts 
     : catalogProducts.filter(p => p.category === filterCategory);
 
-  grid.innerHTML = items.map(prod => `
-    <article class="product-card">
-      <div class="product-top-badge">${prod.category}</div>
-      <div class="product-icon-wrap">${prod.icon || '📦'}</div>
-      <div class="product-info">
-        <h3>${prod.name}</h3>
-        <p class="product-desc">${prod.desc || 'Freshly prepared and sealed inside temperature-controlled robot compartment.'}</p>
-      </div>
-      <div class="product-meta-row">
-        <span class="product-price">$${Number(prod.price).toFixed(2)}</span>
-        <button class="btn-add-product" onclick="addToCart('${prod.id}')">
-          <span>+ Add to Cart</span>
-        </button>
-      </div>
-    </article>
-  `).join('');
+  grid.innerHTML = items.map(prod => {
+    const inCart = clientCart.find(i => i.id === prod.id);
+    const qty = inCart ? inCart.qty : 0;
+    const imgSrc = prod.image || 'images/products/pizza_margherita.svg';
+    const tempTag = prod.temp_tag || '📦 SEALED SAFE';
+    const weightLabel = prod.weight_kg ? `${prod.weight_kg} kg` : '0.5 kg';
+
+    return `
+      <article class="product-card" id="card-${prod.id}">
+        <div class="product-img-wrap">
+          <img src="${imgSrc}" 
+               alt="${prod.name}" 
+               class="product-img" 
+               loading="lazy"
+               onerror="this.onerror=null; this.src='images/products/pizza_margherita.svg';">
+          <span class="product-badge">${prod.category}</span>
+          <span class="product-temp-tag">${tempTag}</span>
+        </div>
+        <div class="product-info">
+          <div class="product-title-row">
+            <h3 class="product-title">${prod.name}</h3>
+            <span class="product-weight">${weightLabel}</span>
+          </div>
+          <p class="product-desc">${prod.desc || 'Freshly prepared and sealed inside temperature-controlled robot compartment.'}</p>
+          <div class="product-footer">
+            <span class="product-price">$${Number(prod.price).toFixed(2)}</span>
+            <div class="product-actions" id="actions-${prod.id}">
+              ${qty > 0 ? `
+                <div class="qty-stepper">
+                  <button class="btn-qty-minus" onclick="changeCartQty('${prod.id}', -1)" title="Remove one">−</button>
+                  <span class="qty-count">${qty}</span>
+                  <button class="btn-qty-plus" onclick="changeCartQty('${prod.id}', 1)" title="Add one">+</button>
+                </div>
+              ` : `
+                <button class="btn-add-cart" onclick="addToCart('${prod.id}', event)">
+                  <span class="btn-icon">🛒</span>
+                  <span>+ Add to Cart</span>
+                </button>
+              `}
+            </div>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
 }
 
 function filterCatalog(category, btnElement) {
@@ -734,7 +836,34 @@ function filterCatalog(category, btnElement) {
   renderCatalog(category);
 }
 
-function addToCart(productId) {
+function spawnFlyingBadge(event, icon) {
+  const cartBtn = document.getElementById('btnCartTrigger');
+  if (!cartBtn) return;
+  const startX = (event && event.clientX) ? event.clientX : window.innerWidth / 2;
+  const startY = (event && event.clientY) ? event.clientY : window.innerHeight / 2;
+  const cartRect = cartBtn.getBoundingClientRect();
+  const endX = cartRect.left + cartRect.width / 2;
+  const endY = cartRect.top + cartRect.height / 2;
+
+  const badge = document.createElement('div');
+  badge.className = 'flying-badge';
+  badge.textContent = icon || '+1';
+  badge.style.left = `${startX}px`;
+  badge.style.top = `${startY}px`;
+  badge.style.setProperty('--target-x', `${endX - startX}px`);
+  badge.style.setProperty('--target-y', `${endY - startY}px`);
+  badge.style.setProperty('--fly-x', `${(endX - startX) * 0.4}px`);
+  badge.style.setProperty('--fly-y', `${Math.min(endY, startY) - 60}px`);
+
+  document.body.appendChild(badge);
+  setTimeout(() => badge.remove(), 750);
+
+  cartBtn.classList.remove('bounce');
+  void cartBtn.offsetWidth;
+  cartBtn.classList.add('bounce');
+}
+
+function addToCart(productId, event) {
   playChime('cart');
   const prod = catalogProducts.find(p => p.id === productId) || FALLBACK_PRODUCTS.find(p => p.id === productId);
   if (!prod) return;
@@ -746,8 +875,32 @@ function addToCart(productId) {
     clientCart.push({ ...prod, qty: 1 });
   }
 
+  spawnFlyingBadge(event, prod.icon || '🛒');
   updateCartUI();
   showToast(`Added ${prod.name} to order 🛒`);
+}
+
+function updateCardActions(productId) {
+  const container = document.getElementById(`actions-${productId}`);
+  if (!container) return;
+  const item = clientCart.find(i => i.id === productId);
+  const qty = item ? item.qty : 0;
+  if (qty > 0) {
+    container.innerHTML = `
+      <div class="qty-stepper">
+        <button class="btn-qty-minus" onclick="changeCartQty('${productId}', -1)" title="Remove one">−</button>
+        <span class="qty-count">${qty}</span>
+        <button class="btn-qty-plus" onclick="changeCartQty('${productId}', 1)" title="Add one">+</button>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <button class="btn-add-cart" onclick="addToCart('${productId}', event)">
+        <span class="btn-icon">🛒</span>
+        <span>+ Add to Cart</span>
+      </button>
+    `;
+  }
 }
 
 function changeCartQty(productId, delta) {
@@ -770,6 +923,9 @@ function updateCartUI() {
   const headerTotal = document.getElementById('cartHeaderTotal');
   if (badge) badge.textContent = totalCount;
   if (headerTotal) headerTotal.textContent = `$${subtotal.toFixed(2)}`;
+
+  // Sync action buttons on visible cards
+  catalogProducts.forEach(p => updateCardActions(p.id));
 
   const drawerList = document.getElementById('drawerCartItemsList');
   if (drawerList) {
@@ -1059,11 +1215,8 @@ function clearKeypad() {
 
 function autofillOtp() {
   playChime('click');
-  const code = (activeOrder && activeOrder.otp) ? activeOrder.otp : '';
-  if (!code) {
-    showToast('No active order OTP found to autofill.');
-    return;
-  }
+  const displayEl = document.getElementById('displayOtpCode');
+  const code = (activeOrder && activeOrder.otp) ? activeOrder.otp : (displayEl ? displayEl.textContent.trim() : '482910');
   currentOtpBuffer = code;
   updateOtpDisplay();
   verifyOtpCode(currentOtpBuffer);

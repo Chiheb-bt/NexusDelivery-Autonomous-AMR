@@ -203,12 +203,78 @@ DEFAULT_CUSTOMERS = [
 
 # Product catalog
 PRODUCT_CATALOG = [
-    {'id': 'PRD-01', 'name': 'Artisan Margherita Pizza', 'category': 'Hot Food', 'price': 14.50, 'weight_kg': 0.8, 'icon': '🍕'},
-    {'id': 'PRD-02', 'name': 'Fresh Sushi Bento Deluxe', 'category': 'Cold Meal', 'price': 22.00, 'weight_kg': 0.5, 'icon': '🍣'},
-    {'id': 'PRD-03', 'name': 'Organic Mediterranean Salad', 'category': 'Fresh Produce', 'price': 11.00, 'weight_kg': 0.4, 'icon': '🥗'},
-    {'id': 'PRD-04', 'name': 'Nitro Cold Brew Espresso', 'category': 'Beverages', 'price': 4.50, 'weight_kg': 0.3, 'icon': '☕'},
-    {'id': 'PRD-05', 'name': 'First Aid & Healthcare Kit', 'category': 'Healthcare', 'price': 18.00, 'weight_kg': 0.6, 'icon': '💊'},
-    {'id': 'PRD-06', 'name': 'French Bakery Pastry Box', 'category': 'Bakery', 'price': 12.00, 'weight_kg': 0.7, 'icon': '🥐'}
+    {
+        'id': 'PRD-01',
+        'name': 'Artisan Margherita Pizza',
+        'category': 'Hot Food',
+        'price': 14.50,
+        'weight_kg': 0.8,
+        'icon': '🍕',
+        'image': 'images/products/pizza_margherita.svg',
+        'photo': 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=600&q=80',
+        'desc': 'Fresh buffalo mozzarella, organic San Marzano tomato, wood-fired 48h sourdough crust, fresh basil.',
+        'temp_tag': '🔥 65°C Heated'
+    },
+    {
+        'id': 'PRD-02',
+        'name': 'Fresh Sushi Bento Deluxe',
+        'category': 'Cold Meal',
+        'price': 22.00,
+        'weight_kg': 0.5,
+        'icon': '🍣',
+        'image': 'images/products/sushi_bento.svg',
+        'photo': 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80',
+        'desc': 'Glazed salmon nigiri, maguro tuna, 4x avocado maki rolls, steamed edamame, and pickled ginger.',
+        'temp_tag': '❄️ 4°C Chilled'
+    },
+    {
+        'id': 'PRD-03',
+        'name': 'Organic Mediterranean Salad',
+        'category': 'Fresh Produce',
+        'price': 11.00,
+        'weight_kg': 0.4,
+        'icon': '🥗',
+        'image': 'images/products/mediterranean_salad.svg',
+        'photo': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+        'desc': 'Crisp romaine, Kalamata olives, diced Greek feta, cucumber slices, and extra virgin olive oil.',
+        'temp_tag': '🥗 Fresh 100%'
+    },
+    {
+        'id': 'PRD-04',
+        'name': 'Nitro Cold Brew Espresso',
+        'category': 'Beverages',
+        'price': 4.50,
+        'weight_kg': 0.3,
+        'icon': '☕',
+        'image': 'images/products/cold_brew_coffee.svg',
+        'photo': 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80',
+        'desc': 'Cold-steeped single origin Ethiopian beans infused with nitrogen micro-bubbles for velvet crema.',
+        'temp_tag': '☕ Nitro Crema'
+    },
+    {
+        'id': 'PRD-05',
+        'name': 'First Aid & Healthcare Kit',
+        'category': 'Healthcare',
+        'price': 18.00,
+        'weight_kg': 0.6,
+        'icon': '💊',
+        'image': 'images/products/healthcare_pack.svg',
+        'photo': 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&w=600&q=80',
+        'desc': 'Thermal emergency wrap, clinical thermometer, rapid antiseptic wipes, and essential first aid.',
+        'temp_tag': '💊 Sealed Safe'
+    },
+    {
+        'id': 'PRD-06',
+        'name': 'French Bakery Pastry Box',
+        'category': 'Bakery',
+        'price': 12.00,
+        'weight_kg': 0.7,
+        'icon': '🥐',
+        'image': 'images/products/french_bakery.svg',
+        'photo': 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+        'desc': 'Flaky golden butter croissants, pain au chocolat, almond Danish swirl, and raw cane sugar glaze.',
+        'temp_tag': '🥐 Warm Baked'
+    }
 ]
 
 
