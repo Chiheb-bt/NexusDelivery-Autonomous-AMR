@@ -1262,12 +1262,37 @@ function updateOtpDisplay() {
   }
 }
 
-let returnCountdownTimerId = null;
 let lastHandoverOrderId = '';
+
+function openMyOrders() {
+  playChime('click');
+  if (!currentUser) {
+    openAuthModal('login');
+    showToast('Please sign in to view your orders.');
+    return;
+  }
+  openAccountModal();
+  setTimeout(() => {
+    const list = document.getElementById('accountOrdersList');
+    if (list) list.scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+}
+
+function openMyAccount() {
+  playChime('click');
+  if (!currentUser) {
+    openAuthModal('login');
+    showToast('Please sign in to view your account.');
+    return;
+  }
+  openAccountModal();
+}
 
 async function verifyOtpCode(code) {
   const feedback = document.getElementById('otpFeedbackMsg');
   const successBox = document.getElementById('hatchSuccessDisplay');
+  const keypad = document.querySelector('.otp-keypad');
+  const helper = document.querySelector('.otp-preset-helper');
   if (feedback) {
     feedback.textContent = 'Verifying security code with rover BMS...';
     feedback.className = 'otp-feedback-msg';
@@ -1292,41 +1317,30 @@ async function verifyOtpCode(code) {
       playChime('success');
       lastHandoverOrderId = data.order_id || (activeOrder ? activeOrder.order_id : '') || 'ORD-ACTIVE';
       if (feedback) {
-        feedback.textContent = '✓ CODE VALIDÉ — COFFRE DÉVERROUILLÉ (60°) !';
+        feedback.textContent = '✓ CODE VALIDATED — COMPARTMENT UNLATCHED (60.1°) !';
         feedback.className = 'otp-feedback-msg success';
       }
+      if (keypad) keypad.style.display = 'none';
+      if (helper) helper.style.display = 'none';
+
       if (successBox) {
         successBox.innerHTML = `
           <div class="success-check-ring">✓</div>
-          <h4 style="color:#10b981; margin:8px 0; font-size:1.15rem;">Motorized Hatch Unlocked (60°)</h4>
-          <p style="margin:4px 0 12px; color:#cbd5e1; font-size:0.9rem;">Please lift the lid and retrieve your items. Have a wonderful meal!</p>
-          <div style="background:rgba(15,23,42,0.85); border:1px solid #38bdf8; border-radius:8px; padding:12px; margin-bottom:14px; text-align:center;">
-            <span style="font-size:0.85rem; color:#94a3b8;">Automatic hatch closure & return to depot in:</span>
-            <div style="font-size:1.8rem; font-weight:800; color:#f59e0b; margin:4px 0;" id="modalReturnCountdown">5s</div>
-            <div style="width:100%; height:5px; background:#334155; border-radius:3px; overflow:hidden;">
-              <div id="countdownProgressBar" style="width:100%; height:100%; background:#10b981; transition:width 1s linear;"></div>
-            </div>
-          </div>
-          <button class="btn-complete-pickup" onclick="confirmPackageRetrieved()" style="background:linear-gradient(135deg, #059669, #10b981); width:100%; padding:14px; font-weight:700; font-size:0.95rem; border-radius:8px; cursor:pointer; border:none; color:#ffffff; box-shadow:0 4px 14px rgba(16,185,129,0.4);">
-            🚀 Done — Return Rover to Depot Now
+          <h4 style="color:#10b981; margin:8px 0; font-size:1.2rem; font-weight:800;" id="hatchStatusHeader">PACKAGE COMPARTMENT UNLOCKED</h4>
+          <p style="margin:4px 0 16px; color:#cbd5e1; font-size:0.92rem;" id="hatchStatusSubtext">Motorized hatch unlatched to 60.1° in Gazebo. Please retrieve your parcel from the elevated cargo tray.</p>
+          <button class="btn-complete-pickup" id="btnConfirmReceiptModal" onclick="customerConfirmPackageReceipt()" style="background:linear-gradient(135deg, #059669, #10b981); width:100%; padding:15px; font-weight:800; font-size:1.0rem; border-radius:10px; cursor:pointer; border:none; color:#ffffff; box-shadow:0 4px 16px rgba(16,185,129,0.4); display:flex; align-items:center; justify-content:center; gap:8px;">
+            <span>📦 I HAVE RECEIVED MY PACKAGE</span>
           </button>
         `;
         successBox.style.display = 'block';
+      }
 
-        let timeLeft = 5;
-        if (returnCountdownTimerId) clearInterval(returnCountdownTimerId);
-        returnCountdownTimerId = setInterval(() => {
-          timeLeft -= 1;
-          const cdEl = document.getElementById('modalReturnCountdown');
-          const barEl = document.getElementById('countdownProgressBar');
-          if (cdEl) cdEl.textContent = `${timeLeft}s`;
-          if (barEl) barEl.style.width = `${Math.max(0, (timeLeft / 5) * 100)}%`;
-          if (timeLeft <= 0) {
-            clearInterval(returnCountdownTimerId);
-            returnCountdownTimerId = null;
-            confirmPackageRetrieved();
-          }
-        }, 1000);
+      // Also update main page tracking button
+      const mainBtn = document.getElementById('btnOpenOtpModal');
+      if (mainBtn) {
+        mainBtn.innerHTML = `<span>📦 I HAVE RECEIVED MY PACKAGE</span><span class="btn-arrow">✓</span>`;
+        mainBtn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+        mainBtn.onclick = () => customerConfirmPackageReceipt();
       }
 
       latestTelemetry.hatch_status = 'OPEN';
@@ -1360,14 +1374,26 @@ async function verifyOtpCode(code) {
   }
 }
 
-async function confirmPackageRetrieved() {
-  if (returnCountdownTimerId) {
-    clearInterval(returnCountdownTimerId);
-    returnCountdownTimerId = null;
-  }
+async function customerConfirmPackageReceipt() {
   playChime('click');
-  closeOtpModal();
-  showToast('Package retrieved. Closing hatch and initiating return to depot... 👋');
+  const btn = document.getElementById('btnConfirmReceiptModal');
+  const header = document.getElementById('hatchStatusHeader');
+  const subtext = document.getElementById('hatchStatusSubtext');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>🔒 CLOSING CARGO COMPARTMENT...</span>`;
+    btn.style.opacity = '0.8';
+  }
+  if (header) {
+    header.textContent = 'CLOSING CARGO COMPARTMENT';
+    header.style.color = '#f59e0b';
+  }
+  if (subtext) {
+    subtext.textContent = 'Commanding motorized hatch to 0.0° and validating joint state feedback...';
+  }
+
+  showToast('Closing cargo hatch and securing compartment... 🔒');
 
   const oid = (activeOrder && activeOrder.order_id) ? activeOrder.order_id : (lastHandoverOrderId || '');
 
@@ -1385,17 +1411,45 @@ async function confirmPackageRetrieved() {
     });
     const data = await res.json();
     if (data.success) {
+      if (header) {
+        header.textContent = 'ROBOT RETURNING TO DEPOT';
+        header.style.color = '#0284c7';
+      }
+      if (subtext) {
+        subtext.textContent = 'Hatch verified closed. Autonomous rover is en-route back to Depot Dock (-31.5, -0.75).';
+      }
+      if (btn) {
+        btn.innerHTML = `<span>🚀 ROBOT RETURNING TO DEPOT</span>`;
+        btn.style.background = 'linear-gradient(135deg, #0284c7, #0369a1)';
+      }
+
       if (activeOrder) activeOrder.status = 'RETURNING_TO_DEPOT';
       latestTelemetry.hatch_status = 'LOCKED';
       latestTelemetry.hatch_angle = 0.0;
       updateTelemetryDisplays(latestTelemetry);
-      showToast('✓ Handover confirmed! Hatch locked. Rover returning to depot.');
+      showToast('✓ Handover confirmed! Rover returning to depot.');
       playChime('success');
       loadAccountOrders();
+
+      setTimeout(() => {
+        closeOtpModal();
+        const mainBtn = document.getElementById('btnOpenOtpModal');
+        if (mainBtn) {
+          mainBtn.innerHTML = `<span>Rover Returning to Depot 🚀</span>`;
+          mainBtn.style.background = 'var(--bg-subtle)';
+          mainBtn.style.color = 'var(--text-muted)';
+          mainBtn.disabled = true;
+        }
+      }, 1800);
     }
   } catch (err) {
     if (activeOrder) activeOrder.status = 'COMPLETED';
+    closeOtpModal();
   }
+}
+
+async function confirmPackageRetrieved() {
+  await customerConfirmPackageReceipt();
 }
 
 /* ==========================================================================

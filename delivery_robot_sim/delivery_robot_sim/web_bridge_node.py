@@ -26,7 +26,7 @@ try:
     from rclpy.node import Node
     from geometry_msgs.msg import Twist
     from nav_msgs.msg import Odometry
-    from sensor_msgs.msg import Image
+    from sensor_msgs.msg import Image, JointState
     from std_msgs.msg import String
     from cv_bridge import CvBridge
     ROS_AVAILABLE = True
@@ -373,6 +373,9 @@ class WebBridgeNode(Node):
         self.latest_handover = None
         self.hatch_unlocked_manual = False
         self.hatch_angle = 0.0
+        self.actual_hatch_joint_angle = 0.0
+        self.hatch_physically_closed = True
+        self.hatch_feedback_source = 'GAZEBO_JOINT_STATES'
         self.hatch_status = 'LOCKED'
         self.package_loaded = True
         self.camera_view_mode = 'ai_hud'
@@ -415,6 +418,7 @@ class WebBridgeNode(Node):
         self.sub_tl = self.create_subscription(String, '/traffic_light/state', self._on_traffic_light, 10)
         self.sub_hatch_status = self.create_subscription(String, '/delivery/hatch_status', self._on_hatch_status_msg, 10)
         self.sub_pkg_status = self.create_subscription(String, '/delivery/package_status', self._on_pkg_status_msg, 10)
+        self.sub_joint_states = self.create_subscription(JointState, '/joint_states', self._on_joint_states, 10)
 
         # ROS 2 Publishers for interactive dispatch & hardware control
         self.pub_new_order = self.create_publisher(String, '/delivery/new_order', 10)
@@ -524,6 +528,21 @@ class WebBridgeNode(Node):
             d = json.loads(msg.data)
             with self.lock:
                 self.package_loaded = bool(d.get('loaded', self.package_loaded))
+        except Exception:
+            pass
+
+    def _on_joint_states(self, msg: JointState):
+        try:
+            if hasattr(msg, 'name') and 'cargo_hatch_joint' in msg.name:
+                idx = msg.name.index('cargo_hatch_joint')
+                pos = float(msg.position[idx])
+                with self.lock:
+                    self.actual_hatch_joint_angle = pos
+                    self.hatch_physically_closed = (abs(pos) < 0.08)
+                    self.hatch_feedback_source = 'GAZEBO_JOINT_STATES'
+                    self.hatch_angle = pos
+                    if self.hatch_physically_closed and self.hatch_status in ('CLOSING', 'UNLOCKED'):
+                        self.hatch_status = 'LOCKED'
         except Exception:
             pass
 
@@ -1504,6 +1523,9 @@ class WebBridgeNode(Node):
                 'planned_route': planned_route,
                 'latest_handover': self.latest_handover,
                 'hatch_angle': round(self.hatch_angle, 2),
+                'actual_hatch_joint_angle': round(getattr(self, 'actual_hatch_joint_angle', self.hatch_angle), 3),
+                'hatch_physically_closed': getattr(self, 'hatch_physically_closed', True),
+                'hatch_feedback_source': getattr(self, 'hatch_feedback_source', 'GAZEBO_JOINT_STATES'),
                 'hatch_status': self.hatch_status,
                 'cargo_lift_position_m': round(self.cargo_ctrl.lift_position, 4),
                 'cargo_mechanism_state': self.cargo_ctrl.state.value,

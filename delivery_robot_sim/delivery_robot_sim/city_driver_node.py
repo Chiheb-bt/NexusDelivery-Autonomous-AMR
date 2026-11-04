@@ -194,14 +194,18 @@ class CityDriverNode(Node):
         self.sub_tl_state = self.create_subscription(
             String, '/traffic_light/state', self._on_tl_state, 10, callback_group=self.cb_group
         )
+        self.hatch_is_open = False
+        self.sub_hatch = self.create_subscription(
+            String, '/delivery/hatch_status', self._on_hatch_status, 10, callback_group=self.cb_group
+        )
 
         # Dedicated Safety Supervisor & Dynamic Pedestrian Tracker
         self.safety_sup = SafetySupervisor(
             sensor_timeout_s=2.5,
             patience_timeout_s=8.0,
             stall_timeout_s=2.5,
-            min_safe_clearance_m=0.65,
-            reduced_speed_clearance_m=3.2,
+            min_safe_clearance_m=0.60,
+            reduced_speed_clearance_m=1.8,
             nominal_speed_limit=self.max_v
         )
         self.actor_tracker = DynamicActorTracker()
@@ -220,6 +224,15 @@ class CityDriverNode(Node):
 
     def _on_tl_state(self, msg: String):
         self.tl_v2x_state = msg.data.strip().upper()
+
+    def _on_hatch_status(self, msg: String):
+        try:
+            data = json.loads(msg.data)
+            st = data.get('state', 'LOCKED')
+            angle = float(data.get('angle_rad', 0.0))
+            self.hatch_is_open = (st == 'OPEN' or angle > 0.08)
+        except Exception:
+            pass
 
     def _sim_time(self) -> float:
         return self.get_clock().now().nanoseconds / 1e9
@@ -566,6 +579,17 @@ class CityDriverNode(Node):
             # Perception is healthy: clear timeout stop state if previously active
             if self.state == 'RECOVERING_ROUTE':
                 self.stop_reason = 'NONE'
+
+        # Cargo Hatch Safety Interlock: if hatch is physically open / unlatched, never drive
+        if getattr(self, 'hatch_is_open', False) and self.target_action != 'WAIT':
+            self.cmd_v = 0.0
+            self.cmd_w = 0.0
+            self._send_cmd(0.0, 0.0)
+            self.state = 'CARGO_DOOR_AJAR'
+            self.stop_reason = 'CARGO_HATCH_OPEN_INTERLOCK'
+            self._publish_state()
+            self._log_row(now)
+            return
 
         # Handle Action == WAIT (robot parked at depot)
         if self.target_action == 'WAIT':

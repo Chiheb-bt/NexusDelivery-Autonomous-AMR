@@ -190,7 +190,7 @@ class SafetySupervisor:
         # 9. REDUCED SPEED (Proximity caution)
         if min_obstacle_dist <= self.reduced_speed_clearance_m:
             self.state = SafetySupervisorState.REDUCED_SPEED
-            v_limit = 0.35 if min_obstacle_dist < 2.0 else min(0.65, self.nominal_speed_limit * 0.70)
+            v_limit = 0.55 if min_obstacle_dist < 1.2 else min(0.95, self.nominal_speed_limit * 0.85)
             return self.state, v_limit, None, f'CAUTION_PROXIMITY (dist={min_obstacle_dist:.2f}m)'
 
         # 10. NOMINAL OPERATION

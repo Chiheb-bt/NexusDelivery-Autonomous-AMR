@@ -1,106 +1,116 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" width="100%" height="100%">
   <defs>
     <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
-      <stop offset="0%" stop-color="#1e293b"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
     </radialGradient>
     <radialGradient id="bowlGrad" cx="50%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#f8fafc"/>
-      <stop offset="70%" stop-color="#e2e8f0"/>
-      <stop offset="100%" stop-color="#cbd5e1"/>
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
     </radialGradient>
     <radialGradient id="leafGrad1" cx="40%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#4ade80"/>
-      <stop offset="100%" stop-color="#15803d"/>
+      <stop offset="0%" stop-color="#4ade80" />
+      <stop offset="100%" stop-color="#15803d" />
     </radialGradient>
     <radialGradient id="leafGrad2" cx="40%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#86efac"/>
-      <stop offset="100%" stop-color="#166534"/>
+      <stop offset="0%" stop-color="#86efac" />
+      <stop offset="100%" stop-color="#166534" />
     </radialGradient>
     <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.6" />
     </filter>
   </defs>
 
-  <rect width="600" height="360" fill="url(#bgGrad)"/>
+  <rect width="600" height="360" fill="url(#bgGrad)" />
 
   <!-- Ceramic Salad Bowl -->
   <g filter="url(#shadow)">
     <!-- Bowl Outer -->
-    <ellipse cx="300" cy="185" rx="190" ry="140" fill="url(#bowlGrad)"/>
+    <ellipse cx="300" cy="185" rx="190" ry="140" fill="url(#bowlGrad)" />
     <!-- Bowl Rim Highlight -->
-    <ellipse cx="300" cy="185" rx="186" ry="136" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.8"/>
+    <ellipse cx="300" cy="185" rx="186" ry="136" fill="none" stroke="#ffffff" stroke-width="4"
+      opacity="0.8" />
     <!-- Bowl Inner Bed -->
-    <ellipse cx="300" cy="185" rx="165" ry="120" fill="#0f172a" opacity="0.1"/>
+    <ellipse cx="300" cy="185" rx="165" ry="120" fill="#0f172a" opacity="0.1" />
 
     <!-- Crisp Lettuce & Spinach Leaves -->
-    <path d="M 200,140 C 180,100 240,110 260,140 C 270,160 220,170 200,140 Z" fill="url(#leafGrad1)"/>
-    <path d="M 330,120 C 370,90 410,130 380,160 C 350,170 320,140 330,120 Z" fill="url(#leafGrad2)"/>
-    <path d="M 170,180 C 140,160 170,220 210,210 C 230,200 200,170 170,180 Z" fill="url(#leafGrad2)"/>
-    <path d="M 390,170 C 430,160 420,220 370,220 C 340,210 370,180 390,170 Z" fill="url(#leafGrad1)"/>
-    <path d="M 230,220 C 260,250 340,250 360,210 C 330,190 250,190 230,220 Z" fill="url(#leafGrad1)"/>
-    <path d="M 270,130 C 300,110 340,130 320,160 C 290,170 260,150 270,130 Z" fill="url(#leafGrad2)"/>
+    <path d="M 200,140 C 180,100 240,110 260,140 C 270,160 220,170 200,140 Z" fill="url(#leafGrad1)" />
+    <path d="M 330,120 C 370,90 410,130 380,160 C 350,170 320,140 330,120 Z" fill="url(#leafGrad2)" />
+    <path d="M 170,180 C 140,160 170,220 210,210 C 230,200 200,170 170,180 Z" fill="url(#leafGrad2)" />
+    <path d="M 390,170 C 430,160 420,220 370,220 C 340,210 370,180 390,170 Z" fill="url(#leafGrad1)" />
+    <path d="M 230,220 C 260,250 340,250 360,210 C 330,190 250,190 230,220 Z" fill="url(#leafGrad1)" />
+    <path d="M 270,130 C 300,110 340,130 320,160 C 290,170 260,150 270,130 Z" fill="url(#leafGrad2)" />
 
     <!-- Crisp Cucumber Slices -->
     <!-- Cucumber 1 -->
-    <ellipse cx="230" cy="160" rx="20" ry="14" fill="#a7f3d0" stroke="#059669" stroke-width="4"/>
-    <circle cx="230" cy="160" r="3" fill="#34d399"/>
+    <ellipse cx="230" cy="160" rx="20" ry="14" fill="#a7f3d0" stroke="#059669" stroke-width="4" />
+    <circle cx="230" cy="160" r="3" fill="#34d399" />
     <!-- Cucumber 2 -->
-    <ellipse cx="360" cy="150" rx="18" ry="12" fill="#a7f3d0" stroke="#059669" stroke-width="4"/>
+    <ellipse cx="360" cy="150" rx="18" ry="12" fill="#a7f3d0" stroke="#059669" stroke-width="4" />
     <!-- Cucumber 3 -->
-    <ellipse cx="300" cy="225" rx="22" ry="15" fill="#a7f3d0" stroke="#059669" stroke-width="4"/>
+    <ellipse cx="300" cy="225" rx="22" ry="15" fill="#a7f3d0" stroke="#059669" stroke-width="4" />
 
     <!-- Cherry Tomato Halves (Glossy Red) -->
     <!-- Tomato 1 -->
-    <path d="M 275,185 A 14,14 0 0,0 275,213 Z" fill="#ef4444"/>
-    <ellipse cx="270" cy="199" rx="10" ry="12" fill="#dc2626"/>
-    <circle cx="268" cy="194" r="3" fill="#fca5a5"/>
+    <path d="M 275,185 A 14,14 0 0,0 275,213 Z" fill="#ef4444" />
+    <ellipse cx="270" cy="199" rx="10" ry="12" fill="#dc2626" />
+    <circle cx="268" cy="194" r="3" fill="#fca5a5" />
     <!-- Tomato 2 -->
-    <path d="M 345,180 A 14,14 0 0,1 345,208 Z" fill="#ef4444"/>
-    <ellipse cx="350" cy="194" rx="10" ry="12" fill="#dc2626"/>
-    <circle cx="352" cy="190" r="3" fill="#fca5a5"/>
+    <path d="M 345,180 A 14,14 0 0,1 345,208 Z" fill="#ef4444" />
+    <ellipse cx="350" cy="194" rx="10" ry="12" fill="#dc2626" />
+    <circle cx="352" cy="190" r="3" fill="#fca5a5" />
     <!-- Tomato 3 -->
-    <circle cx="210" cy="200" r="13" fill="#ef4444"/>
-    <circle cx="206" cy="196" r="4" fill="#fca5a5"/>
+    <circle cx="210" cy="200" r="13" fill="#ef4444" />
+    <circle cx="206" cy="196" r="4" fill="#fca5a5" />
 
     <!-- Greek Feta Cheese Cubes -->
     <!-- Cube 1 -->
-    <polygon points="310,160 330,155 332,175 312,180" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
-    <polygon points="330,155 342,162 344,182 332,175" fill="#f1f5f9"/>
-    <polygon points="310,160 322,167 342,162 330,155" fill="#ffffff"/>
-    <circle cx="320" cy="168" r="1" fill="#15803d"/>
-    <circle cx="326" cy="172" r="1" fill="#15803d"/>
+    <polygon points="310,160 330,155 332,175 312,180" fill="#ffffff" stroke="#e2e8f0"
+      stroke-width="1" />
+    <polygon points="330,155 342,162 344,182 332,175" fill="#f1f5f9" />
+    <polygon points="310,160 322,167 342,162 330,155" fill="#ffffff" />
+    <circle cx="320" cy="168" r="1" fill="#15803d" />
+    <circle cx="326" cy="172" r="1" fill="#15803d" />
 
     <!-- Cube 2 -->
-    <polygon points="240,185 260,180 262,200 242,205" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
-    <polygon points="260,180 270,186 272,206 262,200" fill="#f1f5f9"/>
-    <circle cx="250" cy="192" r="1" fill="#15803d"/>
+    <polygon points="240,185 260,180 262,200 242,205" fill="#ffffff" stroke="#e2e8f0"
+      stroke-width="1" />
+    <polygon points="260,180 270,186 272,206 262,200" fill="#f1f5f9" />
+    <circle cx="250" cy="192" r="1" fill="#15803d" />
 
     <!-- Cube 3 -->
-    <polygon points="360,195 380,190 382,210 362,215" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
-    <polygon points="380,190 390,196 392,216 382,210" fill="#f1f5f9"/>
+    <polygon points="360,195 380,190 382,210 362,215" fill="#ffffff" stroke="#e2e8f0"
+      stroke-width="1" />
+    <polygon points="380,190 390,196 392,216 382,210" fill="#f1f5f9" />
 
     <!-- Glossy Kalamata Olives (Dark Purple / Black) -->
-    <ellipse cx="280" cy="140" rx="12" ry="8" fill="#3b0764"/>
-    <ellipse cx="282" cy="138" rx="4" ry="2" fill="#c084fc" opacity="0.6"/>
+    <ellipse cx="280" cy="140" rx="12" ry="8" fill="#3b0764" />
+    <ellipse cx="282" cy="138" rx="4" ry="2" fill="#c084fc" opacity="0.6" />
 
-    <ellipse cx="325" cy="195" rx="11" ry="8" fill="#1e1b4b"/>
-    <ellipse cx="327" cy="193" rx="4" ry="2" fill="#a5b4fc" opacity="0.6"/>
+    <ellipse cx="325" cy="195" rx="11" ry="8" fill="#1e1b4b" />
+    <ellipse cx="327" cy="193" rx="4" ry="2" fill="#a5b4fc" opacity="0.6" />
 
-    <ellipse cx="250" cy="225" rx="12" ry="7" fill="#3b0764"/>
+    <ellipse cx="250" cy="225" rx="12" ry="7" fill="#3b0764" />
 
     <!-- Red Onion Rings -->
-    <ellipse cx="290" cy="175" rx="35" ry="16" fill="none" stroke="#d946ef" stroke-width="3" opacity="0.8"/>
-    <ellipse cx="340" cy="165" rx="30" ry="14" fill="none" stroke="#c026d3" stroke-width="3" opacity="0.75"/>
+    <ellipse cx="290" cy="175" rx="35" ry="16" fill="none" stroke="#d946ef" stroke-width="3"
+      opacity="0.8" />
+    <ellipse cx="340" cy="165" rx="30" ry="14" fill="none" stroke="#c026d3" stroke-width="3"
+      opacity="0.75" />
 
     <!-- Golden Extra Virgin Olive Oil Drizzle Sheen -->
-    <path d="M 220,150 Q 280,130 330,170 Q 370,190 340,220" fill="none" stroke="#facc15" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+    <path d="M 220,150 Q 280,130 330,170 Q 370,190 340,220" fill="none" stroke="#facc15"
+      stroke-width="3" stroke-linecap="round" opacity="0.75" />
   </g>
 
   <!-- Temperature & Category Badge -->
   <g transform="translate(420, 20)">
-    <rect width="160" height="34" rx="17" fill="rgba(15, 23, 42, 0.85)" stroke="#10b981" stroke-width="1.5"/>
-    <circle cx="20" cy="17" r="5" fill="#10b981"/>
-    <text x="34" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#f8fafc">🥗 FRESH 100%</text>
+    <rect width="160" height="34" rx="17" fill="rgba(15, 23, 42, 0.85)" stroke="#10b981"
+      stroke-width="1.5" />
+    <circle cx="20" cy="17" r="5" fill="#10b981" />
+    <text x="34" y="22"
+      font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12"
+      font-weight="700" fill="#f8fafc">🥗 FRESH 100%</text>
   </g>
 </svg>

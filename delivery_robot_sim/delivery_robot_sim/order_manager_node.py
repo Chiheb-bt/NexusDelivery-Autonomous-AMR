@@ -139,15 +139,40 @@ class OrderManagerNode(Node):
             order_id = data.get('order_id', self.dwell_order_id or '')
             now = self._sim_time()
             self.get_logger().info(f'Handover confirmed for {order_id}. Compartment locked. Initiating return to depot.')
+
+            # Confirm delivery on specific order or active current order
             if order_id in self.order_mgr.orders:
                 self.order_mgr.confirm_delivery(order_id, now=now)
+            elif self.order_mgr.current_order:
+                cur_id = self.order_mgr.current_order.order_id
+                self.get_logger().info(f'Handover confirmed: completing current active order {cur_id}')
+                self.order_mgr.confirm_delivery(cur_id, now=now)
+            elif self.dwell_order_id and self.dwell_order_id in self.order_mgr.orders:
+                self.order_mgr.confirm_delivery(self.dwell_order_id, now=now)
+
+            # Clear all current active mission & dwell locks
             self.dwell_until = None
             self.dwell_action = None
             self.dwell_order_id = None
             self.dwell_otp = None
+            self.order_mgr.current_order = None
+            self.order_mgr.carried_packages.clear()
             self.order_mgr.returning_to_depot = True
             self.order_mgr.mission_state = MissionLifecycleState.RETURNING_TO_DEPOT.value
             self._publish_status(now)
+
+            # Immediately issue return-to-depot target to driver node
+            ret_act = {
+                'target_name': self.order_mgr.depot_name,
+                'target_xy': list(self.order_mgr.depot_xy),
+                'target_heading': 0.0,
+                'action': 'PARK',
+                'order_id': order_id,
+                'package_id': 'NONE'
+            }
+            msg_target = String()
+            msg_target.data = json.dumps(ret_act)
+            self.pub_target.publish(msg_target)
         except Exception as e:
             self.get_logger().error(f'Error handling handover confirmation: {e}')
 

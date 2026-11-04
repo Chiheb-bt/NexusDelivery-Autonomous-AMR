@@ -1,123 +1,126 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" width="100%" height="100%">
   <defs>
     <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
-      <stop offset="0%" stop-color="#1e293b"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
     </radialGradient>
     <linearGradient id="boxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#18181b"/>
-      <stop offset="100%" stop-color="#09090b"/>
+      <stop offset="0%" stop-color="#18181b" />
+      <stop offset="100%" stop-color="#09090b" />
     </linearGradient>
     <linearGradient id="boxRim" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ef4444"/>
-      <stop offset="100%" stop-color="#991b1b"/>
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#991b1b" />
     </linearGradient>
     <linearGradient id="salmonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fb923c"/>
-      <stop offset="50%" stop-color="#f97316"/>
-      <stop offset="100%" stop-color="#ea580c"/>
+      <stop offset="0%" stop-color="#fb923c" />
+      <stop offset="50%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#ea580c" />
     </linearGradient>
     <linearGradient id="tunaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f43f5e"/>
-      <stop offset="70%" stop-color="#e11d48"/>
-      <stop offset="100%" stop-color="#be123c"/>
+      <stop offset="0%" stop-color="#f43f5e" />
+      <stop offset="70%" stop-color="#e11d48" />
+      <stop offset="100%" stop-color="#be123c" />
     </linearGradient>
     <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.6" />
     </filter>
   </defs>
 
-  <rect width="600" height="360" fill="url(#bgGrad)"/>
+  <rect width="600" height="360" fill="url(#bgGrad)" />
 
   <!-- Sleek Japanese Lacquer Bento Box -->
   <g filter="url(#shadow)">
     <!-- Outer Red Rim -->
-    <rect x="90" y="45" width="420" height="270" rx="20" fill="url(#boxRim)"/>
+    <rect x="90" y="45" width="420" height="270" rx="20" fill="url(#boxRim)" />
     <!-- Inner Dark Cavity -->
-    <rect x="96" y="51" width="408" height="258" rx="16" fill="url(#boxGrad)"/>
-    
+    <rect x="96" y="51" width="408" height="258" rx="16" fill="url(#boxGrad)" />
+
     <!-- Dividers -->
-    <rect x="300" y="55" width="6" height="250" fill="#27272a"/>
-    <rect x="306" y="175" width="194" height="6" fill="#27272a"/>
+    <rect x="300" y="55" width="6" height="250" fill="#27272a" />
+    <rect x="306" y="175" width="194" height="6" fill="#27272a" />
 
     <!-- Compartment 1 (Left): Premium Nigiri Sushi Trio -->
     <!-- Rice Pillows & Glazed Salmon -->
     <!-- Nigiri 1: Salmon -->
     <g transform="translate(130, 80)">
-      <ellipse cx="60" cy="35" rx="52" ry="24" fill="#f8fafc"/>
-      <ellipse cx="60" cy="30" rx="55" ry="22" fill="url(#salmonGrad)"/>
+      <ellipse cx="60" cy="35" rx="52" ry="24" fill="#f8fafc" />
+      <ellipse cx="60" cy="30" rx="55" ry="22" fill="url(#salmonGrad)" />
       <!-- Salmon White Fat Striations -->
-      <path d="M 25,26 Q 60,32 95,26" stroke="#fed7aa" stroke-width="2.5" fill="none" opacity="0.8"/>
-      <path d="M 30,34 Q 60,40 90,34" stroke="#fed7aa" stroke-width="2" fill="none" opacity="0.8"/>
-      <ellipse cx="65" cy="22" rx="14" ry="4" fill="#ffffff" opacity="0.35"/>
+      <path d="M 25,26 Q 60,32 95,26" stroke="#fed7aa" stroke-width="2.5" fill="none" opacity="0.8" />
+      <path d="M 30,34 Q 60,40 90,34" stroke="#fed7aa" stroke-width="2" fill="none" opacity="0.8" />
+      <ellipse cx="65" cy="22" rx="14" ry="4" fill="#ffffff" opacity="0.35" />
     </g>
 
     <!-- Nigiri 2: Maguro Tuna -->
     <g transform="translate(130, 150)">
-      <ellipse cx="60" cy="35" rx="52" ry="24" fill="#f8fafc"/>
-      <ellipse cx="60" cy="30" rx="55" ry="22" fill="url(#tunaGrad)"/>
-      <ellipse cx="65" cy="22" rx="15" ry="4" fill="#ffffff" opacity="0.25"/>
+      <ellipse cx="60" cy="35" rx="52" ry="24" fill="#f8fafc" />
+      <ellipse cx="60" cy="30" rx="55" ry="22" fill="url(#tunaGrad)" />
+      <ellipse cx="65" cy="22" rx="15" ry="4" fill="#ffffff" opacity="0.25" />
     </g>
 
     <!-- Nigiri 3: Salmon with Nori Belt -->
     <g transform="translate(130, 220)">
-      <ellipse cx="60" cy="35" rx="52" ry="24" fill="#f8fafc"/>
-      <ellipse cx="60" cy="30" rx="55" ry="22" fill="url(#salmonGrad)"/>
-      <path d="M 25,26 Q 60,32 95,26" stroke="#fed7aa" stroke-width="2.5" fill="none" opacity="0.8"/>
+      <ellipse cx="60" cy="35" rx="52" ry="24" fill="#f8fafc" />
+      <ellipse cx="60" cy="30" rx="55" ry="22" fill="url(#salmonGrad)" />
+      <path d="M 25,26 Q 60,32 95,26" stroke="#fed7aa" stroke-width="2.5" fill="none" opacity="0.8" />
       <!-- Nori Belt -->
-      <rect x="48" y="10" width="24" height="42" rx="3" fill="#18181b"/>
-      <rect x="52" y="12" width="16" height="4" fill="#27272a" opacity="0.6"/>
+      <rect x="48" y="10" width="24" height="42" rx="3" fill="#18181b" />
+      <rect x="52" y="12" width="16" height="4" fill="#27272a" opacity="0.6" />
     </g>
 
     <!-- Compartment 2 (Top Right): 4x Avocado & Tuna Maki Rolls -->
     <g transform="translate(325, 70)">
       <!-- Maki 1 -->
-      <circle cx="40" cy="40" r="28" fill="#18181b"/>
-      <circle cx="40" cy="40" r="24" fill="#f8fafc"/>
-      <rect x="32" y="32" width="16" height="16" rx="4" fill="#e11d48"/>
-      <circle cx="44" cy="36" r="4" fill="#84cc16"/>
+      <circle cx="40" cy="40" r="28" fill="#18181b" />
+      <circle cx="40" cy="40" r="24" fill="#f8fafc" />
+      <rect x="32" y="32" width="16" height="16" rx="4" fill="#e11d48" />
+      <circle cx="44" cy="36" r="4" fill="#84cc16" />
 
       <!-- Maki 2 -->
-      <circle cx="115" cy="40" r="28" fill="#18181b"/>
-      <circle cx="115" cy="40" r="24" fill="#f8fafc"/>
-      <rect x="107" y="32" width="16" height="16" rx="4" fill="#f97316"/>
-      <circle cx="119" cy="36" r="4" fill="#84cc16"/>
+      <circle cx="115" cy="40" r="28" fill="#18181b" />
+      <circle cx="115" cy="40" r="24" fill="#f8fafc" />
+      <rect x="107" y="32" width="16" height="16" rx="4" fill="#f97316" />
+      <circle cx="119" cy="36" r="4" fill="#84cc16" />
 
       <!-- Ginger & Wasabi Garnish -->
-      <path d="M 50,85 Q 65,70 80,85 Q 75,95 60,95 Z" fill="#f472b6" opacity="0.85"/>
-      <path d="M 62,88 Q 75,76 85,88" fill="#fb7185" opacity="0.9"/>
+      <path d="M 50,85 Q 65,70 80,85 Q 75,95 60,95 Z" fill="#f472b6" opacity="0.85" />
+      <path d="M 62,88 Q 75,76 85,88" fill="#fb7185" opacity="0.9" />
       <!-- Wasabi Rosette -->
-      <ellipse cx="120" cy="85" rx="14" ry="10" fill="#65a30d"/>
-      <circle cx="118" cy="83" r="4" fill="#84cc16"/>
+      <ellipse cx="120" cy="85" rx="14" ry="10" fill="#65a30d" />
+      <circle cx="118" cy="83" r="4" fill="#84cc16" />
     </g>
 
     <!-- Compartment 3 (Bottom Right): Steamed Edamame Pods -->
     <g transform="translate(325, 195)">
       <!-- Pod 1 -->
-      <path d="M 20,40 Q 60,15 100,30 Q 80,60 30,55 Z" fill="#4d7c0f"/>
-      <ellipse cx="40" cy="38" rx="10" ry="7" fill="#65a30d"/>
-      <ellipse cx="65" cy="32" rx="10" ry="7" fill="#65a30d"/>
-      <ellipse cx="88" cy="33" rx="8" ry="6" fill="#65a30d"/>
+      <path d="M 20,40 Q 60,15 100,30 Q 80,60 30,55 Z" fill="#4d7c0f" />
+      <ellipse cx="40" cy="38" rx="10" ry="7" fill="#65a30d" />
+      <ellipse cx="65" cy="32" rx="10" ry="7" fill="#65a30d" />
+      <ellipse cx="88" cy="33" rx="8" ry="6" fill="#65a30d" />
       <!-- Pod 2 -->
-      <path d="M 50,75 Q 90,50 135,65 Q 115,95 65,90 Z" fill="#3f6212"/>
-      <ellipse cx="70" cy="73" rx="10" ry="7" fill="#4d7c0f"/>
-      <ellipse cx="95" cy="67" rx="10" ry="7" fill="#4d7c0f"/>
-      <ellipse cx="120" cy="68" rx="8" ry="6" fill="#4d7c0f"/>
+      <path d="M 50,75 Q 90,50 135,65 Q 115,95 65,90 Z" fill="#3f6212" />
+      <ellipse cx="70" cy="73" rx="10" ry="7" fill="#4d7c0f" />
+      <ellipse cx="95" cy="67" rx="10" ry="7" fill="#4d7c0f" />
+      <ellipse cx="120" cy="68" rx="8" ry="6" fill="#4d7c0f" />
     </g>
   </g>
 
   <!-- Polished Chopsticks Crossing the Edge -->
   <g transform="translate(30, 290) rotate(-15)">
-    <rect x="0" y="0" width="340" height="7" rx="3.5" fill="#d97706"/>
-    <rect x="300" y="0" width="40" height="7" fill="#b45309"/>
-    <rect x="0" y="14" width="340" height="7" rx="3.5" fill="#f59e0b"/>
-    <rect x="300" y="14" width="40" height="7" fill="#b45309"/>
+    <rect x="0" y="0" width="340" height="7" rx="3.5" fill="#d97706" />
+    <rect x="300" y="0" width="40" height="7" fill="#b45309" />
+    <rect x="0" y="14" width="340" height="7" rx="3.5" fill="#f59e0b" />
+    <rect x="300" y="14" width="40" height="7" fill="#b45309" />
   </g>
 
   <!-- Temperature & Category Badge -->
   <g transform="translate(420, 20)">
-    <rect width="160" height="34" rx="17" fill="rgba(15, 23, 42, 0.85)" stroke="#38bdf8" stroke-width="1.5"/>
-    <circle cx="20" cy="17" r="5" fill="#38bdf8"/>
-    <text x="34" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#f8fafc">❄️ CHILLED 4°C</text>
+    <rect width="160" height="34" rx="17" fill="rgba(15, 23, 42, 0.85)" stroke="#38bdf8"
+      stroke-width="1.5" />
+    <circle cx="20" cy="17" r="5" fill="#38bdf8" />
+    <text x="34" y="22"
+      font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12"
+      font-weight="700" fill="#f8fafc">❄️ CHILLED 4°C</text>
   </g>
 </svg>
