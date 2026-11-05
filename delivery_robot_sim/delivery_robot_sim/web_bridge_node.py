@@ -60,6 +60,12 @@ except ImportError:
             self.angular = _Vector3()
     class Odometry: pass
     class Image: pass
+    class JointState:
+        def __init__(self):
+            self.name = []
+            self.position = []
+            self.velocity = []
+            self.effort = []
     class String:
         def __init__(self): self.data = ""
 
