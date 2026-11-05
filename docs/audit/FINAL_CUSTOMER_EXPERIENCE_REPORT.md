@@ -1,7 +1,7 @@
-# NEXORA Final Customer Experience & Product Report
+# NEXUSDELIVERY Final Customer Experience & Product Report
 
 ## 1. Product Vision & Commercial Standard
-NEXORA delivers a high-end autonomous sidewalk delivery service comparable to Tier-1 delivery tech platforms. The customer web experience (`http://localhost:8080/client`) is designed around 4 core principles:
+NEXUSDELIVERY delivers a high-end autonomous sidewalk delivery service comparable to Tier-1 delivery tech platforms. The customer web experience (`http://localhost:8080/client`) is designed around 4 core principles:
 1. **Uncompromised Visual Contrast:** Clean light mode default with deep slate typography (`#0f172a`), eliminating text washout and unreadable sections.
 2. **Authentic Product Identity:** High-resolution culinary photography representing actual temperature-managed deliveries.
 3. **Interactive Sidewalk Pinning:** Direct spatial selection of doorstep delivery bays on the living Gazebo vector map.
@@ -16,7 +16,7 @@ sequenceDiagram
     autonumber
     actor Customer as Customer (Sophie)
     participant Web as Customer Portal
-    participant Fleet as NEXORA Fleet Hub
+    participant Fleet as NEXUSDELIVERY Fleet Hub
     participant Rover as Rover Alpha (Gazebo)
 
     Customer->>Web: Selects Artisan Margherita Pizza & sets Doorstep Pin

@@ -1,4 +1,4 @@
-# NEXORA Customer Portal UX & Interaction Verification
+# NEXUSDELIVERY Customer Portal UX & Interaction Verification
 
 ## 1. Scope & Verification Environment
 - **Target URL:** `http://localhost:8080/client`

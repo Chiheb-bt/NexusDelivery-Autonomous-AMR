@@ -83,15 +83,15 @@ Chiheb Robotics solves this crisis with a vertically integrated, software-define
 NexusDelivery bridges the gap between customer convenience and industrial fleet observability through an interactive, quad-portal web dashboard:
 
 ````carousel
-![Customer Portal](assets/poc_1_customer_portal.png)
+![Customer Portal Landing](../assets/website/customer_portal_landing.png)
 <!-- slide -->
-![Fleet Cockpit Monitor](assets/poc_2_fleet_cockpit.png)
+![Customer Interactive Pin Dropper](../assets/website/customer_portal_preview.png)
 <!-- slide -->
-![Hardware Simulator](assets/poc_3_hardware_simulator.png)
+![Curbside Menu & Orders](../assets/website/customer_order_menu.png)
 <!-- slide -->
-![2D CAD Blueprint](assets/poc_4_cad_blueprint.png)
+![Fleet Supervisor Cockpit](../assets/website/fleet_supervisor_cockpit.png)
 <!-- slide -->
-![Doorstep Unlocked](assets/poc_5_doorstep_unlocked.png)
+![Doorstep OTP Unlock](../assets/website/customer_doorstep_otp_modal.png)
 ````
 
 ### 3.1 Portal 1: Customer E-Commerce & Interactive Pin Dropper
@@ -124,15 +124,15 @@ The complete autonomous delivery pipeline was evaluated in a photorealistic Gaze
 The master video documents the exact end-to-end customer and operational scenario:
 
 ````carousel
-![Gazebo 11 Simulation Doorstep Delivery Mission](assets/gazebo_new_location.jpg)
+![Gazebo 11 Simulation Urban World](../assets/simulation/gazebo_world_perspective.png)
 <!-- slide -->
-![Gazebo 3D Sidewalk Tracking with Vision HUD](assets/gazebo_sidewalk_tracking.jpg)
+![Gazebo 3D Sidewalk Robot Follow](../assets/simulation/gazebo_robot_follow_drive.png)
 <!-- slide -->
-![Doorstep OTP Unlock Handover](assets/poc_5_doorstep_unlocked.png)
+![Doorstep OTP Unlock Handover](../assets/website/customer_doorstep_otp_modal.png)
 <!-- slide -->
-![Curbside Handover at Central Square Destination](assets/gazebo_new_location.jpg)
+![Gazebo City Street Navigation](../assets/simulation/gazebo_city_street.png)
 <!-- slide -->
-![Simultaneous Live RealSense Camera: ROS 2 rqt_image_view & Web Dashboard](assets/rqt_web_side_by_side.jpg)
+![Simultaneous Live RealSense Camera rqt view](../assets/simulation/gazebo_rqt_camera_view.png)
 ````
 
 ### 4.1 Act-by-Act Verification Breakdown
@@ -175,8 +175,8 @@ During transit, the robot encountered dynamic pedestrian actors crossing the sid
 
 | Authentic Gazebo Sidewalk Tracking | ROS 2 Perception Pipeline (rqt_image_view) |
 | :---: | :---: |
-| ![Gazebo Sidewalk Tracking](assets/gazebo_sidewalk_tracking.jpg) | ![ROS 2 Vision Perception](assets/rqt_web_side_by_side.jpg) |
-| *Authentic Gazebo 11 simulation of DELIVER_BOT tracking on urban sidewalk* | *ROS 2 Humble /camera/color/image_raw feed with active YOLO detection* |
+| ![Gazebo Sidewalk Tracking](../assets/simulation/gazebo_robot_follow_drive.png) | ![ROS 2 Vision Perception](../assets/simulation/gazebo_rqt_camera_view.png) |
+| *Authentic Gazebo 11 simulation of NEXUSDELIVERY tracking on urban sidewalk* | *ROS 2 Humble /camera/image_raw feed showing traffic light & street* |
 
 ---
 

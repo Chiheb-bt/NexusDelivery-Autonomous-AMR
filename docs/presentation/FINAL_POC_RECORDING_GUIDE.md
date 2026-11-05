@@ -1,7 +1,7 @@
-# NEXORA Final Proof-of-Concept Video Recording Guide
+# NEXUSDELIVERY Final Proof-of-Concept Video Recording Guide
 
 ## 1. Objective
-This guide provides instructions for the user (Chiheb) to record a high-impact, professional demonstration video of the NEXORA autonomous delivery robot Proof of Concept.
+This guide provides instructions for the user (Chiheb) to record a high-impact, professional demonstration video of the NEXUSDELIVERY autonomous delivery robot Proof of Concept.
 
 ---
 

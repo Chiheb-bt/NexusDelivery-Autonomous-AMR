@@ -1,7 +1,7 @@
-# NEXORA End-to-End Acceptance & Verification Sign-Off
+# NEXUSDELIVERY End-to-End Acceptance & Verification Sign-Off
 
 ## 1. Acceptance Overview
-This report certifies that the NEXORA autonomous sidewalk delivery robotics platform has successfully passed all verification gates across robotics autonomy, physical Gazebo simulation, backend state management, and full-stack web engineering.
+This report certifies that the NEXUSDELIVERY autonomous sidewalk delivery robotics platform has successfully passed all verification gates across robotics autonomy, physical Gazebo simulation, backend state management, and full-stack web engineering.
 
 ---
 

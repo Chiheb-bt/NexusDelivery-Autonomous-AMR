@@ -1,4 +1,4 @@
-# NEXORA — CURRENT SYSTEM BASELINE & ARCHITECTURAL AUDIT
+# NEXUSDELIVERY — CURRENT SYSTEM BASELINE & ARCHITECTURAL AUDIT
 **Authoritative Repository:** `/home/chiheb/Downloads/NEXUS-URBAN-AUTONOMY`  
 **ROS 2 Workspace:** `/home/chiheb/rdsim_ws`  
 **Target Environment:** ROS 2 Humble • Gazebo Classic 11.10.2 • Ubuntu 22.04 LTS (Docker Container `rdsim_sim_container`)  
