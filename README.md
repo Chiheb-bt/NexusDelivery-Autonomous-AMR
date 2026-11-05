@@ -158,8 +158,8 @@ During empirical testing, several critical failure modes were diagnosed and corr
 ### A. Quick Start with Docker
 ```bash
 # Clone the repository
-git clone https://github.com/Chiheb-bt/NEXUS-URBAN-AUTONOMY.git
-cd NEXUS-URBAN-AUTONOMY
+git clone https://github.com/Chiheb-bt/NexusDelivery-Autonomous-AMR.git
+cd NexusDelivery-Autonomous-AMR
 
 # Launch visible 3D simulation + Web Bridge
 ./run_visual_simulation.sh
@@ -186,7 +186,7 @@ PYTHONPATH=delivery_robot_sim PBKDF2_ITERATIONS=10000 python3 -m unittest discov
   year = {2026},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{https://github.com/Chiheb-bt/NEXUS-URBAN-AUTONOMY}},
+  howpublished = {\url{https://github.com/Chiheb-bt/NexusDelivery-Autonomous-AMR}},
   note = {TRL 3-4 Autonomous Mobile Robot Platform. Chiheb Robotics Systems Lab}
 }
 ```
