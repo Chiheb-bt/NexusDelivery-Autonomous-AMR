@@ -1,14 +1,12 @@
 # ==============================================================================
 # Chiheb Robotics — NexusDelivery (.gitignore)
 # ==============================================================================
-
 # OS & Desktop files
 .DS_Store
 Thumbs.db
 desktop.ini
 *.swp
 *~
-
 # IDE & Editor files
 .vscode/
 .idea/
@@ -16,7 +14,6 @@ desktop.ini
 *.sublime-workspace
 .agents/
 .system_generated/
-
 # Python compiled & cache
 __pycache__/
 *.py[cod]
@@ -35,7 +32,6 @@ sdist/
 develop-eggs/
 .installed.cfg
 pip-wheel-metadata/
-
 # ROS 2 & Colcon build artifacts
 build/
 install/
@@ -44,13 +40,11 @@ COLCON_IGNORE
 install_isolated/
 devel/
 devel_isolated/
-
 # Gazebo temporary runtime files
 *.log
 gazebo_*.log
 ogre.log
 ~*.world
-
 # Binary tools & external downloads
 tools/cloudflared
 *.zip
@@ -58,14 +52,12 @@ tools/cloudflared
 *.tgz
 *.deb
 *.rpm
-
 # Host scratch & temporary testing logs
 /tmp/driver_log.csv
 /tmp/*.csv
 /tmp/*.json
 /tmp/*.png
 /tmp/*.gif
-
 # Model checkpoints (larger than 100MB; keep lightweight yolov8n.pt 6.5MB)
 *.weights
 *.onnx
@@ -74,14 +66,9 @@ tools/cloudflared
 *.h5
 *.tflite
 !delivery_robot_sim/yolov8n.pt
-
 # Video files exceeding GitHub 100MB limit (re-render via python3 results/proof_of_concept/build_poc_video.py)
 results/proof_of_concept/nexus_delivery_poc.mp4
 results/proof_of_concept/authentic_film/temp_video_silent.mp4
-
-
-
-
 # SQLite databases & runtime storage
 *.db
 *.sqlite3
@@ -90,7 +77,6 @@ results/proof_of_concept/authentic_film/temp_video_silent.mp4
 *.db-shm
 # Large Screencasts & Intermediate Video Renders
 results/proof_of_concept/*.webm
-results/proof_of_concept/final_delivery/*.mp4
 results/proof_of_concept/final_delivery/*.wav
 results/proof_of_concept/authentic_film/*.mp4
 results/proof_of_concept/authentic_film/*.wav
