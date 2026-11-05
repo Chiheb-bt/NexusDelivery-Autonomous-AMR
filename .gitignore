@@ -88,3 +88,9 @@ results/proof_of_concept/authentic_film/temp_video_silent.mp4
 *.db-journal
 *.db-wal
 *.db-shm
+# Large Screencasts & Intermediate Video Renders
+results/proof_of_concept/*.webm
+results/proof_of_concept/final_delivery/*.mp4
+results/proof_of_concept/final_delivery/*.wav
+results/proof_of_concept/authentic_film/*.mp4
+results/proof_of_concept/authentic_film/*.wav

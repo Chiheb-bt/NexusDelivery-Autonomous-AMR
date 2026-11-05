@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this software in your research or engineering work, please cite it as below."
 authors:
-  - family-names: "Chiheb"
-    given-names: "B."
+  - family-names: "Chiheb-bt"
+    given-names: ""
     email: "bchiheb598@gmail.com"
     affiliation: "Chiheb Robotics Systems Lab"
 title: "NexusDelivery: Autonomous Sidewalk Fleet Platform (Simulation-First Prototype Architecture)"
