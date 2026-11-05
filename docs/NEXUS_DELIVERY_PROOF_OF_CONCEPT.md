@@ -1,15 +1,13 @@
 # Chiheb Robotics — NexusDelivery Autonomous Sidewalk Platform
 ## Comprehensive Proof of Concept (PoC) & Commercial Valorization Report
 
-![NexusDelivery Showcase Banner](assets/nexus_poc_showcase_banner.png)
+![NexusDelivery Simulation Overview](../assets/simulation/gazebo_world_perspective.png)
 
 ### 🎬 Master Autonomous Delivery Story & Demonstration Video
-![NexusDelivery Master 68-Second Autonomous Mission Story Video](assets/nexus_master_delivery_story.mp4)
-
-> [!NOTE]
-> **Instant Replay Animation (High-Definition 30 FPS Stream):**
-> 
-> ![NexusDelivery Story Animated Replay](assets/nexus_master_delivery_story.gif)
+* 🎥 **Full Engineering Proof of Concept (2 min 53 s):** [Watch Video](../results/proof_of_concept/final_delivery/NEXUSDELIVERY_ENGINEERING_POC.mp4)
+* ⚡ **Executive Teaser Showcase (60 s):** [Watch Teaser](../results/proof_of_concept/final_delivery/NEXUSDELIVERY_SHORT_SHOWCASE.mp4)
+* 🎙️ **French Voiceover Track:** [Listen Audio](../results/proof_of_concept/final_delivery/NEXUSDELIVERY_VOICEOVER_FR.wav)
+* 📜 **Narration Script:** [Read Script](../results/proof_of_concept/final_delivery/NEXUSDELIVERY_NARRATION_FR.md)
 
 ---
 
