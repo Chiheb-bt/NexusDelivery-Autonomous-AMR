@@ -80,3 +80,17 @@ results/proof_of_concept/*.webm
 results/proof_of_concept/final_delivery/*.wav
 results/proof_of_concept/authentic_film/*.mp4
 results/proof_of_concept/authentic_film/*.wav
+# Defense preparation and personal study notes (local only)
+docs/defense/
+NEXUSDELIVERY_DEFENSE_MASTER_REPORT.md
+# Presentation and LinkedIn posters (local only)
+NEXUSDELIVERY_LINKEDIN_FINAL.png
+nexusdelivery_poster_base.png
+NEXUSDELIVERY_POSTER_IMAGE_SOURCES.md
+assets/presentation/
+assets/robot/nexus_delivery_physical_concept.png
+assets/simulation/gazebo_world_top_view_genuine.png
+docs/design/
+tools/build_presentation_identity.py
+tools/composite_exact_poster.py
+tools/prepare_physical_concept_asset.py
